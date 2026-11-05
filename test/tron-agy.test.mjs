@@ -63,3 +63,47 @@ test("TronAGY Dual-Transport GemiMCP Bridge resolves Cloud (mcp.gemitron.net) an
   assert.equal(local.zeroCloudTraffic, true);
   assert.equal(local.fallbackMcpUrl, null);
 });
+
+test("AGY Fleet Router connects to Windows Local, Mac Local, VPS 01, and VPS 02 and streams zero-jargon chat events", async () => {
+  const {
+    AGY_FLEET_NODES,
+    selectOptimalFleetNode,
+    buildCreatorFriendlyStreamEvents
+  } = await import("../src/fleet-router.mjs");
+
+  assert.deepEqual(Object.keys(AGY_FLEET_NODES), [
+    "auto-best",
+    "win-local",
+    "mac-local",
+    "vps-01",
+    "vps-02"
+  ]);
+
+  const macSelected = selectOptimalFleetNode({
+    preferredNodeId: "mac-local",
+    nodeStatusMap: { "mac-local": { online: true } }
+  });
+  assert.equal(macSelected.selectedNode.id, "mac-local");
+  assert.equal(macSelected.failoverUsed, false);
+
+  const failoverToVps01 = selectOptimalFleetNode({
+    preferredNodeId: "win-local",
+    nodeStatusMap: {
+      "win-local": { online: false },
+      "mac-local": { online: false },
+      "vps-01": { online: true }
+    }
+  });
+  assert.equal(failoverToVps01.selectedNode.id, "vps-01");
+  assert.equal(failoverToVps01.failoverUsed, true);
+
+  const events = buildCreatorFriendlyStreamEvents({
+    prompt: "إعلان فاخر",
+    locale: "ar-EG",
+    nodeId: "vps-02"
+  });
+  assert.equal(events.length, 6);
+  assert.equal(events[0].type, "thinking");
+  assert.equal(events[5].type, "chat_message");
+});
+
