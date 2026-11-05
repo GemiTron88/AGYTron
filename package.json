@@ -1,0 +1,40 @@
+{
+  "name": "@gemitron/agy-tron",
+  "version": "1.0.0",
+  "description": "AGYTron — Global AGY AI Creative Director, ToS-Safe Host-Inversion SDK, Dual Cloud/Local GemiMCP Bridge, and Premium Control Studio for all 6 TronCS Creative Suite apps (PhotoTron, AfterTron, FilmTron, GemiMotion, FigTron, LightTron)",
+  "type": "module",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./mcp-bridge": "./src/mcp-bridge.mjs",
+    "./ui": "./ui/TronAgyControlCenter.tsx"
+  },
+  "bin": {
+    "agy-tron": "./bin/tron-agy.mjs",
+    "tron-agy": "./bin/tron-agy.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/tron-agy.test.mjs",
+    "cli": "node ./bin/tron-agy.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GemiTron88/AGYTron.git"
+  },
+  "keywords": [
+    "gemitron",
+    "troncs",
+    "tron-agy",
+    "antigravity",
+    "gemimotion",
+    "phototron",
+    "aftertron",
+    "filmtron",
+    "figtron",
+    "lighttron",
+    "gemimcp"
+  ],
+  "author": "GemiTron88",
+  "license": "UNLICENSED",
+  "private": true
+}
