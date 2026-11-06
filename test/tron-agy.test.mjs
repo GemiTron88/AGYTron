@@ -64,11 +64,20 @@ test("TronAGY Dual-Transport GemiMCP Bridge resolves Cloud (mcp.gemitron.net) an
   assert.equal(local.fallbackMcpUrl, null);
 });
 
-test("AGY Fleet Router connects to Windows Local, Mac Local, VPS 01, and VPS 02 and streams zero-jargon chat events", async () => {
+test("AGY Fleet Router persists custom IPs, probes /v1/agy/health with /health fallback, and streams SSE chat events", async () => {
   const {
     AGY_FLEET_NODES,
+    FLEET_STORAGE_KEYS,
+    DEFAULT_FLEET_ADDRESSES,
     selectOptimalFleetNode,
-    buildCreatorFriendlyStreamEvents
+    buildCreatorFriendlyStreamEvents,
+    normalizeNodeEndpoint,
+    probeFleetNodeLiveStatus,
+    loadPersistedFleetAddresses,
+    savePersistedFleetAddresses,
+    loadPersistedActiveFleetNode,
+    savePersistedActiveFleetNode,
+    streamFleetNodeChat
   } = await import("../src/fleet-router.mjs");
 
   assert.deepEqual(Object.keys(AGY_FLEET_NODES), [
@@ -106,16 +115,34 @@ test("AGY Fleet Router connects to Windows Local, Mac Local, VPS 01, and VPS 02 
   assert.equal(events[0].type, "thinking");
   assert.equal(events[5].type, "chat_message");
 
-  const {
-    DEFAULT_FLEET_ADDRESSES,
-    normalizeNodeEndpoint,
-    probeFleetNodeLiveStatus
-  } = await import("../src/fleet-router.mjs");
-
   assert.equal(DEFAULT_FLEET_ADDRESSES["vps-01"], "https://mcp.gemitron.net");
   assert.equal(normalizeNodeEndpoint("192.168.1.10"), "http://192.168.1.10:18220");
   assert.equal(normalizeNodeEndpoint("https://mcp.gemitron.net/"), "https://mcp.gemitron.net");
 
+  // Verify localStorage persistence helpers (`agy.fleet.addresses.v1` and `agy.fleet.activeNode.v1`)
+  const memStore = new Map();
+  const fakeStorage = {
+    getItem: (k) => (memStore.has(k) ? memStore.get(k) : null),
+    setItem: (k, v) => memStore.set(k, v)
+  };
+  savePersistedFleetAddresses(
+    {
+      ...DEFAULT_FLEET_ADDRESSES,
+      "win-local": "192.168.1.99:18220",
+      "vps-02": "173.212.237.207:18220"
+    },
+    fakeStorage
+  );
+  savePersistedActiveFleetNode("vps-02", fakeStorage);
+  assert.ok(memStore.has(FLEET_STORAGE_KEYS.addresses));
+  assert.ok(memStore.has(FLEET_STORAGE_KEYS.activeNode));
+
+  const loadedAddresses = loadPersistedFleetAddresses(fakeStorage);
+  assert.equal(loadedAddresses["win-local"], "192.168.1.99:18220");
+  assert.equal(loadedAddresses["vps-02"], "173.212.237.207:18220");
+  assert.equal(loadPersistedActiveFleetNode(fakeStorage), "vps-02");
+
+  // Verify live probe on /v1/agy/health
   const liveProbe = await probeFleetNodeLiveStatus({
     nodeId: "vps-02",
     address: "185.220.101.42:18220",
@@ -124,6 +151,102 @@ test("AGY Fleet Router connects to Windows Local, Mac Local, VPS 01, and VPS 02 
   assert.equal(liveProbe.online, true);
   assert.equal(liveProbe.healthUrl, "http://185.220.101.42:18220/v1/agy/health");
   assert.ok(liveProbe.latencyMs >= 1);
+
+  // Verify fallback to /health on mcp.gemitron.net when /v1/agy/health returns 404
+  const calledUrls = [];
+  const fallbackProbe = await probeFleetNodeLiveStatus({
+    nodeId: "vps-01",
+    address: "https://mcp.gemitron.net",
+    fetchFn: async (url) => {
+      calledUrls.push(url);
+      if (url.endsWith("/v1/agy/health")) {
+        return { ok: false, status: 404 };
+      }
+      return { ok: true, status: 200 };
+    }
+  });
+  assert.equal(fallbackProbe.online, true);
+  assert.equal(fallbackProbe.fallbackUsed, true);
+  assert.deepEqual(calledUrls, [
+    "https://mcp.gemitron.net/v1/agy/health",
+    "https://mcp.gemitron.net/health"
+  ]);
+
+  // Verify live SSE stream client against real in-memory agy-node-daemon
+  const { createAgyNodeDaemonServer, registerNodeWithHub } = await import(
+    "../bin/agy-node-daemon.mjs"
+  );
+  const daemon = createAgyNodeDaemonServer({
+    nodeId: "vps-01",
+    clusterSecret: "test-cluster-secret"
+  });
+  await new Promise((resolve) => daemon.listen(0, "127.0.0.1", resolve));
+  const { port } = daemon.address();
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    const regRes = await registerNodeWithHub({
+      nodeId: "vps-02",
+      port: 18220,
+      address: "173.212.237.207:18220",
+      hubUrl: baseUrl,
+      clusterSecret: "test-cluster-secret"
+    });
+    assert.equal(regRes.ok, true);
+    assert.equal(regRes.data.registered.nodeId, "vps-02");
+
+    const streamed = [];
+    const chatRes = await streamFleetNodeChat({
+      nodeId: "vps-01",
+      address: baseUrl,
+      prompt: "إعلان ساعة تيتانيوم",
+      locale: "ar-EG",
+      onEvent: (ev) => streamed.push(ev)
+    });
+    assert.equal(chatRes.ok, true);
+    assert.equal(chatRes.events.length, 6);
+    assert.equal(streamed.length, 6);
+    assert.equal(streamed[0].type, "thinking");
+    assert.equal(streamed[5].type, "chat_message");
+  } finally {
+    await new Promise((resolve) => daemon.close(resolve));
+  }
 });
 
+test("TronAgyControlCenter.tsx wires localStorage persistence, live /v1/agy/health + /health fallback probing, and 4-device daemon profiles", async () => {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const uiPath = path.resolve(import.meta.dirname, "../ui/TronAgyControlCenter.tsx");
+  const uiSource = await fs.readFile(uiPath, "utf8");
+
+  assert.match(uiSource, /agy\.fleet\.addresses\.v1/);
+  assert.match(uiSource, /agy\.fleet\.activeNode\.v1/);
+  assert.match(uiSource, /\/v1\/agy\/health/);
+  assert.match(uiSource, /\/health/);
+  assert.match(uiSource, /performance\.now\(\)/);
+  assert.match(uiSource, /📡 فحص الاتصال/);
+  assert.match(uiSource, /📡 فحص جميع الأجهزة الأربعة ✦/);
+  assert.match(uiSource, /اتصال بهذا الجهاز ✦/);
+  assert.match(uiSource, /'online' \| 'checking' \| 'offline'/);
+
+  const { createAgyNodeDaemonServer } = await import("../bin/agy-node-daemon.mjs");
+  for (const nodeId of ["win-local", "mac-local", "vps-01", "vps-02"]) {
+    const server = createAgyNodeDaemonServer({
+      nodeId,
+      clusterSecret: "fleet-secret"
+    });
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const { port } = server.address();
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/v1/agy/health`);
+      assert.equal(res.status, 200);
+      const body = await res.json();
+      assert.equal(body.ok, true);
+      assert.equal(body.nodeId, nodeId);
+      assert.equal(body.online, true);
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  }
+});
 

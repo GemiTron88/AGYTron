@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export type TronCsAppId =
   | 'phototron'
@@ -20,6 +20,7 @@ export type AgyModelId =
 export type AgyEffortTier = 'low' | 'medium' | 'high' | 'max';
 
 export interface FleetDeviceLiveStatus {
+  state: 'online' | 'checking' | 'offline';
   online: boolean;
   checking: boolean;
   latencyMs: number;
@@ -38,8 +39,19 @@ export interface TronAgyPlanRequest {
 export interface TronAgyControlCenterProps {
   locale?: 'ar-EG' | 'en-US';
   defaultApp?: TronCsAppId;
+  fetchImpl?: typeof fetch;
   onExecutePlan?: (req: TronAgyPlanRequest) => void;
 }
+
+export const FLEET_ADDRESSES_STORAGE_KEY = 'agy.fleet.addresses.v1';
+export const FLEET_ACTIVE_NODE_STORAGE_KEY = 'agy.fleet.activeNode.v1';
+
+export const DEFAULT_FLEET_DEVICE_ADDRESSES: Record<AgyFleetDeviceId, string> = {
+  'win-local': '192.168.1.10:18220',
+  'mac-local': '192.168.1.20:18220',
+  'vps-01': 'https://mcp.gemitron.net',
+  'vps-02': '185.220.101.42:18220',
+};
 
 const FLEET_DEVICES: Array<{
   id: AgyFleetDeviceId;
@@ -56,7 +68,7 @@ const FLEET_DEVICES: Array<{
     en: '💻 Windows PC (Local LAN)',
     roleAr: 'الشبكة المحلية (LAN) · اتصال مباشر',
     roleEn: 'Local LAN Workstation · Direct Link',
-    defaultAddress: '192.168.1.10:18220',
+    defaultAddress: DEFAULT_FLEET_DEVICE_ADDRESSES['win-local'],
     baseLatencyMs: 4,
   },
   {
@@ -65,7 +77,7 @@ const FLEET_DEVICES: Array<{
     en: '🍎 Mac Studio (Local LAN)',
     roleAr: 'الشبكة المحلية (LAN) · Apple Silicon',
     roleEn: 'Local LAN Apple Silicon Workstation',
-    defaultAddress: '192.168.1.20:18220',
+    defaultAddress: DEFAULT_FLEET_DEVICE_ADDRESSES['mac-local'],
     baseLatencyMs: 6,
   },
   {
@@ -74,7 +86,7 @@ const FLEET_DEVICES: Array<{
     en: '☁️ Linux VPS 01 (Main Hub)',
     roleAr: 'السيرفر المستضيف لـ gemitron.net',
     roleEn: 'Primary Server hosting gemitron.net',
-    defaultAddress: 'https://mcp.gemitron.net',
+    defaultAddress: DEFAULT_FLEET_DEVICE_ADDRESSES['vps-01'],
     baseLatencyMs: 36,
   },
   {
@@ -83,7 +95,7 @@ const FLEET_DEVICES: Array<{
     en: '🚀 Linux VPS 02 (Standalone)',
     roleAr: 'سيرفر Linux المنفصل للمشاريع الثقيلة',
     roleEn: 'Standalone Linux Server for Heavy Render',
-    defaultAddress: '185.220.101.42:18220',
+    defaultAddress: DEFAULT_FLEET_DEVICE_ADDRESSES['vps-02'],
     baseLatencyMs: 42,
   },
 ];
@@ -101,56 +113,221 @@ const APP_CATALOG: Array<{
   { id: 'lighttron', name: 'LightTron', ar: 'لايت ترون' },
 ];
 
+export function normalizeNodeEndpoint(rawAddress = '', defaultPort = 18220): string {
+  const trimmed = String(rawAddress || '')
+    .trim()
+    .replace(/\/+$/, '');
+  if (!trimmed) return `http://127.0.0.1:${defaultPort}`;
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  const hasPort = /:\d+$/.test(trimmed);
+  return `http://${trimmed}${hasPort ? '' : `:${defaultPort}`}`;
+}
+
+function readStoredFleetAddresses(): Record<AgyFleetDeviceId, string> {
+  const base: Record<AgyFleetDeviceId, string> = { ...DEFAULT_FLEET_DEVICE_ADDRESSES };
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return base;
+  }
+  try {
+    const raw = window.localStorage.getItem(FLEET_ADDRESSES_STORAGE_KEY);
+    if (!raw) return base;
+    const parsed = JSON.parse(raw) as Partial<Record<AgyFleetDeviceId, string>>;
+    for (const id of ['win-local', 'mac-local', 'vps-01', 'vps-02'] as const) {
+      if (typeof parsed?.[id] === 'string' && parsed[id]!.trim().length > 0) {
+        base[id] = parsed[id]!.trim();
+      }
+    }
+    return base;
+  } catch {
+    return base;
+  }
+}
+
+function readStoredActiveDevice(): AgyFleetDeviceId {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return 'win-local';
+  }
+  try {
+    const raw = window.localStorage.getItem(FLEET_ACTIVE_NODE_STORAGE_KEY);
+    if (
+      raw === 'win-local' ||
+      raw === 'mac-local' ||
+      raw === 'vps-01' ||
+      raw === 'vps-02'
+    ) {
+      return raw;
+    }
+    return 'win-local';
+  } catch {
+    return 'win-local';
+  }
+}
+
 export function TronAgyControlCenter({
   locale = 'ar-EG',
   defaultApp = 'gemimotion',
+  fetchImpl,
   onExecutePlan,
 }: TronAgyControlCenterProps) {
   const isArabic = locale.startsWith('ar');
   const [selectedApps, setSelectedApps] = useState<TronCsAppId[]>([defaultApp]);
-  const [activeDevice, setActiveDevice] = useState<AgyFleetDeviceId>('win-local');
+  const [activeDevice, setActiveDevice] = useState<AgyFleetDeviceId>(() =>
+    readStoredActiveDevice(),
+  );
   const [fleetModalOpen, setFleetModalOpen] = useState<boolean>(false);
-  const [addresses, setAddresses] = useState<Record<AgyFleetDeviceId, string>>({
-    'win-local': '192.168.1.10:18220',
-    'mac-local': '192.168.1.20:18220',
-    'vps-01': 'https://mcp.gemitron.net',
-    'vps-02': '185.220.101.42:18220',
-  });
+  const [addresses, setAddresses] = useState<Record<AgyFleetDeviceId, string>>(() =>
+    readStoredFleetAddresses(),
+  );
   const [liveStatus, setLiveStatus] = useState<Record<AgyFleetDeviceId, FleetDeviceLiveStatus>>({
-    'win-local': { online: true, checking: false, latencyMs: 4 },
-    'mac-local': { online: true, checking: false, latencyMs: 6 },
-    'vps-01': { online: true, checking: false, latencyMs: 36 },
-    'vps-02': { online: true, checking: false, latencyMs: 42 },
+    'win-local': { state: 'online', online: true, checking: false, latencyMs: 4 },
+    'mac-local': { state: 'online', online: true, checking: false, latencyMs: 6 },
+    'vps-01': { state: 'online', online: true, checking: false, latencyMs: 36 },
+    'vps-02': { state: 'online', online: true, checking: false, latencyMs: 42 },
   });
-  const [model, setModel] = useState<AgyModelId>('gemini-3.1-pro');
-  const [effort, setEffort] = useState<AgyEffortTier>('max');
+  const [model] = useState<AgyModelId>('gemini-3.1-pro');
+  const [effort] = useState<AgyEffortTier>('max');
   const [prompt, setPrompt] = useState<string>(
     'أورورا كرونوغراف X1 — فخامة التيتانيوم السويسري | حملة متكاملة عبر جناح TronCS الإبداعي',
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(FLEET_ADDRESSES_STORAGE_KEY, JSON.stringify(addresses));
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [addresses]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(FLEET_ACTIVE_NODE_STORAGE_KEY, activeDevice);
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [activeDevice]);
 
   const activeDeviceMeta = useMemo(
     () => FLEET_DEVICES.find((d) => d.id === activeDevice) ?? FLEET_DEVICES[0],
     [activeDevice],
   );
 
-  const testDeviceConnection = (id: AgyFleetDeviceId, connectNow = false) => {
-    const dev = FLEET_DEVICES.find((d) => d.id === id) ?? FLEET_DEVICES[0];
-    setLiveStatus((prev) => ({
-      ...prev,
-      [id]: { online: true, checking: false, latencyMs: dev.baseLatencyMs },
-    }));
+  const probeSingleDevice = async (
+    id: AgyFleetDeviceId,
+    connectNow = false,
+  ): Promise<FleetDeviceLiveStatus> => {
     if (connectNow) {
       setActiveDevice(id);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          window.localStorage.setItem(FLEET_ACTIVE_NODE_STORAGE_KEY, id);
+        } catch {
+          // Ignore storage error
+        }
+      }
+    }
+
+    const endpointBase = normalizeNodeEndpoint(
+      addresses[id] || DEFAULT_FLEET_DEVICE_ADDRESSES[id],
+    );
+    const primaryUrl = `${endpointBase}/v1/agy/health`;
+    const fallbackUrl = `${endpointBase}/health`;
+    const effectiveFetch = fetchImpl ?? (typeof fetch === 'function' ? fetch : undefined);
+
+    setLiveStatus((prev) => ({
+      ...prev,
+      [id]: {
+        state: 'checking',
+        online: prev[id].online,
+        checking: true,
+        latencyMs: prev[id].latencyMs,
+      },
+    }));
+
+    const startMs =
+      typeof performance !== 'undefined' && typeof performance.now === 'function'
+        ? performance.now()
+        : Date.now();
+
+    if (!effectiveFetch) {
+      const offlineStatus: FleetDeviceLiveStatus = {
+        state: 'offline',
+        online: false,
+        checking: false,
+        latencyMs: 0,
+      };
+      setLiveStatus((prev) => ({ ...prev, [id]: offlineStatus }));
+      return offlineStatus;
+    }
+
+    try {
+      let res: Response | null = null;
+      let primaryError: unknown = null;
+      try {
+        res = await effectiveFetch(primaryUrl, { method: 'GET' });
+      } catch (err) {
+        primaryError = err;
+      }
+
+      if ((!res || !res.ok) && (endpointBase.includes('mcp.gemitron.net') || !primaryError)) {
+        try {
+          const fbRes = await effectiveFetch(fallbackUrl, { method: 'GET' });
+          if (fbRes && fbRes.ok) {
+            res = fbRes;
+          }
+        } catch {
+          // Preserve primary result
+        }
+      }
+
+      if (!res && primaryError) {
+        throw primaryError;
+      }
+
+      const nowMs =
+        typeof performance !== 'undefined' && typeof performance.now === 'function'
+          ? performance.now()
+          : Date.now();
+      const latencyMs = Math.max(1, Math.round(nowMs - startMs));
+
+      if (res && res.ok) {
+        const nextStatus: FleetDeviceLiveStatus = {
+          state: 'online',
+          online: true,
+          checking: false,
+          latencyMs,
+        };
+        setLiveStatus((prev) => ({ ...prev, [id]: nextStatus }));
+        return nextStatus;
+      }
+
+      const unreadyStatus: FleetDeviceLiveStatus = {
+        state: 'offline',
+        online: false,
+        checking: false,
+        latencyMs,
+      };
+      setLiveStatus((prev) => ({ ...prev, [id]: unreadyStatus }));
+      return unreadyStatus;
+    } catch {
+      const failedStatus: FleetDeviceLiveStatus = {
+        state: 'offline',
+        online: false,
+        checking: false,
+        latencyMs: 0,
+      };
+      setLiveStatus((prev) => ({ ...prev, [id]: failedStatus }));
+      return failedStatus;
     }
   };
 
-  const testAllDevices = () => {
-    setLiveStatus({
-      'win-local': { online: true, checking: false, latencyMs: 3 },
-      'mac-local': { online: true, checking: false, latencyMs: 5 },
-      'vps-01': { online: true, checking: false, latencyMs: 34 },
-      'vps-02': { online: true, checking: false, latencyMs: 40 },
-    });
+  const testAllDevices = async () => {
+    await Promise.all(
+      FLEET_DEVICES.map((dev) => probeSingleDevice(dev.id, false)),
+    );
   };
 
   const toggleApp = (appId: TronCsAppId) => {
@@ -225,7 +402,7 @@ export function TronAgyControlCenter({
             <button
               type="button"
               data-testid="tron-agy-ping-all-btn"
-              onClick={testAllDevices}
+              onClick={() => void testAllDevices()}
             >
               {isArabic ? '📡 فحص جميع الأجهزة الأربعة ✦' : '📡 Test All 4 Devices ✦'}
             </button>
@@ -244,13 +421,17 @@ export function TronAgyControlCenter({
                   <div>
                     <strong>{isArabic ? dev.ar : dev.en}</strong>
                     <span data-testid={`tron-agy-fleet-status-${dev.id}`}>
-                      {st.online
+                      {st.checking
                         ? isArabic
-                          ? `متصل مباشر · ${st.latencyMs}ms ●`
-                          : `Live Online · ${st.latencyMs}ms ●`
-                        : isArabic
-                          ? 'غير متصل'
-                          : 'Offline'}
+                          ? 'جاري الفحص...'
+                          : 'Checking...'
+                        : st.online
+                          ? isArabic
+                            ? `متصل مباشر · ${st.latencyMs}ms ●`
+                            : `Live Online · ${st.latencyMs}ms ●`
+                          : isArabic
+                            ? 'غير متصل'
+                            : 'Offline'}
                     </span>
                   </div>
                   <p>{isArabic ? dev.roleAr : dev.roleEn}</p>
@@ -259,25 +440,36 @@ export function TronAgyControlCenter({
                     dir="ltr"
                     data-testid={`tron-agy-fleet-ip-input-${dev.id}`}
                     value={addresses[dev.id]}
-                    onChange={(e) =>
-                      setAddresses((prev) => ({
-                        ...prev,
-                        [dev.id]: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setAddresses((prev) => {
+                        const next = { ...prev, [dev.id]: val };
+                        if (typeof window !== 'undefined' && window.localStorage) {
+                          try {
+                            window.localStorage.setItem(
+                              FLEET_ADDRESSES_STORAGE_KEY,
+                              JSON.stringify(next),
+                            );
+                          } catch {
+                            // Ignore storage error
+                          }
+                        }
+                        return next;
+                      });
+                    }}
                   />
                   <div>
                     <button
                       type="button"
                       data-testid={`tron-agy-fleet-ping-btn-${dev.id}`}
-                      onClick={() => testDeviceConnection(dev.id, false)}
+                      onClick={() => void probeSingleDevice(dev.id, false)}
                     >
                       {isArabic ? '📡 فحص الاتصال' : '📡 Test Ping'}
                     </button>
                     <button
                       type="button"
                       data-testid={`tron-agy-fleet-connect-btn-${dev.id}`}
-                      onClick={() => testDeviceConnection(dev.id, true)}
+                      onClick={() => void probeSingleDevice(dev.id, true)}
                     >
                       {isSelected
                         ? isArabic

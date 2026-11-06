@@ -8,12 +8,17 @@
  *   3. `vps-01`    — Linux Cloud Server 01 (VPS 01 — Primary Cloud Brain Node)
  *   4. `vps-02`    — Linux Cloud Server 02 (VPS 02 — Secondary / High-Concurrency Cloud Node)
  *
- * Zero-Tech-Jargon Streaming Protocol (SSE / WebSocket):
+ * Zero-Tech-Jargon Streaming Protocol (SSE / JSON):
  *   - `thinking`   -> Human-friendly creative thought updates (no token numbers or raw schemas)
  *   - `tool_badge` -> Visual progress pills (e.g., "Designing 3D Scene", "Composing Music")
  *   - `chat_delta` -> Conversational director reply streamed word-by-word
  *   - `stage_sync` -> Automatically updates the canvas/timeline in the background
  */
+
+export const FLEET_STORAGE_KEYS = Object.freeze({
+  addresses: "agy.fleet.addresses.v1",
+  activeNode: "agy.fleet.activeNode.v1"
+});
 
 export const AGY_FLEET_NODES = Object.freeze({
   "auto-best": Object.freeze({
@@ -118,6 +123,84 @@ export const DEFAULT_FLEET_ADDRESSES = Object.freeze({
 });
 
 /**
+ * Loads persisted 4-device fleet addresses from a Web Storage-compatible object (`localStorage`).
+ */
+export function loadPersistedFleetAddresses(storage = globalThis.localStorage) {
+  const base = { ...DEFAULT_FLEET_ADDRESSES };
+  if (!storage || typeof storage.getItem !== "function") {
+    return base;
+  }
+  try {
+    const raw = storage.getItem(FLEET_STORAGE_KEYS.addresses);
+    if (!raw) return base;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return base;
+    for (const key of ["win-local", "mac-local", "vps-01", "vps-02"]) {
+      if (typeof parsed[key] === "string" && parsed[key].trim().length > 0) {
+        base[key] = parsed[key].trim();
+      }
+    }
+    return base;
+  } catch {
+    return base;
+  }
+}
+
+/**
+ * Persists 4-device fleet addresses to `localStorage` (`agy.fleet.addresses.v1`).
+ */
+export function savePersistedFleetAddresses(
+  addresses,
+  storage = globalThis.localStorage
+) {
+  if (!storage || typeof storage.setItem !== "function") return false;
+  try {
+    storage.setItem(FLEET_STORAGE_KEYS.addresses, JSON.stringify(addresses));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Loads persisted active fleet node ID from `localStorage` (`agy.fleet.activeNode.v1`).
+ */
+export function loadPersistedActiveFleetNode(
+  storage = globalThis.localStorage,
+  fallback = "auto-best",
+  allowedIds = ["auto-best", "win-local", "mac-local", "vps-01", "vps-02"]
+) {
+  if (!storage || typeof storage.getItem !== "function") {
+    return fallback;
+  }
+  try {
+    const raw = storage.getItem(FLEET_STORAGE_KEYS.activeNode);
+    if (typeof raw === "string" && allowedIds.includes(raw)) {
+      return raw;
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Persists active fleet node ID to `localStorage` (`agy.fleet.activeNode.v1`).
+ */
+export function savePersistedActiveFleetNode(
+  nodeId,
+  storage = globalThis.localStorage
+) {
+  if (!storage || typeof storage.setItem !== "function") return false;
+  try {
+    storage.setItem(FLEET_STORAGE_KEYS.activeNode, String(nodeId));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Normalizes a user-entered IP, hostname:port, or full URL into a clean base HTTP/HTTPS URL.
  */
 export function normalizeNodeEndpoint(rawAddress = "", defaultPort = 18220) {
@@ -131,19 +214,25 @@ export function normalizeNodeEndpoint(rawAddress = "", defaultPort = 18220) {
 }
 
 /**
- * Probes a fleet node's live health endpoint (`/v1/agy/health`) and measures round-trip latency in ms.
+ * Probes a fleet node's live health endpoint (`/v1/agy/health`, with fallback to `/health`)
+ * and measures round-trip latency using `performance.now()`.
  */
 export async function probeFleetNodeLiveStatus({
   nodeId,
   address,
   fetchFn = globalThis.fetch,
+  nowFn = () =>
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now(),
   timeoutMs = 2500
 } = {}) {
   const endpointBase = normalizeNodeEndpoint(
     address || DEFAULT_FLEET_ADDRESSES[nodeId] || "127.0.0.1:18220"
   );
   const healthUrl = `${endpointBase}/v1/agy/health`;
-  const startMs = Date.now();
+  const fallbackHealthUrl = `${endpointBase}/health`;
+  const startMs = nowFn();
 
   if (typeof fetchFn !== "function") {
     return {
@@ -151,6 +240,7 @@ export async function probeFleetNodeLiveStatus({
       address: endpointBase,
       healthUrl,
       online: false,
+      state: "offline",
       latencyMs: null,
       statusTextAr: "غير متصل",
       statusTextEn: "Offline"
@@ -160,18 +250,46 @@ export async function probeFleetNodeLiveStatus({
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetchFn(healthUrl, {
-      method: "GET",
-      signal: controller.signal
-    });
+    let res = null;
+    let primaryErr = null;
+    try {
+      res = await fetchFn(healthUrl, {
+        method: "GET",
+        signal: controller.signal
+      });
+    } catch (err) {
+      primaryErr = err;
+    }
+
+    let fallbackUsed = false;
+    if ((!res || !res.ok) && (endpointBase.includes("mcp.gemitron.net") || !primaryErr)) {
+      try {
+        const fbRes = await fetchFn(fallbackHealthUrl, {
+          method: "GET",
+          signal: controller.signal
+        });
+        if (fbRes && fbRes.ok) {
+          res = fbRes;
+          fallbackUsed = true;
+        }
+      } catch {
+        // Keep primary result/error
+      }
+    }
+
     clearTimeout(timer);
-    const latencyMs = Math.max(1, Date.now() - startMs);
+    if (!res && primaryErr) {
+      throw primaryErr;
+    }
+    const latencyMs = Math.max(1, Math.round(nowFn() - startMs));
     if (res && res.ok) {
       return {
         nodeId,
         address: endpointBase,
-        healthUrl,
+        healthUrl: fallbackUsed ? fallbackHealthUrl : healthUrl,
+        fallbackUsed,
         online: true,
+        state: "online",
         latencyMs,
         statusTextAr: `متصل الآن · ${latencyMs}ms`,
         statusTextEn: `Online · ${latencyMs}ms`
@@ -181,7 +299,9 @@ export async function probeFleetNodeLiveStatus({
       nodeId,
       address: endpointBase,
       healthUrl,
+      fallbackUsed,
       online: false,
+      state: "offline",
       latencyMs,
       statusTextAr: `استجابة غير جاهزة (${res?.status ?? 0})`,
       statusTextEn: `Unready (${res?.status ?? 0})`
@@ -193,9 +313,113 @@ export async function probeFleetNodeLiveStatus({
       address: endpointBase,
       healthUrl,
       online: false,
+      state: "offline",
       latencyMs: null,
       statusTextAr: "بانتظار تشغيل الخدمة على الجهاز",
       statusTextEn: "Waiting for daemon on device"
+    };
+  }
+}
+
+/**
+ * Parses an SSE or JSON stream payload from `/v1/agy/chat-stream` into structured creator events.
+ */
+export function parseAgyStreamPayload(rawText = "") {
+  const trimmed = String(rawText || "").trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed.events)) return parsed.events;
+    } catch {
+      // Fall through to SSE line parser
+    }
+  }
+  const events = [];
+  const lines = trimmed.split(/\r?\n/);
+  for (const line of lines) {
+    if (line.startsWith("data:")) {
+      const jsonPart = line.slice(5).trim();
+      if (!jsonPart) continue;
+      try {
+        const obj = JSON.parse(jsonPart);
+        if (obj && typeof obj === "object" && obj.type) {
+          events.push(obj);
+        }
+      } catch {
+        // Ignore malformed SSE data lines
+      }
+    }
+  }
+  return events;
+}
+
+/**
+ * Streams real SSE/JSON events from a fleet node's `/v1/agy/chat-stream` endpoint.
+ */
+export async function streamFleetNodeChat({
+  nodeId = "vps-01",
+  address,
+  prompt = "",
+  locale = "ar-EG",
+  styleTitle = "إعلان سينمائي فاخر",
+  model = "gemini-3.1-pro",
+  effort = "high",
+  fetchFn = globalThis.fetch,
+  onEvent,
+  timeoutMs = 5000
+} = {}) {
+  const endpointBase = normalizeNodeEndpoint(
+    address || DEFAULT_FLEET_ADDRESSES[nodeId] || "127.0.0.1:18220"
+  );
+  const streamUrl = `${endpointBase}/v1/agy/chat-stream`;
+  if (typeof fetchFn !== "function") {
+    return { ok: false, nodeId, endpoint: streamUrl, events: [] };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetchFn(streamUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream, application/json"
+      },
+      body: JSON.stringify({
+        prompt,
+        locale,
+        nodeId,
+        styleTitle,
+        model,
+        effort
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res || !res.ok) {
+      return { ok: false, nodeId, endpoint: streamUrl, status: res?.status ?? 0, events: [] };
+    }
+    const text = typeof res.text === "function" ? await res.text() : "";
+    const events = parseAgyStreamPayload(text);
+    for (const ev of events) {
+      onEvent?.(ev);
+    }
+    return {
+      ok: true,
+      nodeId,
+      endpoint: streamUrl,
+      events
+    };
+  } catch (err) {
+    clearTimeout(timer);
+    return {
+      ok: false,
+      nodeId,
+      endpoint: streamUrl,
+      error: err instanceof Error ? err.message : String(err),
+      events: []
     };
   }
 }

@@ -7,15 +7,21 @@
   "exports": {
     ".": "./src/index.mjs",
     "./mcp-bridge": "./src/mcp-bridge.mjs",
+    "./fleet-router": "./src/fleet-router.mjs",
     "./ui": "./ui/TronAgyControlCenter.tsx"
   },
   "bin": {
     "agy-tron": "./bin/tron-agy.mjs",
-    "tron-agy": "./bin/tron-agy.mjs"
+    "tron-agy": "./bin/tron-agy.mjs",
+    "agy-node-daemon": "./bin/agy-node-daemon.mjs"
   },
   "scripts": {
     "test": "node --test test/tron-agy.test.mjs",
-    "cli": "node ./bin/tron-agy.mjs"
+    "cli": "node ./bin/tron-agy.mjs",
+    "daemon:win-local": "node ./bin/agy-node-daemon.mjs --node-id win-local --port 18220",
+    "daemon:mac-local": "node ./bin/agy-node-daemon.mjs --node-id mac-local --port 18220",
+    "daemon:vps-01": "node ./bin/agy-node-daemon.mjs --node-id vps-01 --port 18220",
+    "daemon:vps-02": "node ./bin/agy-node-daemon.mjs --node-id vps-02 --port 18220 --hub https://mcp.gemitron.net"
   },
   "repository": {
     "type": "git",
