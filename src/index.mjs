@@ -213,10 +213,11 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     mcpRoute: "/products/rankly/mcp",
     internalLoopbackUrl: "http://127.0.0.1:18280",
     accentHex: "#10b981",
-    defaultModel: "gemini-3.1-pro",
+    defaultModel: "gemini-4-argon-high",
     defaultEffort: "high",
-    roleEn: "Autonomous SEO Authority, d4vinci/Scrapling Stealth Spider, Tier 1-2-3 Link Wheels, Spintax & Digital PR Autopilot",
-    roleAr: "أتمتة السيو وبناء الباك لينك الهرمي (Tier 1-2-3)، زاحف Scrapling الخفي، وتوليد المحتوى والـ Spintax",
+    troncsCompanionApps: ["phototron", "figtron", "scaletron", "gemimotion", "filmtron"],
+    roleEn: "Autonomous SEO Authority, d4vinci/Scrapling Stealth Spider, Tier 1-2-3 Link Wheels, Spintax, Digital PR & TronCS Visual Backlink Assets",
+    roleAr: "أتمتة السيو وبناء الباك لينك الهرمي (Tier 1-2-3)، زاحف Scrapling الخفي، وتوليد المحتوى والإنفوجرافيك عبر TronCS",
     nativeTools: [
       "rankly.scrapling.fetch",
       "rankly.scrapling.audit",
@@ -244,10 +245,11 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     mcpRoute: "/products/tarweeg/mcp",
     internalLoopbackUrl: "http://127.0.0.1:18290",
     accentHex: "#6366f1",
-    defaultModel: "gemini-3.1-pro",
+    defaultModel: "gemini-4-argon-high",
     defaultEffort: "high",
-    roleEn: "Centralized 9-Platform Advertising OS (Google, Meta, TikTok, Snap, OpenAI, LinkedIn, X, Pinterest, Microsoft), Multi-Format Creative AI & ROAS Autopilot",
-    roleAr: "نظام إدارة وإطلاق الإعلانات الموحد عبر ٩ منصات عالمية مع توليد الكرييتف وتحسين العائد الإعلاني تلقائياً",
+    troncsCompanionApps: ["lighttron", "scaletron", "phototron", "gemimotion", "aftertron", "filmtron", "figtron"],
+    roleEn: "Centralized 9-Platform Advertising OS (Google, Meta, TikTok, Snap, OpenAI, LinkedIn, X, Pinterest, Microsoft), TronCS Studio Creative Pipeline & ROAS Autopilot",
+    roleAr: "نظام إدارة وإطلاق الإعلانات الموحد عبر ٩ منصات عالمية مع إنتاج الكرييتف والفيديو السينمائي عبر TronCS وتحسين العائد تلقائياً",
     nativeTools: [
       "tarweeg.campaign.launch_saga",
       "tarweeg.providers.sync",
@@ -273,7 +275,7 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     mcpRoute: "/mcp",
     internalLoopbackUrl: "http://127.0.0.1:18080",
     accentHex: "#f59e0b",
-    defaultModel: "claude-opus-4-6",
+    defaultModel: "claude-opus-5-5-high",
     defaultEffort: "max",
     roleEn: "Sovereign Owner Control Hub, GemiAccess Policy Advisor, GemiGuard Lease Governance & Cross-Portfolio Orchestrator",
     roleAr: "مركز قيادة المالك، حوكمة صلاحيات GemiAccess و GemiGuard، وإدارة أسطول الخدمات الموحد",
@@ -299,10 +301,10 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     mcpRoute: "/mcp",
     internalLoopbackUrl: "http://127.0.0.1:18085",
     accentHex: "#0ea5e9",
-    defaultModel: "gemini-3.1-pro",
+    defaultModel: "gemini-4-argon-high",
     defaultEffort: "high",
-    roleEn: "Unified Customer Operations Copilot across Rankly, Tarweeg, Cloud, AI & Managed Workspaces",
-    roleAr: "المساعد الذكي الموحد لإدارة وتشغيل خدمات رانكلي وترويج والسحابة من مكان واحد",
+    roleEn: "Unified Customer Operations Copilot across Rankly, Tarweeg, TronCS, Cloud, AI & Managed Workspaces",
+    roleAr: "المساعد الذكي الموحد لإدارة وتشغيل خدمات رانكلي وترويج وTronCS والسحابة من مكان واحد",
     nativeTools: [
       "dashboard.service.overview",
       "dashboard.rankly.execute",
@@ -324,7 +326,7 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     planSchema: "gemicode.agy.plan.v1",
     mcpRoute: "/mcp",
     accentHex: "#8b5cf6",
-    defaultModel: "claude-opus-4-6",
+    defaultModel: "claude-opus-5-5-high",
     defaultEffort: "max",
     roleEn: "Autonomous Software Architecture, Deep Refactoring, Security Review & Deterministic Test Synthesis",
     roleAr: "الهندسة البرمجية الذاتية، مراجعة الكود والأمان، وبناء الاختبارات القياسية",
@@ -348,7 +350,7 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     planSchema: "gemicyber.agy.plan.v1",
     mcpRoute: "/mcp",
     accentHex: "#ef4444",
-    defaultModel: "claude-opus-4-6",
+    defaultModel: "claude-opus-5-5-high",
     defaultEffort: "high",
     roleEn: "Defensive & Authorized Security Posture Analysis, Vulnerability Triage & Zero-Trust Hardening",
     roleAr: "تحليل الثغرات، فحص الحماية السيبرانية، وتأمين البنية التحتية",
@@ -372,7 +374,7 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     planSchema: "gemicloud.agy.plan.v1",
     mcpRoute: "/mcp",
     accentHex: "#14b8a6",
-    defaultModel: "claude-sonnet-4-6",
+    defaultModel: "claude-sonnet-5-5-high",
     defaultEffort: "medium",
     roleEn: "Cloud Fleet Telemetry, systemd/Nginx/Loopback Health Diagnosis & Auto-Scaling Advisor",
     roleAr: "إدارة الخوادم السحابية، تشخيص الخدمات، وتحسين الأداء والاستقرار",
@@ -396,7 +398,7 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     planSchema: "gemimail.agy.plan.v1",
     mcpRoute: "/mcp",
     accentHex: "#3b82f6",
-    defaultModel: "gemini-3-flash",
+    defaultModel: "gemini-3.8-flash-medium",
     defaultEffort: "medium",
     roleEn: "Smart Inbox Triage, SPF/DKIM/DMARC Deliverability Guard & Personalized Outreach Sequencing",
     roleAr: "فرز البريد الذكي، حماية سمعة النطاق، وصياغة حملات التواصل المخصصة",
@@ -420,7 +422,7 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     planSchema: "gemipay.agy.plan.v1",
     mcpRoute: "/mcp",
     accentHex: "#22c55e",
-    defaultModel: "claude-sonnet-4-6",
+    defaultModel: "claude-sonnet-5-5-high",
     defaultEffort: "high",
     roleEn: "Subscription Lifecycle Intelligence, Fraud/Anomaly Risk Scoring & Pricing Optimization",
     roleAr: "تحليل الإيرادات والاشتراكات، كشف المخاطر، وتحسين التسعير",
@@ -445,7 +447,7 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
     mcpRoute: "/mcp",
     internalLoopbackUrl: "http://127.0.0.1:18090",
     accentHex: "#a855f7",
-    defaultModel: "gemini-3.1-pro",
+    defaultModel: "gemini-4-argon-high",
     defaultEffort: "high",
     roleEn: "Universal Multi-Model Antigravity Reasoning, Structured JSON Synthesis, Translation & Bilingual Copilot",
     roleAr: "العقل الذكي الشامل للتفكير العميق، التلخيص، الترجمة، وتوليد البيانات المهيكلة لأي خدمة",
@@ -462,43 +464,152 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
   })
 });
 
+/**
+ * Canonical Antigravity (`agy models`) Model Catalog:
+ *   - Gemini 4 Argon (`gemini-4-argon-high`, `gemini-4-argon-medium`, `gemini-4-argon-low`)
+ *   - Gemini 3.8 Flash (`gemini-3.8-flash-high`, `gemini-3.8-flash-medium`, `gemini-3.8-flash-low`)
+ *   - Claude Opus 5.5 (`claude-opus-5-5-high`, `claude-opus-5-5-medium`, `claude-opus-5-5-low`)
+ *   - Claude Sonnet 5.5 (`claude-sonnet-5-5-high`, `claude-sonnet-5-5-medium`, `claude-sonnet-5-5-low`)
+ *   - GPT-OSS 120B (`gpt-oss-120b-medium`)
+ *   - Local TRON Loopback (`qwen3.5:4b-q4_K_M`)
+ */
 export const AGY_MODELS = Object.freeze([
   {
-    id: "gemini-3.1-pro",
-    labelEn: "Gemini 3.1 Pro (Default ✦)",
-    labelAr: "Gemini 3.1 Pro (افتراضي ✦)",
-    provider: "google-official",
-    strengths: "Deep multi-app choreography, SEO/Ads strategy, 3D/Shader math, Arabic RTL art direction & visual critique"
+    id: "gemini-4-argon-high",
+    legacyAliases: ["gemini-3.1-pro", "gemini-4-argon"],
+    labelEn: "Gemini 4 Argon (High · Default ✦)",
+    labelAr: "Gemini 4 Argon (عالٍ · افتراضي ✦)",
+    provider: "google-antigravity",
+    strengths: "Deep multi-app TronCS choreography, Rankly Tier 1-2-3 SEO strategy, Tarweeg 9-platform ad compilation, 3D/Shader math & Arabic RTL art direction"
   },
   {
-    id: "gemini-3-flash",
-    labelEn: "Gemini 3 Flash (Fast ⚡)",
-    labelAr: "Gemini 3 Flash (سريع ⚡)",
-    provider: "google-official",
+    id: "gemini-4-argon-medium",
+    legacyAliases: [],
+    labelEn: "Gemini 4 Argon (Medium)",
+    labelAr: "Gemini 4 Argon (متوسط)",
+    provider: "google-antigravity",
+    strengths: "Balanced multi-service planning, SERP/competitor gap synthesis, audience segmentation & TronCS layout planning"
+  },
+  {
+    id: "gemini-4-argon-low",
+    legacyAliases: [],
+    labelEn: "Gemini 4 Argon (Low)",
+    labelAr: "Gemini 4 Argon (خفيف)",
+    provider: "google-antigravity",
+    strengths: "Low-latency Gemini 4 Argon reasoning for interactive workspace copilot turns"
+  },
+  {
+    id: "gemini-3.8-flash-high",
+    legacyAliases: [],
+    labelEn: "Gemini 3.8 Flash (High ⚡)",
+    labelAr: "Gemini 3.8 Flash (عالٍ ⚡)",
+    provider: "google-antigravity",
+    strengths: "High-speed deep extraction, Scrapling adaptive DOM selector healing, SERP/PAA parsing & bulk footprint classification"
+  },
+  {
+    id: "gemini-3.8-flash-medium",
+    legacyAliases: ["gemini-3-flash", "gemini-3.8-flash"],
+    labelEn: "Gemini 3.8 Flash (Medium ⚡)",
+    labelAr: "Gemini 3.8 Flash (متوسط ⚡)",
+    provider: "google-antigravity",
     strengths: "Sub-second interactive iteration, DOM selector healing, SERP parsing & live parameter tweaking"
   },
   {
-    id: "claude-opus-4-6",
-    labelEn: "Claude Opus 4.6 (OpenCode Master)",
-    labelAr: "Claude Opus 4.6 (إخراج عميق)",
-    provider: "anthropic-official",
-    strengths: "OpenCode-grade architecture, multi-platform ad copy, Digital PR pitches & dense multi-pass critique"
+    id: "gemini-3.8-flash-low",
+    legacyAliases: [],
+    labelEn: "Gemini 3.8 Flash (Low ⚡)",
+    labelAr: "Gemini 3.8 Flash (سريع ⚡)",
+    provider: "google-antigravity",
+    strengths: "Ultra-fast real-time classification, autocomplete keyword clustering & instant UI suggestions"
   },
   {
-    id: "claude-sonnet-4-6",
-    labelEn: "Claude Sonnet 4.6 (Balanced)",
-    labelAr: "Claude Sonnet 4.6 (متوازن)",
-    provider: "anthropic-official",
-    strengths: "Rapid agency SaaS workflows, campaign diagnostics, UI component flows & structured JSON extraction"
+    id: "claude-opus-5-5-high",
+    legacyAliases: ["claude-opus-4-6", "claude-opus-5-5"],
+    labelEn: "Claude Opus 5.5 (High · Deep Master)",
+    labelAr: "Claude Opus 5.5 (عالٍ · إخراج عميق)",
+    provider: "anthropic-antigravity",
+    strengths: "Master-grade architecture, Saudi/GCC/English ad copywriting, nested Spintax E-E-A-T articles, Digital PR pitches & 5-pass critique"
+  },
+  {
+    id: "claude-opus-5-5-medium",
+    legacyAliases: [],
+    labelEn: "Claude Opus 5.5 (Medium)",
+    labelAr: "Claude Opus 5.5 (متوسط)",
+    provider: "anthropic-antigravity",
+    strengths: "Editorial storyboards, FilmTron/AfterTron script direction & multi-network campaign strategy"
+  },
+  {
+    id: "claude-opus-5-5-low",
+    legacyAliases: [],
+    labelEn: "Claude Opus 5.5 (Low)",
+    labelAr: "Claude Opus 5.5 (خفيف)",
+    provider: "anthropic-antigravity",
+    strengths: "Fast Opus creative hooks, headline variations & outreach email personalization"
+  },
+  {
+    id: "claude-sonnet-5-5-high",
+    legacyAliases: ["claude-sonnet-4-6", "claude-sonnet-5-5"],
+    labelEn: "Claude Sonnet 5.5 (High · Balanced)",
+    labelAr: "Claude Sonnet 5.5 (عالٍ · متوازن)",
+    provider: "anthropic-antigravity",
+    strengths: "Rapid agency SaaS workflows, Scrapling recipe repair, CAPI/ROAS diagnostics & FigTron UI component flows"
+  },
+  {
+    id: "claude-sonnet-5-5-medium",
+    legacyAliases: [],
+    labelEn: "Claude Sonnet 5.5 (Medium)",
+    labelAr: "Claude Sonnet 5.5 (متوسط)",
+    provider: "anthropic-antigravity",
+    strengths: "Structured JSON synthesis, connector mapping & daily brief generation"
+  },
+  {
+    id: "claude-sonnet-5-5-low",
+    legacyAliases: [],
+    labelEn: "Claude Sonnet 5.5 (Low)",
+    labelAr: "Claude Sonnet 5.5 (سريع)",
+    provider: "anthropic-antigravity",
+    strengths: "Quick schema validation, tag generation & metadata enrichment"
+  },
+  {
+    id: "gpt-oss-120b-medium",
+    legacyAliases: ["gpt-oss-120b"],
+    labelEn: "GPT-OSS 120B (Medium)",
+    labelAr: "GPT-OSS 120B (متوسط)",
+    provider: "oss-antigravity",
+    strengths: "Open-weights 120B reasoning for high-throughput content spinning, keyword clustering & cross-checking"
   },
   {
     id: "qwen3.5:4b-q4_K_M",
+    legacyAliases: [],
     labelEn: "Qwen 3.5 4B (Local TRON Loopback)",
     labelAr: "Qwen 3.5 4B (محلي TRON)",
     provider: "local-workstation",
     strengths: "100% offline zero-cloud workstation & VPS loopback inference on 127.0.0.1:18090 / 8090"
   }
 ]);
+
+export const AGY_MODEL_ALIASES = Object.freeze({
+  "gemini-3.1-pro": "gemini-4-argon-high",
+  "gemini-4-argon": "gemini-4-argon-high",
+  "gemini-3-flash": "gemini-3.8-flash-medium",
+  "gemini-3.8-flash": "gemini-3.8-flash-medium",
+  "claude-opus-4-6": "claude-opus-5-5-high",
+  "claude-opus-5-5": "claude-opus-5-5-high",
+  "claude-sonnet-4-6": "claude-sonnet-5-5-high",
+  "claude-sonnet-5-5": "claude-sonnet-5-5-high",
+  "gpt-oss-120b": "gpt-oss-120b-medium"
+});
+
+export function resolveAgyModelMeta(rawModelId = "gemini-4-argon-high") {
+  const clean = String(rawModelId || "gemini-4-argon-high").trim();
+  const direct = AGY_MODELS.find((m) => m.id === clean);
+  if (direct) return direct;
+  const aliasedId = AGY_MODEL_ALIASES[clean];
+  if (aliasedId) {
+    return AGY_MODELS.find((m) => m.id === aliasedId) || AGY_MODELS[0];
+  }
+  return null;
+}
 
 export const AGY_EFFORT_TIERS = Object.freeze({
   low: Object.freeze({
@@ -521,6 +632,13 @@ export const AGY_EFFORT_TIERS = Object.freeze({
     labelAr: "عميق (16,384 توكن · 3 تمريرات)",
     thinkingBudgetTokens: 16384,
     maxCritiquePasses: 3
+  }),
+  xhigh: Object.freeze({
+    id: "xhigh",
+    labelEn: "X-High (24,576t · 4 Passes)",
+    labelAr: "فائق العمق (24,576 توكن · 4 تمريرات)",
+    thinkingBudgetTokens: 24576,
+    maxCritiquePasses: 4
   }),
   max: Object.freeze({
     id: "max",
@@ -651,7 +769,7 @@ export function resolveGemitronServiceProfile(rawServiceId = "gemiai") {
     planSchema: `${resolvedId}.agy.plan.v1`,
     mcpRoute: `/products/${resolvedId}/mcp`,
     accentHex: "#a855f7",
-    defaultModel: "gemini-3.1-pro",
+    defaultModel: "gemini-4-argon-high",
     defaultEffort: "high",
     roleEn: `AGYTron Global Smart Mind reasoning & automation for ${resolvedId}`,
     roleAr: `العقل الذكي الشامل AGYTron لخدمة ${resolvedId}`,
@@ -665,7 +783,7 @@ export function resolveGemitronServiceProfile(rawServiceId = "gemiai") {
 }
 
 /**
- * Smart Task-Aware Model & Effort Selector across all Antigravity models.
+ * Smart Task-Aware Model & Effort Selector across all real Antigravity CLI models (`agy models`).
  */
 export function selectOptimalAgyModel({
   service = "gemiai",
@@ -682,22 +800,23 @@ export function selectOptimalAgyModel({
     chosenModelId = "qwen3.5:4b-q4_K_M";
   } else if (!chosenModelId || chosenModelId === "auto") {
     if (/(relocate|selector|fast|autocomplete|quick|ping|triage|classify)/i.test(taskLower)) {
-      chosenModelId = "gemini-3-flash";
+      chosenModelId = "gemini-3.8-flash-medium";
     } else if (/(code|architecture|pr-pitch|critique|audit|security|policy|copy-master|saga)/i.test(taskLower)) {
-      chosenModelId = "claude-opus-4-6";
+      chosenModelId = "claude-opus-5-5-high";
     } else if (/(json|extract|sync|summary|brief|audience|budget)/i.test(taskLower)) {
-      chosenModelId = "claude-sonnet-4-6";
+      chosenModelId = "claude-sonnet-5-5-high";
+    } else if (/(spin|cluster|bulk|oss)/i.test(taskLower)) {
+      chosenModelId = "gpt-oss-120b-medium";
     } else {
-      chosenModelId = profile.defaultModel || "gemini-3.1-pro";
+      chosenModelId = profile.defaultModel || "gemini-4-argon-high";
     }
   }
 
-  const modelMeta =
-    AGY_MODELS.find((m) => m.id === chosenModelId) || AGY_MODELS[0];
+  const modelMeta = resolveAgyModelMeta(chosenModelId) || AGY_MODELS[0];
 
   let chosenEffortId = requestedEffort;
   if (!chosenEffortId || chosenEffortId === "auto" || !Object.hasOwn(AGY_EFFORT_TIERS, chosenEffortId)) {
-    if (modelMeta.id === "gemini-3-flash") {
+    if (modelMeta.id.includes("-low") || modelMeta.id.startsWith("gemini-3.8-flash")) {
       chosenEffortId = "low";
     } else if (/(max|deep|saga|tiered|master|security|architecture)/i.test(taskLower)) {
       chosenEffortId = "max";
@@ -747,6 +866,12 @@ export function buildGlobalAgySmartMindPlan({
 
   const targetProfiles = rawTargets.map((s) => resolveGemitronServiceProfile(s));
   const primaryService = targetProfiles[0].id;
+  if (model && model !== "auto" && !resolveAgyModelMeta(model)) {
+    return { ok: false, code: "INVALID_MODEL", status: "REJECTED" };
+  }
+  if (effort && effort !== "auto" && !Object.hasOwn(AGY_EFFORT_TIERS, effort)) {
+    return { ok: false, code: "INVALID_EFFORT", status: "REJECTED" };
+  }
   const selection = selectOptimalAgyModel({
     service: primaryService,
     task,
@@ -754,13 +879,6 @@ export function buildGlobalAgySmartMindPlan({
     requestedEffort: effort,
     preferOffline: authMode === "local-tron-loopback"
   });
-
-  if (model && model !== "auto" && !AGY_MODELS.some((m) => m.id === model)) {
-    return { ok: false, code: "INVALID_MODEL", status: "REJECTED" };
-  }
-  if (effort && effort !== "auto" && !Object.hasOwn(AGY_EFFORT_TIERS, effort)) {
-    return { ok: false, code: "INVALID_EFFORT", status: "REJECTED" };
-  }
   const normalizedAuth = normalizeAgyAuthMode(authMode);
   if (!normalizedAuth) {
     return { ok: false, code: "INVALID_AUTH_MODE", status: "REJECTED" };
@@ -1016,21 +1134,47 @@ function synthesizeServiceSmartMindOutput({
         ? `{الدليل الشامل|المرجع الاحترافي|الاستراتيجية المتكاملة} لـ ${keyword} {وتصدر نتائج البحث|ومضاعفة الزيارات العضوية|وبناء الباك لينك القوي}`
         : `{Comprehensive Guide|Definitive Blueprint|Strategic Playbook} for ${keyword} {& Search Dominance|& Organic Traffic Growth|& High-DR Authority}`,
       summary: isAr
-        ? `تم تحليل «${cleanPrompt}» عبر عقل AGYTron (${plan.model}) مع خطة نشر هرمية Tier 1 -> Tier 2 -> Tier 3 وزحف Scrapling الذكي.`
-        : `Analyzed "${cleanPrompt}" via AGYTron Smart Mind (${plan.model}) with a 3-Tier Link Wheel topology and adaptive Scrapling stealth selectors.`,
+        ? `تم تحليل «${cleanPrompt}» عبر عقل AGYTron (${plan.model}) مع خطة نشر هرمية Tier 1 -> Tier 2 -> Tier 3 وزحف Scrapling الذكي وتكامل أصول TronCS البصرية.`
+        : `Analyzed "${cleanPrompt}" via AGYTron Smart Mind (${plan.model}) with a 3-Tier Link Wheel topology, adaptive Scrapling stealth selectors, and TronCS visual backlink assets.`,
       tieredTopology: {
         topology: context.topology || "pyramid",
         tier1: ["telegraph", "medium", "devto", "hashnode", "wordpress"],
         tier2: ["mastodon", "tumblr", "discourse", "github"],
         tier3: ["pingomatic-xmlrpc", "websub-hub", "archive-wayback", "indexnow"]
       },
+      troncsCompanionPipeline: {
+        enabled: true,
+        suiteApps: ["phototron", "figtron", "scaletron", "gemimotion", "filmtron"],
+        stages: [
+          {
+            app: "PhotoTron (.pcraft)",
+            tool: "photo.text.create",
+            deliverable: "Linkable E-E-A-T Infographic & Hero OpenGraph Card for Tier 1 Articles & Digital PR"
+          },
+          {
+            app: "FigTron (.figtron)",
+            tool: "figtron.frame.create_autolayout",
+            deliverable: "Interactive Comparison Matrix & Data Study Chart for Guest Post Embeds"
+          },
+          {
+            app: "ScaleTron (.stproj)",
+            tool: "scale.enhance.steerable_sr",
+            deliverable: "4x Edge-Directed Super-Resolution WebP/PNG Optimization for Core Web Vitals"
+          },
+          {
+            app: "GemiMotion (.gmotion) + FilmTron (.fcraft)",
+            tool: "motion.timeline.clip.scene3d",
+            deliverable: "60s Explainer Video & Audiogram for Video/Social Backlink Properties"
+          }
+        ]
+      },
       recommendedTools: profile.nativeTools
     };
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · ${plan.model}] خطة رانكلي جاهزة لـ «${keyword}»:\n1. المحتوى والـ Spintax: ${structured.spintaxHeadline}\n2. هيكلة الباك لينك (Tier 1 -> Tier 2 -> Tier 3): نشر مقالات مرجعية عبر Telegraph وDev.to وWordPress ثم تعزيزها عبر Mastodon وTumblr وأرشفتها فورياً عبر Ping-O-Matic وWebSub وIndexNow.`
-        : `[AGYTron Smart Mind · ${plan.model}] Rankly Execution Plan ready for "${keyword}":\n1. Spintax Headline: ${structured.spintaxHeadline}\n2. 3-Tier Link Wheel: Publish Tier 1 authority articles on Telegraph/Dev.to/WordPress, boost with Tier 2 social bookmarks, and force-index via Tier 3 Ping-O-Matic, WebSub, and IndexNow.`
+        ? `[AGYTron Smart Mind · ${plan.model}] خطة رانكلي + TronCS جاهزة لـ «${keyword}»:\n1. المحتوى والـ Spintax: ${structured.spintaxHeadline}\n2. هيكلة الباك لينك (Tier 1 -> Tier 2 -> Tier 3): نشر مقالات مرجعية عبر Telegraph وDev.to وWordPress ثم تعزيزها عبر Mastodon وTumblr وأرشفتها فورياً عبر Ping-O-Matic وWebSub وIndexNow.\n3. تكامل TronCS الإبداعي: تصميم إنفوجرافيك عالي الموثوقية عبر PhotoTron وFigTron وتكبيره عبر ScaleTron وإنتاج فيديو قصير عبر GemiMotion/FilmTron لمضاعفة قبول الباك لينك.`
+        : `[AGYTron Smart Mind · ${plan.model}] Rankly + TronCS Execution Plan ready for "${keyword}":\n1. Spintax Headline: ${structured.spintaxHeadline}\n2. 3-Tier Link Wheel: Publish Tier 1 authority articles on Telegraph/Dev.to/WordPress, boost with Tier 2 social bookmarks, and force-index via Tier 3 Ping-O-Matic, WebSub, and IndexNow.\n3. TronCS Visual Link-Bait Pipeline: Auto-generate linkable infographics in PhotoTron/FigTron, upscale 4x in ScaleTron, and render video backlinks in GemiMotion/FilmTron.`
     };
   }
 
@@ -1070,6 +1214,37 @@ function synthesizeServiceSmartMindOutput({
         }
       ],
       creativeRatios: ["1:1 (1080x1080)", "4:5 (1080x1350)", "9:16 (1080x1920)", "1.91:1 (1200x628)"],
+      troncsCompanionPipeline: {
+        enabled: true,
+        suiteApps: ["lighttron", "scaletron", "phototron", "gemimotion", "aftertron", "filmtron", "figtron"],
+        stages: [
+          {
+            app: "LightTron (.lcraft) + ScaleTron (.stproj)",
+            tool: "lighttron.develop.tone_curve",
+            deliverable: "RAW Product Color Calibration & 4x/8x Neural Super-Resolution"
+          },
+          {
+            app: "PhotoTron (.pcraft)",
+            tool: "photo.document.place",
+            deliverable: "4-Ratio Multi-Layer Key Art Posters (1:1, 4:5, 9:16, 1.91:1) with Arabic HarfBuzz Typography"
+          },
+          {
+            app: "GemiMotion (.gmotion) + AfterTron (.acraft)",
+            tool: "motion.timeline.clip.scene3d",
+            deliverable: "3D PBR Product Reveal, WGSL Shaders & Easy-Ease Motion Callouts"
+          },
+          {
+            app: "FilmTron (.fcraft)",
+            tool: "film.timeline.place_clip",
+            deliverable: "3-Act TikTok/Reels/Shorts/YouTube Ad Edit with Lumetri Color & -14 LUFS Fairlight Audio Mix"
+          },
+          {
+            app: "FigTron (.figtron)",
+            tool: "figtron.frame.create_autolayout",
+            deliverable: "High-Converting RTL/LTR Landing Page & Lead-Gen Form UI Flow"
+          }
+        ]
+      },
       budgetAllocationPct: {
         google_ads: 30,
         meta: 25,
@@ -1086,8 +1261,8 @@ function synthesizeServiceSmartMindOutput({
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · ${plan.model}] خطة ترويج الإعلانية جاهزة لـ «${cleanPrompt}» عبر ٩ منصات (Google PMax, Meta Reels/CTWA, TikTok Spark, Snapchat, OpenAI Ads, LinkedIn, X, Pinterest, Microsoft) مع نسختين إعلانيتين وتوزيع ميزانية ذكي.`
-        : `[AGYTron Smart Mind · ${plan.model}] Tarweeg 9-Platform Ad Plan ready for "${cleanPrompt}" across Google PMax, Meta Reels/CTWA, TikTok Spark, Snapchat, OpenAI Ads, LinkedIn, X, Pinterest, and Microsoft Ads with 2 high-converting copy variants and automated ROAS guardrails.`
+        ? `[AGYTron Smart Mind · ${plan.model}] خطة ترويج + TronCS الإعلانية جاهزة لـ «${cleanPrompt}» عبر ٩ منصات (Google PMax, Meta Reels/CTWA, TikTok Spark, Snapchat, OpenAI Ads, LinkedIn, X, Pinterest, Microsoft) مع إنتاج البوسترات والفيديو السينمائي عبر تطبيقات TronCS السبعة (PhotoTron, GemiMotion, AfterTron, FilmTron, LightTron, ScaleTron, FigTron).`
+        : `[AGYTron Smart Mind · ${plan.model}] Tarweeg 9-Platform + TronCS Ad Plan ready for "${cleanPrompt}" across Google PMax, Meta Reels/CTWA, TikTok Spark, Snapchat, OpenAI Ads, LinkedIn, X, Pinterest, and Microsoft Ads with full TronCS studio creative production (PhotoTron, GemiMotion, AfterTron, FilmTron, LightTron, ScaleTron, FigTron).`
     };
   }
 
@@ -1116,7 +1291,7 @@ function synthesizeServiceSmartMindOutput({
 export function buildTronAgyCreativePlan({
   prompt,
   apps = ["gemimotion"],
-  model = "gemini-3.1-pro",
+  model = "gemini-4-argon-high",
   effort = "high",
   authMode = "agy-mcp-host",
   executionScope = "device-fleet",
@@ -1128,7 +1303,7 @@ export function buildTronAgyCreativePlan({
   if (typeof prompt !== "string" || !prompt.trim()) {
     return { ok: false, code: "EMPTY_PROMPT", status: "REJECTED" };
   }
-  const modelMeta = AGY_MODELS.find((m) => m.id === model);
+  const modelMeta = resolveAgyModelMeta(model);
   if (!modelMeta) {
     return { ok: false, code: "INVALID_MODEL", status: "REJECTED" };
   }

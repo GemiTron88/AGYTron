@@ -31,7 +31,8 @@ test("TronAGY covers all 7 TronCS Creative Suite apps (including ScaleTron) and 
     "lighttron",
     "scaletron"
   ]);
-  assert.equal(AGY_MODELS.length, 5);
+  assert.equal(AGY_MODELS.length, 14);
+  assert.equal(AGY_EFFORT_TIERS.xhigh.thinkingBudgetTokens, 24576);
   assert.equal(AGY_EFFORT_TIERS.max.thinkingBudgetTokens, 32768);
   assert.equal(AGY_EFFORT_TIERS.max.maxCritiquePasses, 5);
 
@@ -378,13 +379,13 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
   assert.ok(GEMITRON_GLOBAL_SERVICES.gemicode);
   assert.ok(GEMITRON_GLOBAL_SERVICES.gemicyber);
 
-  // Auto-model selection picks fast model for DOM relocate and Opus/Pro for deep campaigns
+  // Auto-model selection picks fast model for DOM relocate and Opus 5.5 / Argon 4 for deep campaigns
   const fastChoice = selectOptimalAgyModel({
     service: "rankly",
     task: "dom-relocate-selector",
     requestedModel: "auto"
   });
-  assert.equal(fastChoice.model, "gemini-3-flash");
+  assert.equal(fastChoice.model, "gemini-3.8-flash-medium");
   assert.equal(fastChoice.effort, "low");
 
   const deepChoice = selectOptimalAgyModel({
@@ -392,14 +393,14 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
     task: "multi-platform-saga-critique",
     requestedModel: "auto"
   });
-  assert.equal(deepChoice.model, "claude-opus-4-6");
+  assert.equal(deepChoice.model, "claude-opus-5-5-high");
   assert.equal(deepChoice.effort, "max");
 
   // Full-funnel cross-service plan (FigTron -> PhotoTron -> GemiMotion -> Tarweeg -> Rankly)
   const funnelPlan = buildGlobalAgySmartMindPlan({
     prompt: "إطلاق حملة شاملة لمنتج تقني جديد مع إعلانات ترويج وأتمتة سيو رانكلي",
     services: ["figtron", "phototron", "gemimotion", "tarweeg", "rankly"],
-    model: "gemini-3.1-pro",
+    model: "gemini-4-argon-high",
     effort: "max"
   });
   assert.equal(funnelPlan.ok, true);
@@ -426,7 +427,7 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
     assert.equal(modelsRes.status, 200);
     const modelsBody = await modelsRes.json();
     assert.equal(modelsBody.ok, true);
-    assert.equal(modelsBody.models.length, 5);
+    assert.equal(modelsBody.models.length, 14);
     assert.ok(modelsBody.services.some((s) => s.id === "rankly"));
     assert.ok(modelsBody.services.some((s) => s.id === "tarweeg"));
 
@@ -437,7 +438,7 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
         service: "rankly",
         task: "tiered-seo-campaign",
         prompt: "أفضل منصة سحابة وأمن سيبراني في الشرق الأوسط",
-        model: "gemini-3.1-pro",
+        model: "gemini-4-argon-high",
         effort: "high",
         context: { keyword: "منصة سحابة", topology: "wheel" }
       })
@@ -446,9 +447,10 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
     const ranklyBody = await ranklyRes.json();
     assert.equal(ranklyBody.ok, true);
     assert.equal(ranklyBody.service, "rankly");
-    assert.equal(ranklyBody.model, "gemini-3.1-pro");
+    assert.equal(ranklyBody.model, "gemini-4-argon-high");
     assert.equal(ranklyBody.critiquePassesCompleted, 3);
     assert.equal(ranklyBody.structured.tieredTopology.topology, "wheel");
+    assert.equal(ranklyBody.structured.troncsCompanionPipeline.enabled, true);
     assert.ok(ranklyBody.choices[0].message.content.includes("Spintax"));
 
     const tarweegRes = await fetch(`${base}/v1/agy/smart-mind`, {
@@ -458,7 +460,7 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
         service: "tarweeg",
         task: "launch-saga-compiler",
         prompt: "حملة تخفيضات الجمعة البيضاء لمتجر إلكتروني",
-        model: "claude-opus-4-6",
+        model: "claude-opus-5-5-high",
         effort: "max"
       })
     });
@@ -466,10 +468,11 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
     const tarweegBody = await tarweegRes.json();
     assert.equal(tarweegBody.ok, true);
     assert.equal(tarweegBody.service, "tarweeg");
-    assert.equal(tarweegBody.model, "claude-opus-4-6");
+    assert.equal(tarweegBody.model, "claude-opus-5-5-high");
     assert.equal(tarweegBody.critiquePassesCompleted, 5);
     assert.equal(tarweegBody.structured.platforms.length, 9);
     assert.equal(tarweegBody.structured.adCopyVariants.length, 2);
+    assert.equal(tarweegBody.structured.troncsCompanionPipeline.enabled, true);
 
     // Custom future service works out of the box
     const customExec = await executeGlobalAgySmartMind({
