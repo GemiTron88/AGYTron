@@ -20,7 +20,7 @@ test("TronAGY enforces 100% Google-ToS-Safe Host-Inversion auth guardrails", () 
   assert.equal(AGY_TOS_SAFETY_GUARD.architecturePattern, "host-inversion-mcp-client");
 });
 
-test("TronAGY covers all 6 TronCS Creative Suite apps and builds multi-app production plans", () => {
+test("TronAGY covers all 7 TronCS Creative Suite apps (including ScaleTron) and builds multi-app production plans", () => {
   const appIds = Object.keys(TRONCS_SUITE_APPS);
   assert.deepEqual(appIds, [
     "phototron",
@@ -28,14 +28,15 @@ test("TronAGY covers all 6 TronCS Creative Suite apps and builds multi-app produ
     "filmtron",
     "gemimotion",
     "figtron",
-    "lighttron"
+    "lighttron",
+    "scaletron"
   ]);
   assert.equal(AGY_MODELS.length, 5);
   assert.equal(AGY_EFFORT_TIERS.max.thinkingBudgetTokens, 32768);
   assert.equal(AGY_EFFORT_TIERS.max.maxCritiquePasses, 5);
 
   const plan = buildTronAgyCreativePlan({
-    prompt: "إطلاق ساعة أورورا X1 عبر جميع تطبيقات TronCS الستة",
+    prompt: "إطلاق ساعة أورورا X1 عبر جميع تطبيقات TronCS السبعة",
     apps: appIds,
     model: "claude-opus-4-6",
     effort: "max",
@@ -45,7 +46,7 @@ test("TronAGY covers all 6 TronCS Creative Suite apps and builds multi-app produ
   assert.equal(plan.ok, true);
   assert.equal(plan.schema, TRON_AGY_SCHEMA);
   assert.equal(plan.authMode, "agy-mcp-host");
-  assert.equal(plan.stages.length, 6);
+  assert.equal(plan.stages.length, 7);
   assert.equal(plan.thinkingBudgetTokens, 32768);
   assert.equal(plan.maxCritiquePasses, 5);
 });

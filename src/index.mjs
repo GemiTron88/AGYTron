@@ -169,6 +169,29 @@ export const TRONCS_SUITE_APPS = Object.freeze({
       "Non-destructive parametric XMP history",
       "Batch color temperature consistency"
     ]
+  }),
+  scaletron: Object.freeze({
+    id: "scaletron",
+    name: "ScaleTron",
+    arName: "سكيل ترون",
+    ext: ".stproj",
+    planSchema: "scaletron.tron.plan.v1",
+    mcpRoute: "/products/troncs/mcp",
+    accentHex: "#ec4899",
+    roleEn: "Edge-Directed Super-Resolution, OKLab Guided Filtering, xBR Pixel Art & Topaz Neural Upscaling",
+    roleAr: "تكبير الصور فائق الدقة، فلاتر OKLab الموجهة، ومعالجة البيكسل آرت والذكاء العصبي",
+    nativeTools: [
+      "scale.inspect.classify",
+      "scale.enhance.steerable_sr",
+      "scale.enhance.xbr_multislope",
+      "scale.enhance.oklab_guided",
+      "scale.topaz.neural_upscale"
+    ],
+    critiqueChecks: [
+      "3x3 source range clamping (zero ringing/overshoot halo)",
+      "Positive acutance delta & OKLab chroma preservation",
+      "Deterministic tile seam continuity at 2x/4x/8x/16x"
+    ]
   })
 });
 

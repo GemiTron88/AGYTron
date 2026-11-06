@@ -6,7 +6,8 @@ export type TronCsAppId =
   | 'filmtron'
   | 'gemimotion'
   | 'figtron'
-  | 'lighttron';
+  | 'lighttron'
+  | 'scaletron';
 
 export type AgyFleetDeviceId = 'win-local' | 'mac-local' | 'vps-01' | 'vps-02';
 
@@ -111,6 +112,7 @@ const APP_CATALOG: Array<{
   { id: 'gemimotion', name: 'GemiMotion', ar: 'جيمي موشن' },
   { id: 'figtron', name: 'FigTron', ar: 'فيج ترون' },
   { id: 'lighttron', name: 'LightTron', ar: 'لايت ترون' },
+  { id: 'scaletron', name: 'ScaleTron', ar: 'سكيل ترون' },
 ];
 
 export function normalizeNodeEndpoint(rawAddress = '', defaultPort = 18220): string {
