@@ -105,5 +105,25 @@ test("AGY Fleet Router connects to Windows Local, Mac Local, VPS 01, and VPS 02 
   assert.equal(events.length, 6);
   assert.equal(events[0].type, "thinking");
   assert.equal(events[5].type, "chat_message");
+
+  const {
+    DEFAULT_FLEET_ADDRESSES,
+    normalizeNodeEndpoint,
+    probeFleetNodeLiveStatus
+  } = await import("../src/fleet-router.mjs");
+
+  assert.equal(DEFAULT_FLEET_ADDRESSES["vps-01"], "https://mcp.gemitron.net");
+  assert.equal(normalizeNodeEndpoint("192.168.1.10"), "http://192.168.1.10:18220");
+  assert.equal(normalizeNodeEndpoint("https://mcp.gemitron.net/"), "https://mcp.gemitron.net");
+
+  const liveProbe = await probeFleetNodeLiveStatus({
+    nodeId: "vps-02",
+    address: "185.220.101.42:18220",
+    fetchFn: async () => ({ ok: true })
+  });
+  assert.equal(liveProbe.online, true);
+  assert.equal(liveProbe.healthUrl, "http://185.220.101.42:18220/v1/agy/health");
+  assert.ok(liveProbe.latencyMs >= 1);
 });
+
 

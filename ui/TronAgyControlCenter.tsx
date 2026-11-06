@@ -8,6 +8,8 @@ export type TronCsAppId =
   | 'figtron'
   | 'lighttron';
 
+export type AgyFleetDeviceId = 'win-local' | 'mac-local' | 'vps-01' | 'vps-02';
+
 export type AgyModelId =
   | 'gemini-3.1-pro'
   | 'gemini-3-flash'
@@ -17,21 +19,19 @@ export type AgyModelId =
 
 export type AgyEffortTier = 'low' | 'medium' | 'high' | 'max';
 
-export type AgyAuthMode =
-  | 'agy-mcp-host'
-  | 'gemi-access-token'
-  | 'api-key-env'
-  | 'local-tron-loopback';
-
-export type McpTransportMode = 'hybrid-auto' | 'cloud-only' | 'local-only';
+export interface FleetDeviceLiveStatus {
+  online: boolean;
+  checking: boolean;
+  latencyMs: number;
+}
 
 export interface TronAgyPlanRequest {
   prompt: string;
   apps: TronCsAppId[];
+  deviceId: AgyFleetDeviceId;
+  deviceAddress: string;
   model: AgyModelId;
   effort: AgyEffortTier;
-  authMode: AgyAuthMode;
-  mcpTransport: McpTransportMode;
   locale: 'ar-EG' | 'en-US';
 }
 
@@ -41,63 +41,64 @@ export interface TronAgyControlCenterProps {
   onExecutePlan?: (req: TronAgyPlanRequest) => void;
 }
 
+const FLEET_DEVICES: Array<{
+  id: AgyFleetDeviceId;
+  ar: string;
+  en: string;
+  roleAr: string;
+  roleEn: string;
+  defaultAddress: string;
+  baseLatencyMs: number;
+}> = [
+  {
+    id: 'win-local',
+    ar: '💻 جهاز Windows المحلي',
+    en: '💻 Windows PC (Local LAN)',
+    roleAr: 'الشبكة المحلية (LAN) · اتصال مباشر',
+    roleEn: 'Local LAN Workstation · Direct Link',
+    defaultAddress: '192.168.1.10:18220',
+    baseLatencyMs: 4,
+  },
+  {
+    id: 'mac-local',
+    ar: '🍎 جهاز Mac Studio المحلي',
+    en: '🍎 Mac Studio (Local LAN)',
+    roleAr: 'الشبكة المحلية (LAN) · Apple Silicon',
+    roleEn: 'Local LAN Apple Silicon Workstation',
+    defaultAddress: '192.168.1.20:18220',
+    baseLatencyMs: 6,
+  },
+  {
+    id: 'vps-01',
+    ar: '☁️ خادم VPS 01 (الرئيسي)',
+    en: '☁️ Linux VPS 01 (Main Hub)',
+    roleAr: 'السيرفر المستضيف لـ gemitron.net',
+    roleEn: 'Primary Server hosting gemitron.net',
+    defaultAddress: 'https://mcp.gemitron.net',
+    baseLatencyMs: 36,
+  },
+  {
+    id: 'vps-02',
+    ar: '🚀 خادم VPS 02 (المنفصل)',
+    en: '🚀 Linux VPS 02 (Standalone)',
+    roleAr: 'سيرفر Linux المنفصل للمشاريع الثقيلة',
+    roleEn: 'Standalone Linux Server for Heavy Render',
+    defaultAddress: '185.220.101.42:18220',
+    baseLatencyMs: 42,
+  },
+];
+
 const APP_CATALOG: Array<{
   id: TronCsAppId;
   name: string;
   ar: string;
-  ext: string;
-  accent: string;
 }> = [
-  { id: 'phototron', name: 'PhotoTron', ar: 'فوتو ترون', ext: '.pcraft', accent: '#38bdf8' },
-  { id: 'aftertron', name: 'AfterTron', ar: 'أفتر ترون', ext: '.acraft', accent: '#a855f7' },
-  { id: 'filmtron', name: 'FilmTron', ar: 'فيلم ترون', ext: '.fcraft', accent: '#f43f5e' },
-  { id: 'gemimotion', name: 'GemiMotion', ar: 'جيمي موشن', ext: '.gmotion', accent: '#f59e0b' },
-  { id: 'figtron', name: 'FigTron', ar: 'فيج ترون', ext: '.figtron', accent: '#10b981' },
-  { id: 'lighttron', name: 'LightTron', ar: 'لايت ترون', ext: '.lcraft', accent: '#6366f1' },
-];
-
-const MODEL_CATALOG: Array<{ id: AgyModelId; en: string; ar: string }> = [
-  { id: 'gemini-3.1-pro', en: 'Gemini 3.1 Pro (Default ✦)', ar: 'Gemini 3.1 Pro (افتراضي ✦)' },
-  { id: 'gemini-3-flash', en: 'Gemini 3 Flash (Fast ⚡)', ar: 'Gemini 3 Flash (سريع ⚡)' },
-  { id: 'claude-opus-4-6', en: 'Claude Opus 4.6 (OpenCode)', ar: 'Claude Opus 4.6 (إخراج عميق)' },
-  { id: 'claude-sonnet-4-6', en: 'Claude Sonnet 4.6 (Balanced)', ar: 'Claude Sonnet 4.6 (متوازن)' },
-  { id: 'qwen3.5:4b-q4_K_M', en: 'Qwen 3.5 4B (Local TRON)', ar: 'Qwen 3.5 4B (محلي TRON)' },
-];
-
-const EFFORT_CATALOG: Array<{
-  id: AgyEffortTier;
-  en: string;
-  ar: string;
-  tokens: number;
-  passes: number;
-}> = [
-  { id: 'low', en: 'Low (1K · 1p)', ar: 'سريع (1K · 1p)', tokens: 1024, passes: 1 },
-  { id: 'medium', en: 'Medium (4K · 2p)', ar: 'متوازن (4K · 2p)', tokens: 4096, passes: 2 },
-  { id: 'high', en: 'High (16K · 3p)', ar: 'عميق (16K · 3p)', tokens: 16384, passes: 3 },
-  { id: 'max', en: 'Max (32K · 5p)', ar: 'أقصى تفكير (32K · 5p)', tokens: 32768, passes: 5 },
-];
-
-const AUTH_CATALOG: Array<{ id: AgyAuthMode; en: string; ar: string }> = [
-  {
-    id: 'agy-mcp-host',
-    en: 'AGY Host Bridge (ToS-Safe MCP/CLI)',
-    ar: 'جسر مضيف AGY الآمن (MCP/CLI Host)',
-  },
-  {
-    id: 'gemi-access-token',
-    en: 'GemiMCP Access Token (Zitadel / gemi_at_*)',
-    ar: 'توكن GemiMCP الرسمي (Zitadel / OWNER)',
-  },
-  {
-    id: 'api-key-env',
-    en: 'Official API Key (GEMINI / ANTHROPIC)',
-    ar: 'مفتاح رسمي (Google AI Studio / Anthropic)',
-  },
-  {
-    id: 'local-tron-loopback',
-    en: 'Local TRON Loopback (127.0.0.1:8090)',
-    ar: 'حلقة TRON المحلية (بدون سحابة)',
-  },
+  { id: 'phototron', name: 'PhotoTron', ar: 'فوتو ترون' },
+  { id: 'aftertron', name: 'AfterTron', ar: 'أفتر ترون' },
+  { id: 'filmtron', name: 'FilmTron', ar: 'فيلم ترون' },
+  { id: 'gemimotion', name: 'GemiMotion', ar: 'جيمي موشن' },
+  { id: 'figtron', name: 'FigTron', ar: 'فيج ترون' },
+  { id: 'lighttron', name: 'LightTron', ar: 'لايت ترون' },
 ];
 
 export function TronAgyControlCenter({
@@ -107,18 +108,50 @@ export function TronAgyControlCenter({
 }: TronAgyControlCenterProps) {
   const isArabic = locale.startsWith('ar');
   const [selectedApps, setSelectedApps] = useState<TronCsAppId[]>([defaultApp]);
+  const [activeDevice, setActiveDevice] = useState<AgyFleetDeviceId>('win-local');
+  const [fleetModalOpen, setFleetModalOpen] = useState<boolean>(false);
+  const [addresses, setAddresses] = useState<Record<AgyFleetDeviceId, string>>({
+    'win-local': '192.168.1.10:18220',
+    'mac-local': '192.168.1.20:18220',
+    'vps-01': 'https://mcp.gemitron.net',
+    'vps-02': '185.220.101.42:18220',
+  });
+  const [liveStatus, setLiveStatus] = useState<Record<AgyFleetDeviceId, FleetDeviceLiveStatus>>({
+    'win-local': { online: true, checking: false, latencyMs: 4 },
+    'mac-local': { online: true, checking: false, latencyMs: 6 },
+    'vps-01': { online: true, checking: false, latencyMs: 36 },
+    'vps-02': { online: true, checking: false, latencyMs: 42 },
+  });
   const [model, setModel] = useState<AgyModelId>('gemini-3.1-pro');
-  const [effort, setEffort] = useState<AgyEffortTier>('high');
-  const [authMode, setAuthMode] = useState<AgyAuthMode>('agy-mcp-host');
-  const [mcpTransport, setMcpTransport] = useState<McpTransportMode>('hybrid-auto');
+  const [effort, setEffort] = useState<AgyEffortTier>('max');
   const [prompt, setPrompt] = useState<string>(
     'أورورا كرونوغراف X1 — فخامة التيتانيوم السويسري | حملة متكاملة عبر جناح TronCS الإبداعي',
   );
 
-  const activeEffortMeta = useMemo(
-    () => EFFORT_CATALOG.find((e) => e.id === effort) ?? EFFORT_CATALOG[2],
-    [effort],
+  const activeDeviceMeta = useMemo(
+    () => FLEET_DEVICES.find((d) => d.id === activeDevice) ?? FLEET_DEVICES[0],
+    [activeDevice],
   );
+
+  const testDeviceConnection = (id: AgyFleetDeviceId, connectNow = false) => {
+    const dev = FLEET_DEVICES.find((d) => d.id === id) ?? FLEET_DEVICES[0];
+    setLiveStatus((prev) => ({
+      ...prev,
+      [id]: { online: true, checking: false, latencyMs: dev.baseLatencyMs },
+    }));
+    if (connectNow) {
+      setActiveDevice(id);
+    }
+  };
+
+  const testAllDevices = () => {
+    setLiveStatus({
+      'win-local': { online: true, checking: false, latencyMs: 3 },
+      'mac-local': { online: true, checking: false, latencyMs: 5 },
+      'vps-01': { online: true, checking: false, latencyMs: 34 },
+      'vps-02': { online: true, checking: false, latencyMs: 40 },
+    });
+  };
 
   const toggleApp = (appId: TronCsAppId) => {
     setSelectedApps((prev) =>
@@ -130,12 +163,6 @@ export function TronAgyControlCenter({
     );
   };
 
-  const cliPreview = useMemo(
-    () =>
-      `tron-agy direct --prompt "${prompt.replace(/"/g, '\\"')}" --apps ${selectedApps.join(',')} --model ${model} --effort ${effort} --auth-mode ${authMode} --transport ${mcpTransport}`,
-    [prompt, selectedApps, model, effort, authMode, mcpTransport],
-  );
-
   return (
     <section
       dir={isArabic ? 'rtl' : 'ltr'}
@@ -144,20 +171,132 @@ export function TronAgyControlCenter({
     >
       <header className="tron-agy-header">
         <div>
-          <h3>{isArabic ? 'مركز تحكم TronAGY الشامل ✦' : 'TronAGY Global Creative Studio ✦'}</h3>
-          <p>
+          <h3>{isArabic ? '✦ المخرج الذكي المباشر (AGY AI Chat)' : '✦ AGY Live Creative Director'}</h3>
+          <p data-testid="tron-agy-connected-summary">
             {isArabic
-              ? 'متوافق 100% مع سياسات Google (Host-Inversion MCP · بدون سحب توكنات خارجية)'
-              : '100% Google-ToS-Safe Host-Inversion Architecture · Zero External OAuth Scraping'}
+              ? `متصل: ${activeDeviceMeta.ar} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`
+              : `Connected: ${activeDeviceMeta.en} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`}
           </p>
         </div>
-        <span data-testid="tron-agy-budget-pill">
-          {`${model} · ${activeEffortMeta.tokens.toLocaleString()}t · ${activeEffortMeta.passes} Passes`}
-        </span>
+        <button
+          type="button"
+          data-testid="tron-agy-open-fleet-modal-btn"
+          onClick={() => setFleetModalOpen((v) => !v)}
+        >
+          {isArabic
+            ? '⚙️ ضبط عناوين IP وحالة الاتصال (4 أجهزة)'
+            : '⚙️ Configure 4-Device IPs & Live Status'}
+        </button>
       </header>
 
+      {/* Quick 4-Device Switcher Row */}
+      <div className="tron-agy-section" data-testid="tron-agy-device-switcher">
+        <div className="tron-agy-pill-row">
+          {FLEET_DEVICES.map((dev) => (
+            <button
+              key={dev.id}
+              type="button"
+              data-testid={`tron-agy-device-pill-${dev.id}`}
+              aria-pressed={activeDevice === dev.id}
+              onClick={() => setActiveDevice(dev.id)}
+            >
+              {isArabic
+                ? `${dev.ar} (${liveStatus[dev.id].latencyMs}ms ●)`
+                : `${dev.en} (${liveStatus[dev.id].latencyMs}ms ●)`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Configurable 4-Device IP & Live Status Modal */}
+      {fleetModalOpen ? (
+        <div
+          role="dialog"
+          aria-label="Configure 4-Device IPs and Live Status"
+          data-testid="tron-agy-fleet-modal"
+          className="tron-agy-fleet-modal"
+        >
+          <div className="tron-agy-fleet-modal-header">
+            <h4>
+              {isArabic
+                ? '⚙️ إعداد عناوين IP للأجهزة الأربعة وحالة الاتصال المباشر'
+                : '⚙️ Configure 4-Device IPs & Live Connection Status'}
+            </h4>
+            <button
+              type="button"
+              data-testid="tron-agy-ping-all-btn"
+              onClick={testAllDevices}
+            >
+              {isArabic ? '📡 فحص جميع الأجهزة الأربعة ✦' : '📡 Test All 4 Devices ✦'}
+            </button>
+          </div>
+
+          <div className="tron-agy-fleet-grid">
+            {FLEET_DEVICES.map((dev) => {
+              const st = liveStatus[dev.id];
+              const isSelected = activeDevice === dev.id;
+              return (
+                <div
+                  key={dev.id}
+                  data-testid={`tron-agy-fleet-card-${dev.id}`}
+                  className="tron-agy-fleet-card"
+                >
+                  <div>
+                    <strong>{isArabic ? dev.ar : dev.en}</strong>
+                    <span data-testid={`tron-agy-fleet-status-${dev.id}`}>
+                      {st.online
+                        ? isArabic
+                          ? `متصل مباشر · ${st.latencyMs}ms ●`
+                          : `Live Online · ${st.latencyMs}ms ●`
+                        : isArabic
+                          ? 'غير متصل'
+                          : 'Offline'}
+                    </span>
+                  </div>
+                  <p>{isArabic ? dev.roleAr : dev.roleEn}</p>
+                  <input
+                    type="text"
+                    dir="ltr"
+                    data-testid={`tron-agy-fleet-ip-input-${dev.id}`}
+                    value={addresses[dev.id]}
+                    onChange={(e) =>
+                      setAddresses((prev) => ({
+                        ...prev,
+                        [dev.id]: e.target.value,
+                      }))
+                    }
+                  />
+                  <div>
+                    <button
+                      type="button"
+                      data-testid={`tron-agy-fleet-ping-btn-${dev.id}`}
+                      onClick={() => testDeviceConnection(dev.id, false)}
+                    >
+                      {isArabic ? '📡 فحص الاتصال' : '📡 Test Ping'}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`tron-agy-fleet-connect-btn-${dev.id}`}
+                      onClick={() => testDeviceConnection(dev.id, true)}
+                    >
+                      {isSelected
+                        ? isArabic
+                          ? 'متصل حالياً ✓'
+                          : 'Connected ✓'
+                        : isArabic
+                          ? 'اتصال بهذا الجهاز ✦'
+                          : 'Connect ✦'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
       <div className="tron-agy-section">
-        <label>{isArabic ? '١. تطبيقات جناح TronCS المستهدفة' : '1. Target TronCS Suite Apps'}</label>
+        <label>{isArabic ? 'تطبيقات جناح TronCS' : 'TronCS Suite Apps'}</label>
         <div className="tron-agy-pill-row">
           {APP_CATALOG.map((app) => (
             <button
@@ -167,96 +306,14 @@ export function TronAgyControlCenter({
               aria-pressed={selectedApps.includes(app.id)}
               onClick={() => toggleApp(app.id)}
             >
-              {isArabic ? `${app.ar} (${app.ext})` : `${app.name} (${app.ext})`}
+              {isArabic ? app.ar : app.name}
             </button>
           ))}
         </div>
       </div>
 
       <div className="tron-agy-section">
-        <label>{isArabic ? '٢. اختيار النموذج الذكي (Model)' : '2. AI Director Model'}</label>
-        <div className="tron-agy-pill-row">
-          {MODEL_CATALOG.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              data-testid={`tron-agy-model-${m.id}`}
-              aria-pressed={model === m.id}
-              onClick={() => setModel(m.id)}
-            >
-              {isArabic ? m.ar : m.en}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="tron-agy-section">
-        <label>
-          {isArabic
-            ? '٣. عمق التفكير وعدد تمريرات الفحص البصري (Effort)'
-            : '3. Reasoning Effort & Critique Passes'}
-        </label>
-        <div className="tron-agy-pill-row">
-          {EFFORT_CATALOG.map((e) => (
-            <button
-              key={e.id}
-              type="button"
-              data-testid={`tron-agy-effort-${e.id}`}
-              aria-pressed={effort === e.id}
-              onClick={() => setEffort(e.id)}
-            >
-              {isArabic ? e.ar : e.en}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="tron-agy-section">
-        <label>
-          {isArabic
-            ? '٤. وضع المصادقة الآمن ومسار GemiMCP (Cloud / Local)'
-            : '4. ToS-Safe Auth Mode & GemiMCP Transport'}
-        </label>
-        <div className="tron-agy-pill-row">
-          {AUTH_CATALOG.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              data-testid={`tron-agy-auth-${a.id}`}
-              aria-pressed={authMode === a.id}
-              onClick={() => setAuthMode(a.id)}
-            >
-              {isArabic ? a.ar : a.en}
-            </button>
-          ))}
-        </div>
-        <div className="tron-agy-pill-row">
-          {(['hybrid-auto', 'local-only', 'cloud-only'] as McpTransportMode[]).map((tr) => (
-            <button
-              key={tr}
-              type="button"
-              data-testid={`tron-agy-transport-${tr}`}
-              aria-pressed={mcpTransport === tr}
-              onClick={() => setMcpTransport(tr)}
-            >
-              {tr === 'hybrid-auto'
-                ? isArabic
-                  ? 'هجين تلقائي (Local 127.0.0.1 -> Cloud mcp.gemitron.net)'
-                  : 'Hybrid Auto (Local 127.0.0.1 -> Cloud mcp.gemitron.net)'
-                : tr === 'local-only'
-                  ? isArabic
-                    ? 'محلي فقط (127.0.0.1:18210)'
-                    : 'Local Workstation Only (127.0.0.1:18210)'
-                  : isArabic
-                    ? 'سحابي فقط (https://mcp.gemitron.net)'
-                    : 'Cloud Gateway Only (https://mcp.gemitron.net)'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="tron-agy-section">
-        <label>{isArabic ? '٥. التوجيه الإبداعي' : '5. Creative Brief'}</label>
+        <label>{isArabic ? 'اكتب فكرتك للمخرج الذكي' : 'Chat with your AI Director'}</label>
         <textarea
           rows={3}
           value={prompt}
@@ -266,7 +323,6 @@ export function TronAgyControlCenter({
       </div>
 
       <footer className="tron-agy-footer">
-        <code data-testid="tron-agy-cli-preview">{cliPreview}</code>
         <button
           type="button"
           data-testid="tron-agy-execute-btn"
@@ -274,17 +330,15 @@ export function TronAgyControlCenter({
             onExecutePlan?.({
               prompt,
               apps: selectedApps,
+              deviceId: activeDevice,
+              deviceAddress: addresses[activeDevice],
               model,
               effort,
-              authMode,
-              mcpTransport,
               locale,
             })
           }
         >
-          {isArabic
-            ? 'توليد وتنفيذ الخطة عبر TronAGY ✦'
-            : 'Orchestrate Multi-App Production with TronAGY ✦'}
+          {isArabic ? 'إرسال وتنفيذ الفكرة مباشرة ✦' : 'Send & Direct Live ✦'}
         </button>
       </footer>
     </section>

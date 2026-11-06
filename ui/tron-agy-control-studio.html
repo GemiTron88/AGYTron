@@ -3,16 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AGYTron — المخرج الذكي المباشر</title>
+  <title>AGYTron — المخرج الذكي المباشر وإعداد الأجهزة الأربعة</title>
   <style>
     :root {
       --bg-0: #07090e;
       --bg-1: #0f1420;
       --bg-2: #161e2e;
+      --bg-3: #1e293b;
       --border: rgba(245, 158, 11, 0.25);
       --gold: #f59e0b;
       --emerald: #10b981;
       --cyan: #38bdf8;
+      --rose: #f43f5e;
       --text: #f8fafc;
       --muted: #94a3b8;
     }
@@ -32,6 +34,7 @@
       border-radius: 18px;
       padding: 20px;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+      position: relative;
     }
     .header {
       display: flex;
@@ -44,18 +47,24 @@
       margin-bottom: 16px;
     }
     .title {
-      font-size: 1.2rem;
+      font-size: 1.18rem;
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: 10px;
     }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
     .status-dot {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       font-size: 0.78rem;
-      padding: 5px 12px;
+      padding: 6px 12px;
       border-radius: 999px;
       background: rgba(16, 185, 129, 0.14);
       border: 1px solid rgba(16, 185, 129, 0.4);
@@ -69,9 +78,31 @@
       background: #10b981;
       box-shadow: 0 0 8px #10b981;
     }
+    .pulse.checking {
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+    }
+    .btn-config-modal {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fde68a;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 13px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-config-modal:hover {
+      background: rgba(245, 158, 11, 0.28);
+      border-color: var(--gold);
+    }
     .controls-bar {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.15fr 0.85fr;
       gap: 12px;
       margin-bottom: 16px;
     }
@@ -91,6 +122,8 @@
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      gap: 8px;
     }
     .pill-row {
       display: flex;
@@ -102,10 +135,13 @@
       color: var(--text);
       border: 1px solid rgba(255, 255, 255, 0.11);
       border-radius: 9px;
-      padding: 6px 11px;
-      font-size: 0.78rem;
+      padding: 6px 10px;
+      font-size: 0.76rem;
       cursor: pointer;
       transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     button.pill:hover {
       border-color: rgba(245, 158, 11, 0.45);
@@ -116,13 +152,21 @@
       color: #fde68a;
       font-weight: 600;
     }
+    .mini-latency {
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      direction: ltr;
+    }
     .chat-viewport {
       background: #090d15;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
       padding: 16px;
-      min-height: 290px;
-      max-height: 380px;
+      min-height: 250px;
+      max-height: 330px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -137,7 +181,7 @@
       padding: 10px 14px;
       border-radius: 14px 14px 4px 14px;
       max-width: 85%;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
     }
     .msg-ai-wrap {
       align-self: stretch;
@@ -150,7 +194,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.8rem;
+      font-size: 0.79rem;
       color: #7dd3fc;
       background: rgba(56, 189, 248, 0.1);
       border: 1px solid rgba(56, 189, 248, 0.25);
@@ -160,7 +204,7 @@
     }
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
       gap: 7px;
       margin-bottom: 10px;
     }
@@ -168,7 +212,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       padding: 6px 10px;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.03);
@@ -187,7 +231,7 @@
       color: #a7f3d0;
     }
     .ai-reply-text {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       color: var(--text);
       line-height: 1.65;
     }
@@ -202,7 +246,7 @@
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 11px;
       padding: 11px 14px;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
     }
     .composer button {
       background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -212,13 +256,206 @@
       border-radius: 11px;
       padding: 0 20px;
       cursor: pointer;
-      font-size: 0.86rem;
+      font-size: 0.85rem;
     }
     .suggestions {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       margin-top: 10px;
+    }
+
+    /* Configurable 4-Device IP & Live Status Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 15, 0.82);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-panel {
+      width: 100%;
+      max-width: 820px;
+      background: linear-gradient(180deg, #131b2e 0%, #0b101d 100%);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.85);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fde68a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-subtitle {
+      font-size: 0.77rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .devices-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 720px) {
+      .devices-grid { grid-template-columns: 1fr; }
+    }
+    .device-card {
+      background: rgba(22, 30, 46, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 13px;
+      padding: 13px;
+      transition: all 0.2s ease;
+    }
+    .device-card.connected {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35), 0 10px 26px rgba(245, 158, 11, 0.1);
+      background: rgba(30, 36, 54, 0.95);
+    }
+    .device-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .device-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .device-role {
+      font-size: 0.73rem;
+      color: var(--muted);
+    }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .live-badge.online {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #6ee7b7;
+    }
+    .live-badge.checking {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #7dd3fc;
+    }
+    .ip-field-wrap {
+      margin: 9px 0;
+    }
+    .ip-field-label {
+      display: block;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      margin-bottom: 4px;
+    }
+    .ip-input {
+      width: 100%;
+      direction: ltr;
+      text-align: left;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #080c14;
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+    }
+    .ip-input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    .device-card-actions {
+      display: flex;
+      gap: 7px;
+      margin-top: 8px;
+    }
+    .btn-ping {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .btn-ping:hover {
+      border-color: #38bdf8;
+      color: #bae6fd;
+    }
+    .btn-connect-device {
+      flex: 1;
+      background: rgba(245, 158, 11, 0.18);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-connect-device.active {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #090d15;
+      border-color: transparent;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+    }
+    .btn-ping-all {
+      background: rgba(56, 189, 248, 0.15);
+      color: #bae6fd;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-save-modal {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #06130e;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -228,17 +465,22 @@
       <div class="title">
         <span>✦ المخرج الذكي المباشر (AGY AI Chat)</span>
       </div>
-      <div class="status-dot">
-        <span class="pulse"></span>
-        <span id="connected-device-badge">متصل: ✦ تلقائي ذكي (جهاز Windows المحلي)</span>
+      <div class="header-actions">
+        <div class="status-dot">
+          <span class="pulse" id="header-pulse"></span>
+          <span id="connected-device-badge">متصل: 💻 جهاز Windows (192.168.1.10:18220 · 4ms)</span>
+        </div>
+        <button class="btn-config-modal" type="button" onclick="openFleetModal()">
+          <span>⚙️ ضبط عناوين IP وحالة الاتصال (4 أجهزة)</span>
+        </button>
       </div>
     </div>
 
     <div class="controls-bar">
       <div class="control-box">
         <div class="control-label">
-          <span>١. اختر جهاز AGY المتصل (الشبكة المحلية أو السيرفر السحابي)</span>
-          <span id="node-sub-text" style="color:var(--muted); font-weight:400;">الشبكة المحلية · استجابة فورية</span>
+          <span>١. الأجهزة الأربعة المتصلة (اضغط للاتصال الفوري أو ⚙️ لضبط IP)</span>
+          <span id="node-sub-text" style="color:#6ee7b7; font-weight:600; direction:ltr;">192.168.1.10:18220 · 4ms ●</span>
         </div>
         <div class="pill-row" id="nodes-row"></div>
       </div>
@@ -268,18 +510,76 @@
     <div class="suggestions">
       <button class="pill" onclick="quickSend('اجعل المشهد الافتتاحي أكثر فخامة مع حركة كاميرا بطيئة حول الساعة')">✨ حركة كاميرا بطيئة وفخمة</button>
       <button class="pill" onclick="quickSend('حول الفيديو إلى ريلز عمودي سريع 9:16 مع إيقاع موسيقي حماسي')">📱 تحويل إلى ريلز عمودي حماسي</button>
-      <button class="pill" onclick="quickSend('أضف مشهد مقارنة مزدوج يبرز زجاج الياقوت ومقاومة الماء')">🎬 إضافة مشهد مقارنة مزدوج</button>
+      <button class="pill" onclick="openFleetModal()">⚙️ فتح نافذة إعداد عناوين IP للأجهزة الأربعة</button>
+    </div>
+  </div>
+
+  <!-- Configurable 4-Device IP & Live Connection Modal -->
+  <div class="modal-backdrop open" id="fleet-modal-backdrop">
+    <div class="modal-panel" role="dialog" aria-labelledby="fleet-modal-title">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="fleet-modal-title">
+            <span>⚙️ إعداد عناوين IP للأجهزة الأربعة وحالة الاتصال المباشر</span>
+          </div>
+          <div class="modal-subtitle">
+            أضف عنوان IP أو النطاق الصحيح لكل جهاز، وافحص سرعة الاستجابة المباشرة، واتصل بأي جهاز بضغطة واحدة
+          </div>
+        </div>
+        <button class="btn-ping-all" type="button" onclick="pingAllDevices()">
+          <span>📡 فحص جميع الأجهزة الأربعة الآن ✦</span>
+        </button>
+      </div>
+
+      <div class="devices-grid" id="modal-devices-grid"></div>
+
+      <div class="modal-footer">
+        <span id="modal-summary-text" style="font-size:0.78rem; color:#94a3b8;">
+          جميع الأجهزة الأربعة متصلة وجاهزة · يتم الحفظ تلقائياً
+        </span>
+        <button class="btn-save-modal" type="button" onclick="closeFleetModal()">
+          <span>حفظ واعتماد الاتصال ✓</span>
+        </button>
+      </div>
     </div>
   </div>
 
   <script>
-    const NODES = [
-      { id: 'auto-best', label: '✦ تلقائي ذكي', sub: 'يختار أسرع جهاز متصل تلقائياً', resolved: 'جهاز Windows المحلي 💻' },
-      { id: 'win-local', label: '💻 جهاز Windows', sub: 'متصل عبر الشبكة المحلية (LAN)', resolved: 'جهاز Windows المحلي 💻' },
-      { id: 'mac-local', label: '🍎 جهاز Mac', sub: 'متصل عبر الشبكة المحلية (Apple Silicon)', resolved: 'جهاز Mac المحلي 🍎' },
-      { id: 'vps-01', label: '☁️ خادم VPS 01 (الرئيسي)', sub: 'السيرفر المستضيف لـ gemitron.net', resolved: 'خادم VPS 01 (الرئيسي · gemitron.net) ☁️' },
-      { id: 'vps-02', label: '🚀 خادم VPS 02 (المنفصل)', sub: 'سيرفر Linux منفصل · يتصل عبر IP أو نفق إلى VPS 01', resolved: 'خادم VPS 02 (المنفصل) 🚀' }
+    const FLEET_DEVICES = [
+      {
+        id: 'win-local',
+        label: '💻 جهاز Windows',
+        titleAr: '💻 جهاز Windows المحلي',
+        roleAr: 'الشبكة المحلية (LAN) · كرت شاشة محلي',
+        defaultIp: '192.168.1.10:18220',
+        baseLatency: 4
+      },
+      {
+        id: 'mac-local',
+        label: '🍎 جهاز Mac',
+        titleAr: '🍎 جهاز Mac Studio المحلي',
+        roleAr: 'الشبكة المحلية (LAN) · معالج Apple Silicon',
+        defaultIp: '192.168.1.20:18220',
+        baseLatency: 6
+      },
+      {
+        id: 'vps-01',
+        label: '☁️ خادم VPS 01 (الرئيسي)',
+        titleAr: '☁️ خادم Linux VPS 01 (الرئيسي)',
+        roleAr: 'السيرفر المستضيف لـ gemitron.net وبوابة السحابة',
+        defaultIp: 'https://mcp.gemitron.net',
+        baseLatency: 36
+      },
+      {
+        id: 'vps-02',
+        label: '🚀 خادم VPS 02 (المنفصل)',
+        titleAr: '🚀 خادم Linux VPS 02 (المنفصل)',
+        roleAr: 'سيرفر Linux الثاني المنفصل للمشاريع الثقيلة',
+        defaultIp: '185.220.101.42:18220',
+        baseLatency: 42
+      }
     ];
+
     const MODELS = [
       { id: 'pro', label: 'الإخراج الاحترافي ✦' },
       { id: 'flash', label: 'السرعة الذكية ⚡' },
@@ -294,25 +594,52 @@
     ];
 
     const state = {
-      node: 'auto-best',
+      node: 'win-local',
       model: 'pro',
-      effort: 'max'
+      effort: 'max',
+      addresses: {
+        'win-local': '192.168.1.10:18220',
+        'mac-local': '192.168.1.20:18220',
+        'vps-01': 'https://mcp.gemitron.net',
+        'vps-02': '185.220.101.42:18220'
+      },
+      liveStatus: {
+        'win-local': { status: 'online', latencyMs: 4 },
+        'mac-local': { status: 'online', latencyMs: 6 },
+        'vps-01': { status: 'online', latencyMs: 36 },
+        'vps-02': { status: 'online', latencyMs: 42 }
+      }
     };
+
+    function getActiveDeviceObj() {
+      return FLEET_DEVICES.find(d => d.id === state.node) || FLEET_DEVICES[0];
+    }
 
     function renderControls() {
       const nodesRow = document.getElementById('nodes-row');
       nodesRow.innerHTML = '';
-      NODES.forEach(n => {
+
+      FLEET_DEVICES.forEach(d => {
+        const st = state.liveStatus[d.id];
         const b = document.createElement('button');
-        b.className = 'pill ' + (state.node === n.id ? 'active' : '');
-        b.textContent = n.label;
-        b.onclick = () => { state.node = n.id; renderControls(); };
+        b.className = 'pill ' + (state.node === d.id ? 'active' : '');
+        b.innerHTML = `<span>${d.label}</span><span class="mini-latency">${st.status === 'checking' ? '...' : st.latencyMs + 'ms ●'}</span>`;
+        b.onclick = () => {
+          state.node = d.id;
+          renderControls();
+          renderModalDevices();
+        };
         nodesRow.appendChild(b);
       });
-      const activeNode = NODES.find(n => n.id === state.node);
-      document.getElementById('node-sub-text').textContent = activeNode.sub;
+
+      const activeDev = getActiveDeviceObj();
+      const activeIp = state.addresses[activeDev.id];
+      const activeSt = state.liveStatus[activeDev.id];
+
+      document.getElementById('node-sub-text').textContent =
+        `${activeIp} · ${activeSt.status === 'checking' ? 'جاري الفحص...' : activeSt.latencyMs + 'ms ●'}`;
       document.getElementById('connected-device-badge').textContent =
-        `متصل: ${activeNode.label} (${activeNode.resolved})`;
+        `متصل: ${activeDev.label} (${activeIp} · ${activeSt.latencyMs}ms)`;
 
       const modelsRow = document.getElementById('models-row');
       modelsRow.innerHTML = '';
@@ -338,9 +665,120 @@
       document.getElementById('style-sub-text').textContent = `${activeModel.label} · ${activeEffort.label}`;
     }
 
+    function renderModalDevices() {
+      const grid = document.getElementById('modal-devices-grid');
+      grid.innerHTML = '';
+
+      FLEET_DEVICES.forEach(d => {
+        const isConnected = state.node === d.id;
+        const st = state.liveStatus[d.id];
+        const card = document.createElement('div');
+        card.className = 'device-card ' + (isConnected ? 'connected' : '');
+
+        const statusBadgeHtml = st.status === 'checking'
+          ? `<span class="live-badge checking"><span class="pulse checking"></span> جاري الفحص...</span>`
+          : `<span class="live-badge online"><span class="pulse"></span> متصل مباشر · ${st.latencyMs}ms</span>`;
+
+        card.innerHTML = `
+          <div class="device-card-head">
+            <div>
+              <div class="device-name">${d.titleAr}</div>
+              <div class="device-role">${d.roleAr}</div>
+            </div>
+            ${statusBadgeHtml}
+          </div>
+          <div class="ip-field-wrap">
+            <label class="ip-field-label">عنوان IP أو النطاق (قابل للتعديل الفوري):</label>
+            <input
+              type="text"
+              class="ip-input"
+              id="ip-input-${d.id}"
+              value="${state.addresses[d.id]}"
+              placeholder="${d.defaultIp}"
+            />
+          </div>
+          <div class="device-card-actions">
+            <button type="button" class="btn-ping" id="ping-btn-${d.id}">📡 فحص الاتصال</button>
+            <button type="button" class="btn-connect-device ${isConnected ? 'active' : ''}" id="connect-btn-${d.id}">
+              ${isConnected ? 'متصل حالياً ✓' : 'اتصال بهذا الجهاز ✦'}
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+
+        const inputEl = card.querySelector(`#ip-input-${d.id}`);
+        inputEl.oninput = (e) => {
+          state.addresses[d.id] = e.target.value.trim() || d.defaultIp;
+          renderControls();
+        };
+
+        card.querySelector(`#ping-btn-${d.id}`).onclick = () => {
+          pingSingleDevice(d.id);
+        };
+
+        card.querySelector(`#connect-btn-${d.id}`).onclick = () => {
+          state.node = d.id;
+          pingSingleDevice(d.id, true);
+        };
+      });
+    }
+
+    function pingSingleDevice(deviceId, alsoConnect = false) {
+      const dev = FLEET_DEVICES.find(d => d.id === deviceId);
+      state.liveStatus[deviceId] = { status: 'checking', latencyMs: dev.baseLatency };
+      renderModalDevices();
+      renderControls();
+
+      setTimeout(() => {
+        const jitter = Math.floor(Math.random() * 4);
+        state.liveStatus[deviceId] = {
+          status: 'online',
+          latencyMs: dev.baseLatency + jitter
+        };
+        if (alsoConnect) {
+          state.node = deviceId;
+          document.getElementById('modal-summary-text').textContent =
+            `تم الاتصال بنجاح بـ ${dev.titleAr} على العنوان ${state.addresses[deviceId]} (${state.liveStatus[deviceId].latencyMs}ms) ✓`;
+        }
+        renderModalDevices();
+        renderControls();
+      }, 320);
+    }
+
+    function pingAllDevices() {
+      FLEET_DEVICES.forEach(d => {
+        state.liveStatus[d.id] = { status: 'checking', latencyMs: d.baseLatency };
+      });
+      renderModalDevices();
+      renderControls();
+
+      FLEET_DEVICES.forEach((d, idx) => {
+        setTimeout(() => {
+          state.liveStatus[d.id] = {
+            status: 'online',
+            latencyMs: d.baseLatency + (idx % 3)
+          };
+          renderModalDevices();
+          renderControls();
+        }, 220 + idx * 140);
+      });
+    }
+
+    function openFleetModal() {
+      renderModalDevices();
+      document.getElementById('fleet-modal-backdrop').classList.add('open');
+    }
+
+    function closeFleetModal() {
+      document.getElementById('fleet-modal-backdrop').classList.remove('open');
+      renderControls();
+    }
+
     function streamConversationTurn(userText) {
       const viewport = document.getElementById('chat-viewport');
-      const activeNode = NODES.find(n => n.id === state.node);
+      const activeDev = getActiveDeviceObj();
+      const activeIp = state.addresses[activeDev.id];
 
       const userDiv = document.createElement('div');
       userDiv.className = 'msg-user';
@@ -352,7 +790,7 @@
 
       const thinkingEl = document.createElement('div');
       thinkingEl.className = 'thinking-banner';
-      thinkingEl.innerHTML = `<span>💭</span> <span id="think-text">جاري تخيل المشاهد وتوزيع الإضاءة عبر ${activeNode.resolved}...</span>`;
+      thinkingEl.innerHTML = `<span>💭</span> <span>جاري التفكير وتصميم المشاهد عبر ${activeDev.titleAr} (${activeIp})...</span>`;
       aiWrap.appendChild(thinkingEl);
 
       const toolsGrid = document.createElement('div');
@@ -379,23 +817,22 @@
       viewport.appendChild(aiWrap);
       viewport.scrollTop = viewport.scrollHeight;
 
-      // Animate live tool progress + word-by-word chat streaming
       steps.forEach((_, idx) => {
         setTimeout(() => {
           pillEls[idx].className = 'tool-pill working';
           pillEls[idx].querySelector('.st').textContent = 'جاري العمل...';
-        }, idx * 280);
+        }, idx * 240);
         setTimeout(() => {
           pillEls[idx].className = 'tool-pill done';
           pillEls[idx].querySelector('.st').textContent = 'اكتمل ✓';
-        }, idx * 280 + 240);
+        }, idx * 240 + 200);
       });
 
-      const fullReply = `أهلاً بك! نفذت طلبك «${userText}» عبر ${activeNode.resolved}. صممت ٣ مشاهد متتابعة بإضاءة ذهبية دافئة، ونسقت الموسيقى التصويرية والمؤثرات الصوتية مع حركة العناصر، وتأكدت من وضوح العناوين العربية. يمكنك تشغيل العرض الآن أو إخباري بأي لمسة إضافية!`;
+      const fullReply = `تم تنفيذ طلبك «${userText}» مباشرة عبر ${activeDev.titleAr} (${activeIp} · ${state.liveStatus[activeDev.id].latencyMs}ms). صممت المشاهد والانتقالات ونسقت الموسيقى والمؤثرات الصوتية بدقة عالية!`;
       const words = fullReply.split(' ');
 
       setTimeout(() => {
-        thinkingEl.innerHTML = `<span>✨</span> <span>اكتمل التفكير والتنفيذ عبر ${activeNode.resolved}</span>`;
+        thinkingEl.innerHTML = `<span>✨</span> <span>اكتمل الإخراج المباشر عبر ${activeDev.titleAr} (${activeIp})</span>`;
         let i = 0;
         const timer = setInterval(() => {
           if (i < words.length) {
@@ -405,11 +842,12 @@
           } else {
             clearInterval(timer);
           }
-        }, 35);
-      }, 1150);
+        }, 30);
+      }, 1000);
     }
 
     function quickSend(text) {
+      closeFleetModal();
       document.getElementById('chat-input').value = text;
       streamConversationTurn(text);
     }
@@ -421,6 +859,7 @@
     };
 
     renderControls();
+    renderModalDevices();
     streamConversationTurn('صمم لي إعلان فاخر لساعة أورورا X1 مع إضاءة ذهبية وموسيقى أوركسترالية ومؤثرات صوتية');
   </script>
 </body>

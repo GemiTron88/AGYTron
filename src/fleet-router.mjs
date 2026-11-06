@@ -110,6 +110,96 @@ export function selectOptimalFleetNode({
   };
 }
 
+export const DEFAULT_FLEET_ADDRESSES = Object.freeze({
+  "win-local": "192.168.1.10:18220",
+  "mac-local": "192.168.1.20:18220",
+  "vps-01": "https://mcp.gemitron.net",
+  "vps-02": "185.220.101.42:18220"
+});
+
+/**
+ * Normalizes a user-entered IP, hostname:port, or full URL into a clean base HTTP/HTTPS URL.
+ */
+export function normalizeNodeEndpoint(rawAddress = "", defaultPort = 18220) {
+  const trimmed = String(rawAddress || "").trim().replace(/\/+$/, "");
+  if (!trimmed) return `http://127.0.0.1:${defaultPort}`;
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  const hasPort = /:\d+$/.test(trimmed);
+  return `http://${trimmed}${hasPort ? "" : `:${defaultPort}`}`;
+}
+
+/**
+ * Probes a fleet node's live health endpoint (`/v1/agy/health`) and measures round-trip latency in ms.
+ */
+export async function probeFleetNodeLiveStatus({
+  nodeId,
+  address,
+  fetchFn = globalThis.fetch,
+  timeoutMs = 2500
+} = {}) {
+  const endpointBase = normalizeNodeEndpoint(
+    address || DEFAULT_FLEET_ADDRESSES[nodeId] || "127.0.0.1:18220"
+  );
+  const healthUrl = `${endpointBase}/v1/agy/health`;
+  const startMs = Date.now();
+
+  if (typeof fetchFn !== "function") {
+    return {
+      nodeId,
+      address: endpointBase,
+      healthUrl,
+      online: false,
+      latencyMs: null,
+      statusTextAr: "غير متصل",
+      statusTextEn: "Offline"
+    };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetchFn(healthUrl, {
+      method: "GET",
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    const latencyMs = Math.max(1, Date.now() - startMs);
+    if (res && res.ok) {
+      return {
+        nodeId,
+        address: endpointBase,
+        healthUrl,
+        online: true,
+        latencyMs,
+        statusTextAr: `متصل الآن · ${latencyMs}ms`,
+        statusTextEn: `Online · ${latencyMs}ms`
+      };
+    }
+    return {
+      nodeId,
+      address: endpointBase,
+      healthUrl,
+      online: false,
+      latencyMs,
+      statusTextAr: `استجابة غير جاهزة (${res?.status ?? 0})`,
+      statusTextEn: `Unready (${res?.status ?? 0})`
+    };
+  } catch {
+    clearTimeout(timer);
+    return {
+      nodeId,
+      address: endpointBase,
+      healthUrl,
+      online: false,
+      latencyMs: null,
+      statusTextAr: "بانتظار تشغيل الخدمة على الجهاز",
+      statusTextEn: "Waiting for daemon on device"
+    };
+  }
+}
+
 /**
  * Generates human-friendly, zero-jargon live stream events for the AGY Chat UI.
  */
