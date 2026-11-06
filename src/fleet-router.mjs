@@ -17,8 +17,12 @@
 
 export const FLEET_STORAGE_KEYS = Object.freeze({
   addresses: "agy.fleet.addresses.v1",
-  activeNode: "agy.fleet.activeNode.v1"
+  activeNode: "agy.fleet.activeNode.v1",
+  executionScope: "agy.fleet.executionScope.v1"
 });
+
+export const AGY_REMOTE_AGENT_ENDPOINT = "https://mcp.gemitron.net/v1/agy/remote-agent";
+
 
 export const AGY_FLEET_NODES = Object.freeze({
   "auto-best": Object.freeze({
@@ -202,6 +206,45 @@ export function savePersistedActiveFleetNode(
     return false;
   }
 }
+
+/**
+ * Loads persisted AGY execution scope (`device-fleet` | `account-remote-agent`) from `localStorage`.
+ */
+export function loadPersistedExecutionScope(
+  storage = globalThis.localStorage,
+  fallback = "device-fleet"
+) {
+  if (!storage || typeof storage.getItem !== "function") {
+    return fallback;
+  }
+  try {
+    const raw = storage.getItem(FLEET_STORAGE_KEYS.executionScope);
+    if (raw === "device-fleet" || raw === "account-remote-agent") {
+      return raw;
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Persists AGY execution scope (`device-fleet` | `account-remote-agent`) to `localStorage`.
+ */
+export function savePersistedExecutionScope(
+  scope,
+  storage = globalThis.localStorage
+) {
+  if (!storage || typeof storage.setItem !== "function") return false;
+  const normalized = scope === "account-remote-agent" ? "account-remote-agent" : "device-fleet";
+  try {
+    storage.setItem(FLEET_STORAGE_KEYS.executionScope, normalized);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 
 /**
  * Default Cloud-Only Fleet Nodes managed via Studio Owner Control Hub (`/control-hub`).

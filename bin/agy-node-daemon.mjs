@@ -624,8 +624,49 @@ export async function handleAgyNodeHttpRequest(
     return true;
   }
 
+  if (pathname === "/v1/agy/remote-agent") {
+    if (req.method === "GET") {
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      res.end(
+        JSON.stringify({
+          ok: true,
+          status: "ok",
+          executionScope: "account-remote-agent",
+          routingMode: "gemi-access-account-relay",
+          requiresDeviceIp: false,
+          relayEndpoint: "https://mcp.gemitron.net/v1/agy/remote-agent",
+          online: true
+        })
+      );
+      return true;
+    }
+    if (req.method === "POST") {
+      const payload = await readJsonBody(req);
+      const events = buildCreatorFriendlyStreamEvents({
+        prompt: payload.prompt || "",
+        locale: payload.locale || "ar-EG",
+        nodeId: "vps-01",
+        styleTitle: payload.styleTitle || "إعلان سينمائي فاخر"
+      });
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      res.end(
+        JSON.stringify({
+          ok: true,
+          executionScope: "account-remote-agent",
+          routingMode: "gemi-access-account-relay",
+          requiresDeviceIp: false,
+          accountId: payload.accountId || "gemi-account-active",
+          relayEndpoint: "https://mcp.gemitron.net/v1/agy/remote-agent",
+          events
+        })
+      );
+      return true;
+    }
+  }
+
   return false;
 }
+
 
 export function createAgyNodeDaemonServer({
   nodeId = NODE_ID,

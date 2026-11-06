@@ -300,6 +300,40 @@ export const AGY_AUTH_MODES = Object.freeze({
   })
 });
 
+export const AGY_REMOTE_AGENT_RELAY_URL = "https://mcp.gemitron.net/v1/agy/remote-agent";
+
+export const AGY_EXECUTION_SCOPES = Object.freeze({
+  "device-fleet": Object.freeze({
+    id: "device-fleet",
+    labelEn: "🖥️ Device Agent (Fleet IPs)",
+    labelAr: "🖥️ وكيل الأجهزة (الشبكة والخوادم)",
+    routingMode: "node-ip-endpoint",
+    requiresDeviceIp: true,
+    description:
+      "Routes to a specific local LAN workstation (Windows PC, Mac Studio) or dedicated Cloud VPS IP (vps-01, vps-02)."
+  }),
+  "account-remote-agent": Object.freeze({
+    id: "account-remote-agent",
+    labelEn: "🌐 Remote Agent (Account-Bound)",
+    labelAr: "🌐 الوكيل السحابي عن بُعد (مرتبط بالحساب)",
+    routingMode: "gemi-access-account-relay",
+    requiresDeviceIp: false,
+    relayEndpoint: AGY_REMOTE_AGENT_RELAY_URL,
+    description:
+      "Tied to your signed-in account (GemiAccess + Google Antigravity Remote Agent workspace) via https://mcp.gemitron.net/v1/agy/remote-agent with zero device IP configuration required."
+  })
+});
+
+export function normalizeAgyExecutionScope(rawScope = "device-fleet") {
+  if (rawScope === "remote-agent" || rawScope === "account-remote-agent" || rawScope === "account") {
+    return "account-remote-agent";
+  }
+  if (rawScope === "device-fleet" || rawScope === "device" || rawScope === "fleet") {
+    return "device-fleet";
+  }
+  return null;
+}
+
 export function normalizeAgyAuthMode(rawMode = "agy-mcp-host") {
   if (rawMode === "antigravity-oauth" || rawMode === "agy-mcp-host") {
     return "agy-mcp-host";
@@ -316,6 +350,8 @@ export function buildTronAgyCreativePlan({
   model = "gemini-3.1-pro",
   effort = "high",
   authMode = "agy-mcp-host",
+  executionScope = "device-fleet",
+  accountId = null,
   mcpTransport = "hybrid-auto",
   locale = "ar-EG",
   workspaceRoot = "/workspace/troncs-production"
@@ -334,6 +370,10 @@ export function buildTronAgyCreativePlan({
   const normalizedAuth = normalizeAgyAuthMode(authMode);
   if (!normalizedAuth) {
     return { ok: false, code: "INVALID_AUTH_MODE", status: "REJECTED" };
+  }
+  const normalizedScope = normalizeAgyExecutionScope(executionScope);
+  if (!normalizedScope) {
+    return { ok: false, code: "INVALID_EXECUTION_SCOPE", status: "REJECTED" };
   }
   const validApps = (Array.isArray(apps) ? apps : [apps]).filter((a) =>
     Object.hasOwn(TRONCS_SUITE_APPS, a)
@@ -359,6 +399,8 @@ export function buildTronAgyCreativePlan({
     };
   });
 
+  const scopeMeta = AGY_EXECUTION_SCOPES[normalizedScope];
+
   return {
     ok: true,
     schema: TRON_AGY_SCHEMA,
@@ -374,9 +416,15 @@ export function buildTronAgyCreativePlan({
     maxCritiquePasses: effortMeta.maxCritiquePasses,
     authMode: normalizedAuth,
     authModeMeta: AGY_AUTH_MODES[normalizedAuth],
+    executionScope: normalizedScope,
+    executionScopeMeta: scopeMeta,
+    accountId: normalizedScope === "account-remote-agent" ? (accountId || "gemi-account-active") : accountId,
+    remoteAgentRelayUrl:
+      normalizedScope === "account-remote-agent" ? AGY_REMOTE_AGENT_RELAY_URL : null,
     mcpTransport,
     targetApps: validApps,
     stages,
-    cliCommand: `tron-agy direct --prompt "${cleanPrompt.replace(/"/g, '\\"')}" --apps ${validApps.join(",")} --model ${modelMeta.id} --effort ${effortMeta.id} --auth-mode ${normalizedAuth} --transport ${mcpTransport}`
+    cliCommand: `tron-agy direct --prompt "${cleanPrompt.replace(/"/g, '\\"')}" --apps ${validApps.join(",")} --model ${modelMeta.id} --effort ${effortMeta.id} --auth-mode ${normalizedAuth} --scope ${normalizedScope} --transport ${mcpTransport}`
   };
 }
+

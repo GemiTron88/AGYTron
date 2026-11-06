@@ -11,6 +11,8 @@ export type TronCsAppId =
 
 export type AgyFleetDeviceId = 'win-local' | 'mac-local' | 'vps-01' | 'vps-02';
 
+export type AgyExecutionScope = 'device-fleet' | 'account-remote-agent';
+
 export type AgyModelId =
   | 'gemini-3.1-pro'
   | 'gemini-3-flash'
@@ -30,8 +32,10 @@ export interface FleetDeviceLiveStatus {
 export interface TronAgyPlanRequest {
   prompt: string;
   apps: TronCsAppId[];
+  executionScope?: AgyExecutionScope;
   deviceId: AgyFleetDeviceId;
   deviceAddress: string;
+  remoteAgentRelayUrl?: string | null;
   model: AgyModelId;
   effort: AgyEffortTier;
   locale: 'ar-EG' | 'en-US';
@@ -46,6 +50,9 @@ export interface TronAgyControlCenterProps {
 
 export const FLEET_ADDRESSES_STORAGE_KEY = 'agy.fleet.addresses.v1';
 export const FLEET_ACTIVE_NODE_STORAGE_KEY = 'agy.fleet.activeNode.v1';
+export const FLEET_EXECUTION_SCOPE_STORAGE_KEY = 'agy.fleet.executionScope.v1';
+export const REMOTE_AGENT_RELAY_URL = 'https://mcp.gemitron.net/v1/agy/remote-agent';
+
 
 export const DEFAULT_FLEET_DEVICE_ADDRESSES: Record<AgyFleetDeviceId, string> = {
   'win-local': '192.168.1.10:18220',
@@ -167,6 +174,21 @@ function readStoredActiveDevice(): AgyFleetDeviceId {
   }
 }
 
+function readStoredExecutionScope(): AgyExecutionScope {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return 'device-fleet';
+  }
+  try {
+    const raw = window.localStorage.getItem(FLEET_EXECUTION_SCOPE_STORAGE_KEY);
+    if (raw === 'device-fleet' || raw === 'account-remote-agent') {
+      return raw;
+    }
+    return 'device-fleet';
+  } catch {
+    return 'device-fleet';
+  }
+}
+
 export function TronAgyControlCenter({
   locale = 'ar-EG',
   defaultApp = 'gemimotion',
@@ -175,6 +197,9 @@ export function TronAgyControlCenter({
 }: TronAgyControlCenterProps) {
   const isArabic = locale.startsWith('ar');
   const [selectedApps, setSelectedApps] = useState<TronCsAppId[]>([defaultApp]);
+  const [executionScope, setExecutionScope] = useState<AgyExecutionScope>(() =>
+    readStoredExecutionScope(),
+  );
   const [activeDevice, setActiveDevice] = useState<AgyFleetDeviceId>(() =>
     readStoredActiveDevice(),
   );
@@ -211,6 +236,15 @@ export function TronAgyControlCenter({
       // Ignore storage quota errors
     }
   }, [activeDevice]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(FLEET_EXECUTION_SCOPE_STORAGE_KEY, executionScope);
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [executionScope]);
 
   const activeDeviceMeta = useMemo(
     () => FLEET_DEVICES.find((d) => d.id === activeDevice) ?? FLEET_DEVICES[0],
@@ -352,10 +386,32 @@ export function TronAgyControlCenter({
         <div>
           <h3>{isArabic ? '✦ المخرج الذكي المباشر (AGY AI Chat)' : '✦ AGY Live Creative Director'}</h3>
           <p data-testid="tron-agy-connected-summary">
-            {isArabic
-              ? `متصل: ${activeDeviceMeta.ar} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`
-              : `Connected: ${activeDeviceMeta.en} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`}
+            {executionScope === 'account-remote-agent'
+              ? isArabic
+                ? `متصل بالحساب: 🌐 الوكيل السحابي عن بُعد (${REMOTE_AGENT_RELAY_URL} · بدون إعداد IP ●)`
+                : `Account-Bound: 🌐 Remote Agent (${REMOTE_AGENT_RELAY_URL} · Zero IP Config ●)`
+              : isArabic
+                ? `متصل: ${activeDeviceMeta.ar} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`
+                : `Connected: ${activeDeviceMeta.en} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`}
           </p>
+        </div>
+        <div className="tron-agy-scope-toggle" data-testid="tron-agy-execution-scope-switcher">
+          <button
+            type="button"
+            data-testid="tron-agy-scope-device-fleet"
+            aria-pressed={executionScope === 'device-fleet'}
+            onClick={() => setExecutionScope('device-fleet')}
+          >
+            {isArabic ? '🖥️ وكيل الأجهزة (Fleet IPs)' : '🖥️ Device Agent (Fleet IPs)'}
+          </button>
+          <button
+            type="button"
+            data-testid="tron-agy-scope-account-remote-agent"
+            aria-pressed={executionScope === 'account-remote-agent'}
+            onClick={() => setExecutionScope('account-remote-agent')}
+          >
+            {isArabic ? '🌐 الوكيل السحابي (مرتبط بالحساب)' : '🌐 Remote Agent (Account-Bound)'}
+          </button>
         </div>
         <button
           type="button"
@@ -368,8 +424,25 @@ export function TronAgyControlCenter({
         </button>
       </header>
 
+      {/* Account-Bound Remote Agent Banner (when Remote Agent is active) */}
+      {executionScope === 'account-remote-agent' ? (
+        <div className="tron-agy-section" data-testid="tron-agy-remote-agent-banner">
+          <strong>
+            {isArabic
+              ? '🌐 الوكيل السحابي عن بُعد (Antigravity Remote Agent · مرتبط بحسابك)'
+              : '🌐 Antigravity Remote Agent (Tied to your Account · Zero IP Config)'}
+          </strong>
+          <p>
+            {isArabic
+              ? `يعمل عبر جلسة حسابك الموحدة (GemiAccess -> ${REMOTE_AGENT_RELAY_URL}) دون الحاجة لتشغيل جهاز محلي أو إدخال عنوان IP.`
+              : `Routes through your signed-in GemiAccess account session (${REMOTE_AGENT_RELAY_URL}) without needing a local PC open or device IP.`}
+          </p>
+        </div>
+      ) : null}
+
       {/* Quick 4-Device Switcher Row */}
       <div className="tron-agy-section" data-testid="tron-agy-device-switcher">
+
         <div className="tron-agy-pill-row">
           {FLEET_DEVICES.map((dev) => (
             <button
@@ -534,8 +607,14 @@ export function TronAgyControlCenter({
             onExecutePlan?.({
               prompt,
               apps: selectedApps,
+              executionScope,
               deviceId: activeDevice,
-              deviceAddress: addresses[activeDevice],
+              deviceAddress:
+                executionScope === 'account-remote-agent'
+                  ? REMOTE_AGENT_RELAY_URL
+                  : addresses[activeDevice],
+              remoteAgentRelayUrl:
+                executionScope === 'account-remote-agent' ? REMOTE_AGENT_RELAY_URL : null,
               model,
               effort,
               locale,
@@ -548,3 +627,4 @@ export function TronAgyControlCenter({
     </section>
   );
 }
+

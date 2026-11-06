@@ -41,15 +41,21 @@ test("TronAGY covers all 7 TronCS Creative Suite apps (including ScaleTron) and 
     model: "claude-opus-4-6",
     effort: "max",
     authMode: "antigravity-oauth",
+    executionScope: "account-remote-agent",
+    accountId: "gamal@gemitron.net",
     mcpTransport: "hybrid-auto"
   });
   assert.equal(plan.ok, true);
   assert.equal(plan.schema, TRON_AGY_SCHEMA);
   assert.equal(plan.authMode, "agy-mcp-host");
+  assert.equal(plan.executionScope, "account-remote-agent");
+  assert.equal(plan.accountId, "gamal@gemitron.net");
+  assert.equal(plan.remoteAgentRelayUrl, "https://mcp.gemitron.net/v1/agy/remote-agent");
   assert.equal(plan.stages.length, 7);
   assert.equal(plan.thinkingBudgetTokens, 32768);
   assert.equal(plan.maxCritiquePasses, 5);
 });
+
 
 test("TronAGY Dual-Transport GemiMCP Bridge resolves Cloud (mcp.gemitron.net) and Local (127.0.0.1:18210) endpoints", () => {
   assert.equal(GEMIMCP_ENDPOINTS.cloud.origin, "https://mcp.gemitron.net");
