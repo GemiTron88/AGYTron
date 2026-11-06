@@ -17,8 +17,11 @@ export const GEMIMCP_ENDPOINTS = Object.freeze({
     federatedMcpUrl: "https://mcp.gemitron.net/mcp",
     tronCsMcpUrl: "https://mcp.gemitron.net/products/troncs/mcp",
     motionMcpUrl: "https://mcp.gemitron.net/products/motion/mcp",
+    ranklyMcpUrl: "https://mcp.gemitron.net/products/rankly/mcp",
+    tarweegMcpUrl: "https://mcp.gemitron.net/products/tarweeg/mcp",
+    smartMindUrl: "https://mcp.gemitron.net/v1/agy/smart-mind",
     oidcIssuer: "https://auth.gemitron.net",
-    role: "Cloud OAuth/Zitadel Gateway, GemiGuard Lease Verifier, Durable Job Store & Paired Desktop Agent Hub"
+    role: "Cloud OAuth/Zitadel Gateway, GemiGuard Lease Verifier, Global AGYTron Smart Mind Hub & Paired Desktop Agent Hub"
   }),
   localWorkstation: Object.freeze({
     id: "local-workstation-mcp",
@@ -26,22 +29,35 @@ export const GEMIMCP_ENDPOINTS = Object.freeze({
     federatedMcpUrl: "http://127.0.0.1:18210/mcp",
     tronCsMcpUrl: "http://127.0.0.1:18210/products/troncs/mcp",
     motionMcpUrl: "http://127.0.0.1:18210/products/motion/mcp",
+    ranklyMcpUrl: "http://127.0.0.1:18210/products/rankly/mcp",
+    tarweegMcpUrl: "http://127.0.0.1:18210/products/tarweeg/mcp",
+    smartMindUrl: "http://127.0.0.1:18210/v1/agy/smart-mind",
     localLlamaServerUrl: "http://127.0.0.1:8090",
+    localGemiAiUrl: "http://127.0.0.1:18090",
     localTronBrokerUrl: "http://127.0.0.1:30001",
-    role: "Zero-Latency Workstation Loopback Server + Local TRON Llama-Server & Native App IPC"
+    role: "Zero-Latency Workstation/VPS Loopback Server + Global AGYTron Smart Mind & Native App IPC"
   })
 });
 
 export function resolveMcpTransportConfig({
   transport = "hybrid-auto",
   authMode = "agy-mcp-host",
+  product = "troncs",
   cloudOrigin = GEMIMCP_ENDPOINTS.cloud.origin,
   localOrigin = GEMIMCP_ENDPOINTS.localWorkstation.origin
 } = {}) {
+  const cleanProduct = String(product || "troncs").trim().toLowerCase();
+  const routeSuffix =
+    cleanProduct === "federated" || cleanProduct === "studio" || cleanProduct === "dashboard"
+      ? "/mcp"
+      : `/products/${cleanProduct}/mcp`;
+
   if (transport === "local-only" || authMode === "local-tron-loopback") {
     return {
       activeTransport: "local-only",
-      primaryMcpUrl: `${localOrigin}/products/troncs/mcp`,
+      product: cleanProduct,
+      primaryMcpUrl: `${localOrigin}${routeSuffix}`,
+      smartMindUrl: `${localOrigin}/v1/agy/smart-mind`,
       fallbackMcpUrl: null,
       requiresGemiGuardLease: true,
       zeroCloudTraffic: true,
@@ -52,7 +68,9 @@ export function resolveMcpTransportConfig({
   if (transport === "cloud-only") {
     return {
       activeTransport: "cloud-only",
-      primaryMcpUrl: `${cloudOrigin}/products/troncs/mcp`,
+      product: cleanProduct,
+      primaryMcpUrl: `${cloudOrigin}${routeSuffix}`,
+      smartMindUrl: `${cloudOrigin}/v1/agy/smart-mind`,
       fallbackMcpUrl: null,
       requiresGemiGuardLease: true,
       zeroCloudTraffic: false,
@@ -62,11 +80,15 @@ export function resolveMcpTransportConfig({
   }
   return {
     activeTransport: "hybrid-auto",
-    primaryMcpUrl: `${localOrigin}/products/troncs/mcp`,
-    fallbackMcpUrl: `${cloudOrigin}/products/troncs/mcp`,
+    product: cleanProduct,
+    primaryMcpUrl: `${localOrigin}${routeSuffix}`,
+    smartMindUrl: `${localOrigin}/v1/agy/smart-mind`,
+    fallbackMcpUrl: `${cloudOrigin}${routeSuffix}`,
+    fallbackSmartMindUrl: `${cloudOrigin}/v1/agy/smart-mind`,
     requiresGemiGuardLease: true,
     zeroCloudTraffic: false,
     description:
       "Hybrid Auto-Route: prefers low-latency local workstation GemiMCP (127.0.0.1:18210) when on the same machine, and seamlessly falls back to Cloud GemiMCP (https://mcp.gemitron.net) for remote/cloud orchestration."
   };
 }
+

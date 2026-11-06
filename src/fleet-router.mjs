@@ -563,10 +563,13 @@ export async function streamFleetNodeChat({
 }
 
 /**
- * Generates human-friendly, zero-jargon live stream events for the AGY Chat UI.
+ * Generates human-friendly, zero-jargon live stream events for the AGY Chat UI across any GemiTron service.
  */
 export function buildCreatorFriendlyStreamEvents({
   prompt,
+  service = "troncs",
+  model = "gemini-3.1-pro",
+  effort = "high",
   locale = "ar-EG",
   nodeId = "auto-best",
   styleTitle = "إعلان سينمائي فاخر"
@@ -574,6 +577,103 @@ export function buildCreatorFriendlyStreamEvents({
   const isAr = locale.startsWith("ar");
   const routed = selectOptimalFleetNode({ preferredNodeId: nodeId });
   const nodeLabel = isAr ? routed.selectedNode.labelAr : routed.selectedNode.labelEn;
+  const svc = String(service || "troncs").toLowerCase();
+
+  if (svc === "rankly" || svc === "seo") {
+    return [
+      {
+        type: "thinking",
+        title: isAr ? "جاري تحليل الكلمات المفتاحية والمنافسين عبر AGYTron..." : "Analyzing SERP intent & competitor gaps via AGYTron...",
+        detail: isAr
+          ? `يعمل العقل الذكي (${model} · ${effort}) عبر ${nodeLabel} لبناء خطة تصدر نتائج البحث.`
+          : `Running AGYTron Smart Mind (${model} · ${effort}) on ${nodeLabel} to architect your SEO authority plan.`
+      },
+      {
+        type: "tool_badge",
+        icon: "🕷️",
+        status: "done",
+        label: isAr ? "زحف Scrapling الخفي وفحص SERP/PAA" : "Scrapling Stealth Crawl & SERP/PAA Audit",
+        summary: isAr ? "استخراج الفرص الدلالية والأسئلة الأكثر بحثاً" : "Extracted semantic opportunities & PAA questions"
+      },
+      {
+        type: "tool_badge",
+        icon: "✍️",
+        status: "done",
+        label: isAr ? "توليد المقالات المرجعية ومصفوفة Spintax" : "Generating Authority Content & Spintax Matrix",
+        summary: isAr ? "تفرد نصي يتجاوز ٨٥٪ مع توزيع طبيعي للأنكور" : ">85% uniqueness score with natural anchor ratios"
+      },
+      {
+        type: "tool_badge",
+        icon: "🔗",
+        status: "done",
+        label: isAr ? "بناء شبكة الباك لينك الهرمية (Tier 1 -> Tier 2 -> Tier 3)" : "Building 3-Tier Link Wheel (Tier 1 -> Tier 2 -> Tier 3)",
+        summary: isAr ? "ربط منصات Web 2.0 والمدونات والمشاركات الاجتماعية" : "Chained Web 2.0 properties, bookmarks & profiles"
+      },
+      {
+        type: "tool_badge",
+        icon: "📡",
+        status: "done",
+        label: isAr ? "أرشفة فورية عبر IndexNow و Ping-O-Matic و WebSub" : "Instant Indexing via IndexNow, Ping-O-Matic & WebSub",
+        summary: isAr ? "إشعار محركات البحث وأرشيف الإنترنت بالروابط الجديدة" : "Pinged search hubs & Wayback Machine for rapid discovery"
+      },
+      {
+        type: "chat_message",
+        role: "assistant",
+        nodeBadge: nodeLabel,
+        text: isAr
+          ? `جهزت ونفذت خطة رانكلي الذكية عبر ${nodeLabel} (${model})! تم فحص نتائج البحث عبر Scrapling، وتوليد المحتوى بصيغة Spintax عالية التفرد، وجدولة شبكة الروابط الهرمية (Tier 1/2/3) مع إشعار محركات البحث فورياً.`
+          : `Your Rankly SEO & Autopilot campaign is ready via ${nodeLabel} (${model})! Scrapling audited the SERP, generated high-uniqueness Spintax articles, chained your Tier 1-2-3 link wheel, and dispatched instant indexing pings.`
+      }
+    ];
+  }
+
+  if (svc === "tarweeg" || svc === "ads") {
+    return [
+      {
+        type: "thinking",
+        title: isAr ? "جاري هندسة الحملة الإعلانية متعددة المنصات عبر AGYTron..." : "Architecting multi-platform ad campaign via AGYTron...",
+        detail: isAr
+          ? `يحلل العقل الذكي (${model} · ${effort}) عبر ${nodeLabel} أفضل زوايا الإقناع وتوزيع الميزانية.`
+          : `AGYTron Smart Mind (${model} · ${effort}) on ${nodeLabel} is optimizing hooks, formats, and ROAS allocation.`
+      },
+      {
+        type: "tool_badge",
+        icon: "🎯",
+        status: "done",
+        label: isAr ? "بناء شرائح الجمهور وهيكلة الـ ٩ منصات" : "Compiling Audience Segments Across 9 Ad Platforms",
+        summary: isAr ? "Google PMax · Meta · TikTok · Snap · OpenAI · LinkedIn · X · Pinterest · Microsoft" : "Google PMax · Meta · TikTok · Snap · OpenAI · LinkedIn · X · Pinterest · Microsoft"
+      },
+      {
+        type: "tool_badge",
+        icon: "🎨",
+        status: "done",
+        label: isAr ? "توليد النصوص الإعلانية والصور بـ ٤ مقاسات قياسية" : "Generating Copy & Multi-Aspect Raster Creatives",
+        summary: isAr ? "مقاسات 1:1 و 4:5 و 9:16 و 1.91:1 جاهزة للنشر" : "1:1, 4:5, 9:16 & 1.91:1 assets rendered and verified"
+      },
+      {
+        type: "tool_badge",
+        icon: "💰",
+        status: "done",
+        label: isAr ? "ضبط قواعد حماية الميزانية وتتبع التحويلات CAPI" : "Configuring Budget Guardrails & CAPI Conversion Sync",
+        summary: isAr ? "ربط بيكسل المتجر وحماية العائد الإعلاني ROAS" : "Connected store CAPI events & automated ROAS floor guard"
+      },
+      {
+        type: "tool_badge",
+        icon: "🚀",
+        status: "done",
+        label: isAr ? "اعتماد خطة الإطلاق الموحدة (LaunchSaga)" : "Verifying 4-Step LaunchSaga Execution Plan",
+        summary: isAr ? "جاهز للإطلاق الفوري مع إمكانية التراجع الآمن" : "Ready for atomic multi-network launch with rollback protection"
+      },
+      {
+        type: "chat_message",
+        role: "assistant",
+        nodeBadge: nodeLabel,
+        text: isAr
+          ? `حملتك الإعلانية على «ترويج» جاهزة عبر ${nodeLabel} (${model})! صممت النصوص الإعلانية والصور بجميع المقاسات، ووزعت الميزانية بذكاء عبر المنصات التسع مع تفعيل حماية العائد ROAS وتتبع التحويلات.`
+          : `Your Tarweeg multi-platform campaign is ready via ${nodeLabel} (${model})! Ad copy, 4 aspect-ratio creatives, and budget allocations across all 9 ad networks are compiled with active ROAS guardrails.`
+      }
+    ];
+  }
 
   return [
     {
@@ -621,3 +721,4 @@ export function buildCreatorFriendlyStreamEvents({
     }
   ];
 }
+

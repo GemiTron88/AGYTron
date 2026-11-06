@@ -30,6 +30,15 @@ import {
   probeFleetNodeLiveStatus,
   validateCloudFleetAddress
 } from "../src/fleet-router.mjs";
+import {
+  AGY_MODELS,
+  AGY_EFFORT_TIERS,
+  AGY_AUTH_MODES,
+  AGY_EXECUTION_SCOPES,
+  GEMITRON_GLOBAL_SERVICES,
+  buildGlobalAgySmartMindPlan,
+  executeGlobalAgySmartMind
+} from "../src/index.mjs";
 
 const args = process.argv.slice(2);
 function flag(name, fallback) {
@@ -596,6 +605,9 @@ export async function handleAgyNodeHttpRequest(
 
     const events = buildCreatorFriendlyStreamEvents({
       prompt: payload.prompt || "",
+      service: payload.service || payload.app || "troncs",
+      model: payload.model || "gemini-3.1-pro",
+      effort: payload.effort || "high",
       locale: payload.locale || "ar-EG",
       nodeId: effectiveNodeId,
       styleTitle: payload.styleTitle || "إعلان سينمائي فاخر"
@@ -624,6 +636,77 @@ export async function handleAgyNodeHttpRequest(
     return true;
   }
 
+  if (
+    req.method === "GET" &&
+    (pathname === "/v1/agy/models" || pathname === "/v1/agy/services" || pathname === "/v1/agy/capabilities")
+  ) {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        schema: "tronagy.global_smart_mind.catalog.v1",
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
+        models: AGY_MODELS,
+        effortTiers: AGY_EFFORT_TIERS,
+        authModes: AGY_AUTH_MODES,
+        executionScopes: AGY_EXECUTION_SCOPES,
+        services: Object.values(GEMITRON_GLOBAL_SERVICES),
+        nodes: effectiveRegistry.list()
+      })
+    );
+    return true;
+  }
+
+  if (
+    req.method === "POST" &&
+    (pathname === "/v1/agy/smart-mind" ||
+      pathname === "/v1/agy/think" ||
+      pathname === "/v1/agy/chat/completions")
+  ) {
+    const payload = await readJsonBody(req);
+    const effectiveNodeId =
+      payload.nodeId || effectiveRegistry.getDefaultNodeId() || nodeMeta.id;
+
+    if (payload.planOnly === true) {
+      const plan = buildGlobalAgySmartMindPlan({
+        prompt: payload.prompt || payload.messages?.[payload.messages.length - 1]?.content || "",
+        service: payload.service || payload.app || "gemiai",
+        services: payload.services || payload.apps || [],
+        task: payload.task || "general-reasoning",
+        model: payload.model || "auto",
+        effort: payload.effort || "auto",
+        authMode: payload.authMode || "agy-mcp-host",
+        executionScope: payload.executionScope || "device-fleet",
+        nodeId: effectiveNodeId,
+        locale: payload.locale || "ar-EG"
+      });
+      res.writeHead(plan.ok ? 200 : 422, { "Content-Type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify(plan));
+      return true;
+    }
+
+    const result = await executeGlobalAgySmartMind({
+      prompt: payload.prompt || "",
+      systemPrompt: payload.systemPrompt || payload.system || "",
+      messages: Array.isArray(payload.messages) ? payload.messages : [],
+      service: payload.service || payload.app || "gemiai",
+      services: Array.isArray(payload.services) ? payload.services : [],
+      task: payload.task || "general-reasoning",
+      model: payload.model || "auto",
+      effort: payload.effort || "auto",
+      nodeId: effectiveNodeId,
+      authMode: payload.authMode || "agy-mcp-host",
+      executionScope: payload.executionScope || "device-fleet",
+      locale: payload.locale || "ar-EG",
+      context: payload.context && typeof payload.context === "object" ? payload.context : {},
+      fetchFn
+    });
+
+    res.writeHead(result.ok ? 200 : 422, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
+  }
+
   if (pathname === "/v1/agy/remote-agent") {
     if (req.method === "GET") {
       res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
@@ -644,6 +727,9 @@ export async function handleAgyNodeHttpRequest(
       const payload = await readJsonBody(req);
       const events = buildCreatorFriendlyStreamEvents({
         prompt: payload.prompt || "",
+        service: payload.service || "troncs",
+        model: payload.model || "gemini-3.1-pro",
+        effort: payload.effort || "high",
         locale: payload.locale || "ar-EG",
         nodeId: "vps-01",
         styleTitle: payload.styleTitle || "إعلان سينمائي فاخر"

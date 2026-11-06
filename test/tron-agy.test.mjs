@@ -362,4 +362,129 @@ test("AGY Cloud-Only Fleet CRUD API adds/updates/removes cloud nodes, rejects lo
   }
 });
 
+test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, Studio, Dashboard, Cyber, Code & custom services) with auto-model routing and /v1/agy/smart-mind HTTP API", async () => {
+  const {
+    GEMITRON_GLOBAL_SERVICES,
+    selectOptimalAgyModel,
+    buildGlobalAgySmartMindPlan,
+    executeGlobalAgySmartMind
+  } = await import("../src/index.mjs");
+  const { createAgyNodeDaemonServer } = await import("../bin/agy-node-daemon.mjs");
+
+  assert.ok(GEMITRON_GLOBAL_SERVICES.rankly);
+  assert.ok(GEMITRON_GLOBAL_SERVICES.tarweeg);
+  assert.ok(GEMITRON_GLOBAL_SERVICES.studio);
+  assert.ok(GEMITRON_GLOBAL_SERVICES.dashboard);
+  assert.ok(GEMITRON_GLOBAL_SERVICES.gemicode);
+  assert.ok(GEMITRON_GLOBAL_SERVICES.gemicyber);
+
+  // Auto-model selection picks fast model for DOM relocate and Opus/Pro for deep campaigns
+  const fastChoice = selectOptimalAgyModel({
+    service: "rankly",
+    task: "dom-relocate-selector",
+    requestedModel: "auto"
+  });
+  assert.equal(fastChoice.model, "gemini-3-flash");
+  assert.equal(fastChoice.effort, "low");
+
+  const deepChoice = selectOptimalAgyModel({
+    service: "tarweeg",
+    task: "multi-platform-saga-critique",
+    requestedModel: "auto"
+  });
+  assert.equal(deepChoice.model, "claude-opus-4-6");
+  assert.equal(deepChoice.effort, "max");
+
+  // Full-funnel cross-service plan (FigTron -> PhotoTron -> GemiMotion -> Tarweeg -> Rankly)
+  const funnelPlan = buildGlobalAgySmartMindPlan({
+    prompt: "إطلاق حملة شاملة لمنتج تقني جديد مع إعلانات ترويج وأتمتة سيو رانكلي",
+    services: ["figtron", "phototron", "gemimotion", "tarweeg", "rankly"],
+    model: "gemini-3.1-pro",
+    effort: "max"
+  });
+  assert.equal(funnelPlan.ok, true);
+  assert.equal(funnelPlan.stages.length, 5);
+  assert.deepEqual(funnelPlan.targetServices, [
+    "figtron",
+    "phototron",
+    "gemimotion",
+    "tarweeg",
+    "rankly"
+  ]);
+
+  // Execute Smart Mind for Rankly and Tarweeg via HTTP daemon
+  const daemon = createAgyNodeDaemonServer({
+    nodeId: "vps-01",
+    clusterSecret: "smart-secret"
+  });
+  await new Promise((resolve) => daemon.listen(0, "127.0.0.1", resolve));
+  const { port } = daemon.address();
+  const base = `http://127.0.0.1:${port}`;
+
+  try {
+    const modelsRes = await fetch(`${base}/v1/agy/models`);
+    assert.equal(modelsRes.status, 200);
+    const modelsBody = await modelsRes.json();
+    assert.equal(modelsBody.ok, true);
+    assert.equal(modelsBody.models.length, 5);
+    assert.ok(modelsBody.services.some((s) => s.id === "rankly"));
+    assert.ok(modelsBody.services.some((s) => s.id === "tarweeg"));
+
+    const ranklyRes = await fetch(`${base}/v1/agy/smart-mind`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service: "rankly",
+        task: "tiered-seo-campaign",
+        prompt: "أفضل منصة سحابة وأمن سيبراني في الشرق الأوسط",
+        model: "gemini-3.1-pro",
+        effort: "high",
+        context: { keyword: "منصة سحابة", topology: "wheel" }
+      })
+    });
+    assert.equal(ranklyRes.status, 200);
+    const ranklyBody = await ranklyRes.json();
+    assert.equal(ranklyBody.ok, true);
+    assert.equal(ranklyBody.service, "rankly");
+    assert.equal(ranklyBody.model, "gemini-3.1-pro");
+    assert.equal(ranklyBody.critiquePassesCompleted, 3);
+    assert.equal(ranklyBody.structured.tieredTopology.topology, "wheel");
+    assert.ok(ranklyBody.choices[0].message.content.includes("Spintax"));
+
+    const tarweegRes = await fetch(`${base}/v1/agy/smart-mind`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service: "tarweeg",
+        task: "launch-saga-compiler",
+        prompt: "حملة تخفيضات الجمعة البيضاء لمتجر إلكتروني",
+        model: "claude-opus-4-6",
+        effort: "max"
+      })
+    });
+    assert.equal(tarweegRes.status, 200);
+    const tarweegBody = await tarweegRes.json();
+    assert.equal(tarweegBody.ok, true);
+    assert.equal(tarweegBody.service, "tarweeg");
+    assert.equal(tarweegBody.model, "claude-opus-4-6");
+    assert.equal(tarweegBody.critiquePassesCompleted, 5);
+    assert.equal(tarweegBody.structured.platforms.length, 9);
+    assert.equal(tarweegBody.structured.adCopyVariants.length, 2);
+
+    // Custom future service works out of the box
+    const customExec = await executeGlobalAgySmartMind({
+      service: "gemilogistics",
+      task: "route-optimization",
+      prompt: "Optimize last-mile delivery routes in Riyadh",
+      model: "auto",
+      fetchFn: null
+    });
+    assert.equal(customExec.ok, true);
+    assert.equal(customExec.service, "gemilogistics");
+  } finally {
+    await new Promise((resolve) => daemon.close(resolve));
+  }
+});
+
+
 
