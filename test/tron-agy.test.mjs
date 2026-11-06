@@ -250,3 +250,109 @@ test("TronAgyControlCenter.tsx wires localStorage persistence, live /v1/agy/heal
   }
 });
 
+test("AGY Cloud-Only Fleet CRUD API adds/updates/removes cloud nodes, rejects local LAN IPs, and persists to disk", async () => {
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const http = await import("node:http");
+  const { createAgyFleetRegistry, handleAgyNodeHttpRequest } = await import(
+    "../bin/agy-node-daemon.mjs"
+  );
+
+  const tmpFile = path.join(os.tmpdir(), `agy-fleet-test-${Date.now()}.json`);
+  const registry = createAgyFleetRegistry({
+    primaryNodeId: "vps-01",
+    storagePath: tmpFile,
+    cloudOnly: true
+  });
+
+  const server = http.createServer(async (req, res) => {
+    const handled = await handleAgyNodeHttpRequest(req, res, {
+      nodeId: "vps-01",
+      clusterSecret: "cloud-secret",
+      registry,
+      fetchFn: async () => ({ ok: true, status: 200 })
+    });
+    if (!handled) {
+      res.writeHead(404);
+      res.end();
+    }
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address();
+  const base = `http://127.0.0.1:${port}`;
+
+  try {
+    // 1. Rejects local LAN IP (192.168.1.50:18220)
+    const lanRes = await fetch(`${base}/v1/agy/nodes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer cloud-secret"
+      },
+      body: JSON.stringify({
+        nodeId: "home-lan",
+        labelAr: "جهاز منزلي",
+        labelEn: "Home LAN Box",
+        address: "192.168.1.50:18220"
+      })
+    });
+    assert.equal(lanRes.status, 422);
+    const lanBody = await lanRes.json();
+    assert.equal(lanBody.error, "CLOUD_ONLY_ADDRESS_REQUIRED");
+
+    // 2. Adds a new cloud node (vps-03) and sets it as default
+    const addRes = await fetch(`${base}/v1/agy/nodes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer cloud-secret"
+      },
+      body: JSON.stringify({
+        nodeId: "vps-03-gpu",
+        labelAr: "خادم VPS 03 (GPU السحابي)",
+        labelEn: "Linux VPS 03 (Cloud GPU)",
+        address: "203.0.113.88:18220",
+        region: "EU-West",
+        isDefault: true
+      })
+    });
+    assert.equal(addRes.status, 200);
+    const addBody = await addRes.json();
+    assert.equal(addBody.ok, true);
+    assert.equal(addBody.defaultNodeId, "vps-03-gpu");
+    assert.equal(addBody.node.online, true);
+    assert.equal(addBody.nodes.length, 3);
+
+    // 3. Reloads from disk persistence and verifies vps-03-gpu is preserved
+    const reloadedRegistry = createAgyFleetRegistry({
+      primaryNodeId: "vps-01",
+      storagePath: tmpFile,
+      cloudOnly: true
+    });
+    assert.equal(reloadedRegistry.getDefaultNodeId(), "vps-03-gpu");
+    assert.equal(reloadedRegistry.list().length, 3);
+
+    // 4. Deletes vps-03-gpu and resets default to vps-01
+    const delRes = await fetch(`${base}/v1/agy/nodes/vps-03-gpu/delete`, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer cloud-secret"
+      }
+    });
+    assert.equal(delRes.status, 200);
+    const delBody = await delRes.json();
+    assert.equal(delBody.ok, true);
+    assert.equal(delBody.defaultNodeId, "vps-01");
+    assert.equal(delBody.nodes.length, 2);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+    try {
+      fs.unlinkSync(tmpFile);
+    } catch {
+      // Ignore cleanup error
+    }
+  }
+});
+
+

@@ -406,6 +406,16 @@ export function TronAgyControlCenter({
             >
               {isArabic ? '📡 فحص جميع الأجهزة الأربعة ✦' : '📡 Test All 4 Devices ✦'}
             </button>
+            <a
+              href="https://studio.gemitron.net/control-hub#agy-fleet"
+              target="_blank"
+              rel="noreferrer"
+              data-testid="tron-agy-studio-owner-link"
+            >
+              {isArabic
+                ? '☁️ إدارة الخوادم السحابية من لوحة المالك (Studio Control Hub)'
+                : '☁️ Manage Cloud Fleet in Studio Owner Panel'}
+            </a>
           </div>
 
           <div className="tron-agy-fleet-grid">

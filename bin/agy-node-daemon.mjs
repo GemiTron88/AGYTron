@@ -19,12 +19,16 @@
 import http from "node:http";
 import os from "node:os";
 import fs from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   AGY_FLEET_NODES,
+  CLOUD_FLEET_DEFAULT_NODES,
   DEFAULT_FLEET_ADDRESSES,
   buildCreatorFriendlyStreamEvents,
-  normalizeNodeEndpoint
+  normalizeNodeEndpoint,
+  probeFleetNodeLiveStatus,
+  validateCloudFleetAddress
 } from "../src/fleet-router.mjs";
 
 const args = process.argv.slice(2);
@@ -57,39 +61,272 @@ const CLUSTER_SECRET = flag(
   "--cluster-secret",
   process.env.AGY_CLUSTER_SECRET || ""
 );
+const FLEET_STORAGE_PATH = flag(
+  "--storage-path",
+  process.env.AGY_FLEET_STORAGE_PATH || ""
+);
 
-export function createAgyFleetRegistry({ primaryNodeId = "vps-01" } = {}) {
+function sanitizeNodeSlug(raw = "") {
+  const cleaned = String(raw || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return cleaned || `cloud-node-${Date.now().toString(36)}`;
+}
+
+export function createAgyFleetRegistry({
+  primaryNodeId = "vps-01",
+  storagePath = FLEET_STORAGE_PATH,
+  cloudOnly = true
+} = {}) {
   const nodes = new Map();
-  for (const id of ["win-local", "mac-local", "vps-01", "vps-02"]) {
-    const meta = AGY_FLEET_NODES[id];
-    nodes.set(id, {
-      nodeId: id,
-      labelAr: meta.labelAr,
-      labelEn: meta.labelEn,
-      kind: meta.kind,
-      address: DEFAULT_FLEET_ADDRESSES[id],
-      online: id === primaryNodeId,
-      registeredAt: id === primaryNodeId ? new Date().toISOString() : null
-    });
+  let defaultNodeId = primaryNodeId || "vps-01";
+
+  const seedDefaults = () => {
+    for (const seed of CLOUD_FLEET_DEFAULT_NODES) {
+      nodes.set(seed.nodeId, {
+        nodeId: seed.nodeId,
+        icon: seed.icon || "☁️",
+        labelAr: seed.labelAr,
+        labelEn: seed.labelEn,
+        kind: seed.kind || "standalone-vps",
+        region: seed.region || "Cloud",
+        address: seed.address,
+        cloudOnly: true,
+        isDefault: seed.nodeId === defaultNodeId,
+        online: seed.nodeId === primaryNodeId,
+        latencyMs: seed.nodeId === primaryNodeId ? 1 : null,
+        lastCheckedAt: seed.nodeId === primaryNodeId ? new Date().toISOString() : null,
+        registeredAt: seed.nodeId === primaryNodeId ? new Date().toISOString() : null
+      });
+    }
+  };
+
+  const persistToDisk = () => {
+    if (!storagePath) return;
+    try {
+      fs.mkdirSync(path.dirname(storagePath), { recursive: true });
+      const payload = {
+        schema: "gemitron.agy.cloud-fleet.v1",
+        cloudOnly: true,
+        defaultNodeId,
+        updatedAt: new Date().toISOString(),
+        nodes: Array.from(nodes.values())
+      };
+      fs.writeFileSync(storagePath, JSON.stringify(payload, null, 2), "utf8");
+    } catch {
+      // Non-fatal in read-only test sandboxes
+    }
+  };
+
+  seedDefaults();
+
+  if (storagePath && fs.existsSync(storagePath)) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(storagePath, "utf8"));
+      if (raw && typeof raw === "object") {
+        if (typeof raw.defaultNodeId === "string" && raw.defaultNodeId.trim()) {
+          defaultNodeId = raw.defaultNodeId.trim();
+        }
+        if (Array.isArray(raw.nodes) && raw.nodes.length > 0) {
+          nodes.clear();
+          for (const item of raw.nodes) {
+            if (!item || !item.nodeId) continue;
+            if (cloudOnly) {
+              const check = validateCloudFleetAddress(item.address);
+              if (!check.valid) continue;
+            }
+            nodes.set(item.nodeId, {
+              nodeId: item.nodeId,
+              icon: item.icon || "☁️",
+              labelAr: item.labelAr || item.nodeId,
+              labelEn: item.labelEn || item.nodeId,
+              kind: item.kind || "standalone-vps",
+              region: item.region || "Cloud",
+              address: item.address,
+              cloudOnly: true,
+              isDefault: item.nodeId === defaultNodeId,
+              online: Boolean(item.online || item.nodeId === primaryNodeId),
+              latencyMs: typeof item.latencyMs === "number" ? item.latencyMs : null,
+              lastCheckedAt: item.lastCheckedAt || null,
+              registeredAt: item.registeredAt || null
+            });
+          }
+          if (nodes.size === 0) {
+            seedDefaults();
+          }
+        }
+      }
+    } catch {
+      // Fallback to seeded defaults
+    }
   }
+
   return {
+    getDefaultNodeId() {
+      return defaultNodeId;
+    },
+    setDefaultNodeId(nextId = "vps-01") {
+      const target = String(nextId || "").trim();
+      if (target !== "auto-best" && !nodes.has(target)) {
+        return { ok: false, error: "UNKNOWN_NODE_ID", nodeId: target };
+      }
+      defaultNodeId = target;
+      for (const [id, entry] of nodes.entries()) {
+        nodes.set(id, { ...entry, isDefault: id === defaultNodeId });
+      }
+      persistToDisk();
+      return { ok: true, defaultNodeId };
+    },
     register(entry = {}) {
-      const id = AGY_FLEET_NODES[entry.nodeId] ? entry.nodeId : primaryNodeId;
-      const meta = AGY_FLEET_NODES[id] || AGY_FLEET_NODES["vps-01"];
+      const id = sanitizeNodeSlug(entry.nodeId || primaryNodeId);
+      const existing = nodes.get(id);
+      const fallbackMeta = AGY_FLEET_NODES[id] || AGY_FLEET_NODES["vps-02"];
+      const rawAddress =
+        entry.address || existing?.address || DEFAULT_FLEET_ADDRESSES[id] || "";
+      if (cloudOnly && rawAddress) {
+        const check = validateCloudFleetAddress(rawAddress);
+        if (!check.valid) {
+          return {
+            ok: false,
+            error: "CLOUD_ONLY_ADDRESS_REQUIRED",
+            reason: check.reason,
+            messageAr: check.messageAr,
+            messageEn: check.messageEn
+          };
+        }
+      }
       const record = {
         nodeId: id,
-        labelAr: meta.labelAr,
-        labelEn: meta.labelEn,
-        kind: meta.kind,
-        address: entry.address || DEFAULT_FLEET_ADDRESSES[id],
+        icon: entry.icon || existing?.icon || fallbackMeta?.icon || "🚀",
+        labelAr: entry.labelAr || existing?.labelAr || fallbackMeta?.labelAr || `خادم سحابي (${id})`,
+        labelEn: entry.labelEn || existing?.labelEn || fallbackMeta?.labelEn || `Cloud Server (${id})`,
+        kind: entry.kind || existing?.kind || fallbackMeta?.kind || "standalone-vps",
+        region: entry.region || existing?.region || "EU-Central",
+        address: rawAddress,
         port: entry.port || 18220,
         hostname: entry.hostname || os.hostname(),
         platform: entry.platform || os.platform(),
+        cloudOnly: true,
+        isDefault: id === defaultNodeId,
         online: true,
+        latencyMs: typeof entry.latencyMs === "number" ? entry.latencyMs : existing?.latencyMs ?? 5,
+        lastCheckedAt: new Date().toISOString(),
         registeredAt: new Date().toISOString()
       };
       nodes.set(id, record);
+      persistToDisk();
       return record;
+    },
+    upsertNode(payload = {}) {
+      const id = sanitizeNodeSlug(payload.nodeId || payload.id || payload.labelEn || payload.labelAr);
+      const rawAddress = String(payload.address || "").trim();
+      const validation = validateCloudFleetAddress(rawAddress);
+      if (cloudOnly && !validation.valid) {
+        return {
+          ok: false,
+          error: "CLOUD_ONLY_ADDRESS_REQUIRED",
+          reason: validation.reason,
+          messageAr: validation.messageAr,
+          messageEn: validation.messageEn
+        };
+      }
+      const existing = nodes.get(id);
+      const labelAr = String(
+        payload.labelAr || payload.nameAr || existing?.labelAr || `خادم سحابي (${id})`
+      ).trim();
+      const labelEn = String(
+        payload.labelEn || payload.nameEn || existing?.labelEn || `Cloud Node (${id})`
+      ).trim();
+      const wantDefault = Boolean(payload.isDefault);
+      if (wantDefault) {
+        defaultNodeId = id;
+        for (const [k, v] of nodes.entries()) {
+          nodes.set(k, { ...v, isDefault: k === id });
+        }
+      }
+      const record = {
+        nodeId: id,
+        icon: payload.icon || existing?.icon || (id === "vps-01" ? "☁️" : "🚀"),
+        labelAr,
+        labelEn,
+        kind: payload.kind || existing?.kind || (id === "vps-01" ? "cloud-hub-vps" : "standalone-vps"),
+        region: String(payload.region || existing?.region || "Cloud").trim(),
+        address: rawAddress,
+        normalizedEndpoint: validation.normalized,
+        cloudOnly: true,
+        isDefault: id === defaultNodeId,
+        online: existing?.online ?? (id === primaryNodeId),
+        latencyMs: existing?.latencyMs ?? null,
+        lastCheckedAt: existing?.lastCheckedAt ?? null,
+        registeredAt: existing?.registeredAt || new Date().toISOString()
+      };
+      nodes.set(id, record);
+      persistToDisk();
+      return { ok: true, node: record };
+    },
+    removeNode(nodeId = "") {
+      const id = sanitizeNodeSlug(nodeId);
+      if (id === "vps-01") {
+        return {
+          ok: false,
+          error: "PRIMARY_HUB_PROTECTED",
+          messageAr: "لا يمكن حذف الخادم السحابي الرئيسي (vps-01 · gemitron.net)، يمكنك تعديل عنوانه أو اسمه فقط.",
+          messageEn: "Primary cloud hub (vps-01) cannot be deleted; you may update its name or endpoint."
+        };
+      }
+      if (!nodes.has(id)) {
+        return {
+          ok: false,
+          error: "NODE_NOT_FOUND",
+          messageAr: "الخادم المطلوب غير موجود في الأسطول السحابي.",
+          messageEn: "Cloud node not found in fleet."
+        };
+      }
+      nodes.delete(id);
+      if (defaultNodeId === id) {
+        defaultNodeId = "vps-01";
+        const primary = nodes.get("vps-01");
+        if (primary) {
+          nodes.set("vps-01", { ...primary, isDefault: true });
+        }
+      }
+      persistToDisk();
+      return { ok: true, removedNodeId: id, defaultNodeId };
+    },
+    async pingNode(nodeId = "", { fetchFn = globalThis.fetch } = {}) {
+      const id = sanitizeNodeSlug(nodeId);
+      const entry = nodes.get(id);
+      if (!entry) {
+        return { ok: false, error: "NODE_NOT_FOUND", nodeId: id };
+      }
+      const probe = await probeFleetNodeLiveStatus({
+        nodeId: id,
+        address: entry.address,
+        fetchFn
+      });
+      const updated = {
+        ...entry,
+        online: probe.online,
+        latencyMs: probe.latencyMs,
+        statusTextAr: probe.statusTextAr,
+        statusTextEn: probe.statusTextEn,
+        lastCheckedAt: new Date().toISOString()
+      };
+      nodes.set(id, updated);
+      persistToDisk();
+      return { ok: true, probe, node: updated };
+    },
+    async pingAll({ fetchFn = globalThis.fetch } = {}) {
+      const results = [];
+      for (const id of nodes.keys()) {
+        const r = await this.pingNode(id, { fetchFn });
+        if (r.ok && r.node) {
+          results.push(r.node);
+        }
+      }
+      return { ok: true, nodes: results };
     },
     list() {
       return Array.from(nodes.values());
@@ -142,13 +379,38 @@ export async function registerNodeWithHub({
   }
 }
 
+async function readJsonBody(req) {
+  let body = "";
+  for await (const chunk of req) {
+    body += chunk;
+  }
+  try {
+    return JSON.parse(body || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function checkClusterAuth(req, res, clusterSecret) {
+  if (!clusterSecret) return true;
+  const authHeader = String(req.headers?.authorization || "");
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  if (token && token !== clusterSecret) {
+    res.writeHead(401, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ ok: false, error: "INVALID_CLUSTER_SECRET" }));
+    return false;
+  }
+  return true;
+}
+
 export async function handleAgyNodeHttpRequest(
   req,
   res,
   {
     nodeId = NODE_ID,
     clusterSecret = CLUSTER_SECRET,
-    registry = null
+    registry = null,
+    fetchFn = globalThis.fetch
   } = {}
 ) {
   const effectiveRegistry = registry || createAgyFleetRegistry({ primaryNodeId: nodeId });
@@ -157,7 +419,7 @@ export async function handleAgyNodeHttpRequest(
   const pathname = rawUrl.split("?")[0];
 
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
@@ -172,13 +434,15 @@ export async function handleAgyNodeHttpRequest(
     (pathname === "/v1/agy/health" || pathname === "/health" || Boolean(nodeRouteHealthMatch))
   ) {
     const requestedId = nodeRouteHealthMatch ? nodeRouteHealthMatch[1] : nodeMeta.id;
-    const targetMeta = AGY_FLEET_NODES[requestedId] || nodeMeta;
+    const registeredItem = effectiveRegistry.list().find((n) => n.nodeId === requestedId);
+    const targetMeta = AGY_FLEET_NODES[requestedId] || registeredItem || nodeMeta;
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(
       JSON.stringify({
         ok: true,
         status: "ok",
-        nodeId: targetMeta.id,
+        cloudOnly: true,
+        nodeId: targetMeta.id || targetMeta.nodeId || requestedId,
         labelAr: targetMeta.labelAr,
         labelEn: targetMeta.labelEn,
         kind: targetMeta.kind,
@@ -186,6 +450,7 @@ export async function handleAgyNodeHttpRequest(
         hostname: os.hostname(),
         online: true,
         clusterAuthConfigured: Boolean(clusterSecret),
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
         registeredNodes: effectiveRegistry.list()
       })
     );
@@ -197,7 +462,9 @@ export async function handleAgyNodeHttpRequest(
     res.end(
       JSON.stringify({
         ok: true,
+        cloudOnly: true,
         hubNodeId: nodeMeta.id,
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
         nodes: effectiveRegistry.list()
       })
     );
@@ -205,28 +472,111 @@ export async function handleAgyNodeHttpRequest(
   }
 
   if (req.method === "POST" && pathname === "/v1/agy/nodes/register") {
-    if (clusterSecret) {
-      const authHeader = String(req.headers?.authorization || "");
-      const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-      if (token && token !== clusterSecret) {
-        res.writeHead(401, { "Content-Type": "application/json; charset=utf-8" });
-        res.end(JSON.stringify({ ok: false, error: "INVALID_CLUSTER_SECRET" }));
-        return true;
-      }
-    }
-    let body = "";
-    for await (const chunk of req) {
-      body += chunk;
-    }
-    let payload = {};
-    try {
-      payload = JSON.parse(body || "{}");
-    } catch {
-      payload = {};
-    }
+    if (!checkClusterAuth(req, res, clusterSecret)) return true;
+    const payload = await readJsonBody(req);
     const registered = effectiveRegistry.register(payload);
+    if (registered && registered.ok === false) {
+      res.writeHead(422, { "Content-Type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify(registered));
+      return true;
+    }
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(JSON.stringify({ ok: true, registered }));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/nodes/default") {
+    if (!checkClusterAuth(req, res, clusterSecret)) return true;
+    const payload = await readJsonBody(req);
+    const result = effectiveRegistry.setDefaultNodeId(
+      payload.defaultNodeId || payload.nodeId || "vps-01"
+    );
+    res.writeHead(result.ok ? 200 : 422, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ...result,
+        nodes: effectiveRegistry.list()
+      })
+    );
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/nodes/ping") {
+    const pingRes = await effectiveRegistry.pingAll({ fetchFn });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
+        nodes: pingRes.nodes
+      })
+    );
+    return true;
+  }
+
+  const singlePingMatch = pathname.match(/^\/v1\/agy\/nodes\/([a-z0-9-]+)\/ping$/i);
+  if (req.method === "POST" && singlePingMatch) {
+    const targetId = singlePingMatch[1];
+    const pingRes = await effectiveRegistry.pingNode(targetId, { fetchFn });
+    res.writeHead(pingRes.ok ? 200 : 404, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ...pingRes,
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
+        nodes: effectiveRegistry.list()
+      })
+    );
+    return true;
+  }
+
+  const deleteNodeMatch =
+    pathname.match(/^\/v1\/agy\/nodes\/([a-z0-9-]+)\/delete$/i) ||
+    (req.method === "DELETE" ? pathname.match(/^\/v1\/agy\/nodes\/([a-z0-9-]+)$/i) : null);
+  if (deleteNodeMatch && (req.method === "DELETE" || req.method === "POST")) {
+    if (!checkClusterAuth(req, res, clusterSecret)) return true;
+    const targetId = deleteNodeMatch[1];
+    const delRes = effectiveRegistry.removeNode(targetId);
+    res.writeHead(delRes.ok ? 200 : 422, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ...delRes,
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
+        nodes: effectiveRegistry.list()
+      })
+    );
+    return true;
+  }
+
+  const updateNodeMatch =
+    req.method === "PUT" ? pathname.match(/^\/v1\/agy\/nodes\/([a-z0-9-]+)$/i) : null;
+  if ((req.method === "POST" && pathname === "/v1/agy/nodes") || updateNodeMatch) {
+    if (!checkClusterAuth(req, res, clusterSecret)) return true;
+    const payload = await readJsonBody(req);
+    if (updateNodeMatch) {
+      payload.nodeId = updateNodeMatch[1];
+    }
+    const upRes = effectiveRegistry.upsertNode(payload);
+    if (!upRes.ok) {
+      res.writeHead(422, { "Content-Type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify(upRes));
+      return true;
+    }
+    let finalNode = upRes.node;
+    if (payload.probeNow !== false) {
+      const pinged = await effectiveRegistry.pingNode(finalNode.nodeId, { fetchFn });
+      if (pinged.ok && pinged.node) {
+        finalNode = pinged.node;
+      }
+    }
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        node: finalNode,
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
+        nodes: effectiveRegistry.list()
+      })
+    );
     return true;
   }
 
@@ -239,22 +589,10 @@ export async function handleAgyNodeHttpRequest(
       pathname === "/v1/agy/chat/stream" ||
       Boolean(nodeRouteStreamMatch))
   ) {
-    let body = "";
-    for await (const chunk of req) {
-      body += chunk;
-    }
-    let payload = {};
-    try {
-      payload = JSON.parse(body || "{}");
-    } catch {
-      payload = {};
-    }
-
+    const payload = await readJsonBody(req);
     const effectiveNodeId = nodeRouteStreamMatch
       ? nodeRouteStreamMatch[1]
-      : payload.nodeId && AGY_FLEET_NODES[payload.nodeId]
-        ? payload.nodeId
-        : nodeMeta.id;
+      : payload.nodeId || effectiveRegistry.getDefaultNodeId() || nodeMeta.id;
 
     const events = buildCreatorFriendlyStreamEvents({
       prompt: payload.prompt || "",

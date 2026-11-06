@@ -168,15 +168,18 @@ export function savePersistedFleetAddresses(
 export function loadPersistedActiveFleetNode(
   storage = globalThis.localStorage,
   fallback = "auto-best",
-  allowedIds = ["auto-best", "win-local", "mac-local", "vps-01", "vps-02"]
+  allowedIds = null
 ) {
   if (!storage || typeof storage.getItem !== "function") {
     return fallback;
   }
   try {
     const raw = storage.getItem(FLEET_STORAGE_KEYS.activeNode);
-    if (typeof raw === "string" && allowedIds.includes(raw)) {
-      return raw;
+    if (typeof raw === "string" && /^[a-z0-9-]+$/i.test(raw.trim())) {
+      if (Array.isArray(allowedIds) && allowedIds.length > 0 && !allowedIds.includes(raw.trim())) {
+        return fallback;
+      }
+      return raw.trim();
     }
     return fallback;
   } catch {
@@ -198,6 +201,98 @@ export function savePersistedActiveFleetNode(
   } catch {
     return false;
   }
+}
+
+/**
+ * Default Cloud-Only Fleet Nodes managed via Studio Owner Control Hub (`/control-hub`).
+ * Excludes local LAN (`192.168.x.x`) devices so all nodes are routable cloud endpoints.
+ */
+export const CLOUD_FLEET_DEFAULT_NODES = Object.freeze([
+  Object.freeze({
+    nodeId: "vps-01",
+    icon: "☁️",
+    labelAr: "خادم VPS 01 (الرئيسي · gemitron.net)",
+    labelEn: "Linux VPS 01 (Main · gemitron.net)",
+    kind: "cloud-hub-vps",
+    region: "EU-Central",
+    address: "https://mcp.gemitron.net",
+    isDefault: true,
+    cloudOnly: true
+  }),
+  Object.freeze({
+    nodeId: "vps-02",
+    icon: "🚀",
+    labelAr: "خادم VPS 02 (السحابي المنفصل · Contabo)",
+    labelEn: "Linux VPS 02 (Standalone Cloud VPS)",
+    kind: "standalone-vps",
+    region: "EU-Central",
+    address: "173.212.237.207:18220",
+    isDefault: false,
+    cloudOnly: true
+  })
+]);
+
+/**
+ * Validates that an endpoint address is a public Cloud IP/Domain (rejecting local LAN
+ * ranges `192.168.*`, `10.*`, `172.16-31.*`, `127.*`, `localhost`, and `.local`/`.lan`).
+ */
+export function validateCloudFleetAddress(rawAddress = "", defaultPort = 18220) {
+  const trimmed = String(rawAddress || "").trim();
+  if (!trimmed) {
+    return {
+      valid: false,
+      normalized: "",
+      host: "",
+      reason: "EMPTY_ADDRESS",
+      messageAr: "يرجى إدخال عنوان الخادم السحابي (IP عام أو نطاق).",
+      messageEn: "Please enter a cloud server address (public IP or domain)."
+    };
+  }
+  const normalized = normalizeNodeEndpoint(trimmed, defaultPort);
+  let parsed;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    return {
+      valid: false,
+      normalized,
+      host: "",
+      reason: "INVALID_URL",
+      messageAr: "صيغة العنوان السحابي غير صالحة.",
+      messageEn: "Invalid cloud endpoint URL format."
+    };
+  }
+  const host = String(parsed.hostname || "").toLowerCase();
+  const isLocalOrLan =
+    host === "localhost" ||
+    host === "0.0.0.0" ||
+    host.endsWith(".local") ||
+    host.endsWith(".lan") ||
+    host.endsWith(".internal") ||
+    /^127\./.test(host) ||
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^169\.254\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(host);
+
+  if (isLocalOrLan) {
+    return {
+      valid: false,
+      normalized,
+      host,
+      reason: "LOCAL_LAN_FORBIDDEN",
+      messageAr: "يُسمح فقط بالخوادم السحابية (IP عام أو نطاق سحابي) — عناوين الشبكة المحلية LAN غير مسموحة.",
+      messageEn: "Cloud-only policy: private LAN / localhost addresses (192.168.x.x, 10.x.x.x, localhost) are not permitted."
+    };
+  }
+
+  return {
+    valid: true,
+    normalized,
+    host,
+    port: parsed.port ? Number(parsed.port) : parsed.protocol === "https:" ? 443 : 80,
+    reason: null
+  };
 }
 
 /**
