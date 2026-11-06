@@ -513,17 +513,26 @@ test("AGYTron enforces 100% Google-ToS-Safe Model Family Quota Tracking with aut
   ]);
   const catalog = listAllNineAppsKnowledgeCatalog();
   assert.equal(catalog.totalApps, 9);
-  assert.ok(catalog.totalSkills >= 18);
-  assert.ok(catalog.totalWorkflows >= 9);
+  assert.equal(catalog.totalSkills, 52);
+  assert.equal(catalog.totalWorkflows, 31);
+  assert.ok(catalog.totalPlaybooks >= 14);
+  assert.ok(catalog.totalMcpBindings >= 80);
 
   for (const appId of NINE_CORE_APPS) {
     const profile = getAppKnowledgeAndSkills(appId);
     assert.equal(profile.appId, appId);
-    assert.ok(Array.isArray(profile.knowledgeBase.domainRules) && profile.knowledgeBase.domainRules.length >= 2);
+    assert.ok(Array.isArray(profile.knowledgeBase.architectureAndCapabilities) && profile.knowledgeBase.architectureAndCapabilities.length >= 1);
+    assert.ok(Array.isArray(profile.knowledgeBase.domainRules) && profile.knowledgeBase.domainRules.length >= 3);
     assert.ok(Array.isArray(profile.knowledgeBase.invariants) && profile.knowledgeBase.invariants.length >= 2);
-    assert.ok(Array.isArray(profile.skills) && profile.skills.length >= 2);
-    assert.ok(Array.isArray(profile.workflows) && profile.workflows.length >= 1);
+    assert.ok(Array.isArray(profile.knowledgeBase.diagnosticPlaybooks) && profile.knowledgeBase.diagnosticPlaybooks.length >= 1);
+    assert.ok(Array.isArray(profile.knowledgeBase.mcpToolBindings) && profile.knowledgeBase.mcpToolBindings.length >= 5);
+    assert.ok(Array.isArray(profile.skills) && profile.skills.length >= 4);
+    assert.ok(Array.isArray(profile.workflows) && profile.workflows.length >= 2);
   }
+  assert.equal(getAppKnowledgeAndSkills("rankly").skills.length, 12);
+  assert.equal(getAppKnowledgeAndSkills("rankly").workflows.length, 7);
+  assert.equal(getAppKnowledgeAndSkills("tarweeg").skills.length, 12);
+  assert.equal(getAppKnowledgeAndSkills("tarweeg").workflows.length, 7);
 
   // 2. Verify ToS-Safe Model Family Quota Ledger + Automatic Failover
   assert.equal(resolveModelFamilyId("gemini-4-argon-high"), "gemini-4-argon");
