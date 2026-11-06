@@ -49,22 +49,25 @@ export const AGY_FLEET_NODES = Object.freeze({
   "vps-01": Object.freeze({
     id: "vps-01",
     icon: "☁️",
-    labelAr: "خادم سحابي VPS 01",
-    labelEn: "Linux Cloud VPS 01",
-    locationAr: "سيرفر Linux الأول · متاح دائماً",
-    locationEn: "Primary Linux Cloud Server · 24/7 Online",
-    kind: "cloud-vps",
-    defaultEndpoint: "https://vps01-agy.gemitron.net"
+    labelAr: "خادم VPS 01 (الرئيسي · gemitron.net)",
+    labelEn: "Linux VPS 01 (Main · gemitron.net)",
+    locationAr: "السيرفر المستضيف لـ gemitron.net · متصل دائماً",
+    locationEn: "Hosts gemitron.net & GemiMCP Hub · 24/7 Online",
+    kind: "cloud-hub-vps",
+    hostsGemitronDomain: true,
+    defaultEndpoint: "https://mcp.gemitron.net/v1/agy/nodes/vps-01"
   }),
   "vps-02": Object.freeze({
     id: "vps-02",
     icon: "🚀",
-    labelAr: "خادم سحابي VPS 02",
-    labelEn: "Linux Cloud VPS 02",
-    locationAr: "سيرفر Linux الثاني · للمهام الثقيلة",
-    locationEn: "Secondary Linux Cloud Server · Heavy Production",
-    kind: "cloud-vps",
-    defaultEndpoint: "https://vps02-agy.gemitron.net"
+    labelAr: "خادم VPS 02 (منفصل · IP مباشر أو نفق)",
+    labelEn: "Linux VPS 02 (Standalone IP / Tunnel)",
+    locationAr: "سيرفر Linux منفصل · يتصل عبر IP مباشر أو نفق إلى VPS 01",
+    locationEn: "Separate Linux VPS · Direct IP or Outbound Tunnel to VPS 01",
+    kind: "standalone-vps",
+    hostsGemitronDomain: false,
+    defaultEndpoint: process.env.AGY_VPS02_ENDPOINT || "http://<VPS_02_IP>:18220",
+    tunnelViaVps01Endpoint: "https://mcp.gemitron.net/v1/agy/nodes/vps-02"
   })
 });
 
