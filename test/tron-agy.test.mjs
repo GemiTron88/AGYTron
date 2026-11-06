@@ -489,5 +489,116 @@ test("AGYTron Global Smart Mind supports ANY GemiTron service (Rankly, Tarweeg, 
   }
 });
 
+test("AGYTron enforces 100% Google-ToS-Safe Model Family Quota Tracking with auto-failover and provides Knowledgebase, Workflows & Skills for all 9 core apps", async () => {
+  const {
+    NINE_CORE_APPS,
+    createAgyQuotaLedger,
+    resolveModelFamilyId,
+    getAppKnowledgeAndSkills,
+    listAllNineAppsKnowledgeCatalog
+  } = await import("../src/index.mjs");
+  const { createAgyNodeDaemonServer } = await import("../bin/agy-node-daemon.mjs");
+
+  // 1. Verify all 9 core apps have Knowledgebase, Skills, and Workflows
+  assert.deepEqual(NINE_CORE_APPS, [
+    "phototron",
+    "aftertron",
+    "filmtron",
+    "gemimotion",
+    "figtron",
+    "lighttron",
+    "scaletron",
+    "rankly",
+    "tarweeg"
+  ]);
+  const catalog = listAllNineAppsKnowledgeCatalog();
+  assert.equal(catalog.totalApps, 9);
+  assert.ok(catalog.totalSkills >= 18);
+  assert.ok(catalog.totalWorkflows >= 9);
+
+  for (const appId of NINE_CORE_APPS) {
+    const profile = getAppKnowledgeAndSkills(appId);
+    assert.equal(profile.appId, appId);
+    assert.ok(Array.isArray(profile.knowledgeBase.domainRules) && profile.knowledgeBase.domainRules.length >= 2);
+    assert.ok(Array.isArray(profile.knowledgeBase.invariants) && profile.knowledgeBase.invariants.length >= 2);
+    assert.ok(Array.isArray(profile.skills) && profile.skills.length >= 2);
+    assert.ok(Array.isArray(profile.workflows) && profile.workflows.length >= 1);
+  }
+
+  // 2. Verify ToS-Safe Model Family Quota Ledger + Automatic Failover
+  assert.equal(resolveModelFamilyId("gemini-4-argon-high"), "gemini-4-argon");
+  assert.equal(resolveModelFamilyId("claude-opus-5-5-medium"), "claude-opus-5-5");
+  assert.equal(resolveModelFamilyId("qwen3.5:4b-q4_K_M"), "local-tron");
+
+  const ledger = createAgyQuotaLedger();
+  const initialSnap = ledger.getSnapshot();
+  assert.equal(initialSnap.tosSafe, true);
+  assert.equal(initialSnap.families.length, 6);
+
+  // Trigger HTTP 429 rate-limit cooldown on claude-opus-5-5 and verify automatic failover to gemini-4-argon-high
+  ledger.recordUsage({
+    modelId: "claude-opus-5-5-high",
+    service: "tarweeg",
+    promptTokens: 500,
+    completionTokens: 200,
+    rateLimited: true,
+    cooldownSeconds: 300
+  });
+
+  const safeSelection = ledger.selectQuotaSafeModel("claude-opus-5-5-high");
+  assert.equal(safeSelection.requestedFamilyId, "claude-opus-5-5");
+  assert.equal(safeSelection.failoverTriggered, true);
+  assert.equal(safeSelection.selectedFamilyId, "gemini-4-argon");
+  assert.equal(safeSelection.selectedModel, "gemini-4-argon-high");
+
+  // 3. Verify HTTP endpoints (/v1/agy/quota, /v1/agy/knowledge, and /v1/agy/smart-mind with skillId/workflowId)
+  const daemon = createAgyNodeDaemonServer({
+    nodeId: "vps-01",
+    clusterSecret: "quota-secret"
+  });
+  await new Promise((resolve) => daemon.listen(0, "127.0.0.1", resolve));
+  const { port } = daemon.address();
+  const base = `http://127.0.0.1:${port}`;
+
+  try {
+    const kbRes = await fetch(`${base}/v1/agy/knowledge?app=rankly`);
+    assert.equal(kbRes.status, 200);
+    const kbBody = await kbRes.json();
+    assert.equal(kbBody.ok, true);
+    assert.equal(kbBody.app.appId, "rankly");
+    assert.ok(kbBody.app.skills.some((s) => s.id === "rankly.tiered_link_architect"));
+
+    const execRes = await fetch(`${base}/v1/agy/smart-mind`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service: "rankly",
+        skillId: "rankly.scrapling_self_healer",
+        workflowId: "rankly.wf.full_seo_autopilot",
+        prompt: "إصلاح محددات CSS لمنصة Telegraph وبناء حملة هرمية",
+        model: "gemini-3.8-flash-medium",
+        effort: "medium"
+      })
+    });
+    assert.equal(execRes.status, 200);
+    const execBody = await execRes.json();
+    assert.equal(execBody.ok, true);
+    assert.equal(execBody.appKnowledge.activeSkill.id, "rankly.scrapling_self_healer");
+    assert.equal(execBody.appKnowledge.activeWorkflow.id, "rankly.wf.full_seo_autopilot");
+    assert.ok(execBody.quotaStatus);
+    assert.equal(execBody.quotaStatus.familyId, "gemini-3.8-flash");
+
+    const quotaRes = await fetch(`${base}/v1/agy/quota`);
+    assert.equal(quotaRes.status, 200);
+    const quotaBody = await quotaRes.json();
+    assert.equal(quotaBody.ok, true);
+    assert.equal(quotaBody.tosSafe, true);
+    assert.ok(quotaBody.totalRequests24h >= 1);
+  } finally {
+    await new Promise((resolve) => daemon.close(resolve));
+  }
+});
+
+
 
 

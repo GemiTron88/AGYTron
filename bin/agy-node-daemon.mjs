@@ -36,6 +36,9 @@ import {
   AGY_AUTH_MODES,
   AGY_EXECUTION_SCOPES,
   GEMITRON_GLOBAL_SERVICES,
+  defaultAgyQuotaLedger,
+  getAppKnowledgeAndSkills,
+  listAllNineAppsKnowledgeCatalog,
   buildGlobalAgySmartMindPlan,
   executeGlobalAgySmartMind
 } from "../src/index.mjs";
@@ -651,9 +654,47 @@ export async function handleAgyNodeHttpRequest(
         authModes: AGY_AUTH_MODES,
         executionScopes: AGY_EXECUTION_SCOPES,
         services: Object.values(GEMITRON_GLOBAL_SERVICES),
-        nodes: effectiveRegistry.list()
+        nodes: effectiveRegistry.list(),
+        quota: defaultAgyQuotaLedger.getSnapshot(),
+        nineAppsKnowledge: listAllNineAppsKnowledgeCatalog()
       })
     );
+    return true;
+  }
+
+  if (req.method === "GET" && pathname === "/v1/agy/quota") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(defaultAgyQuotaLedger.getSnapshot()));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/quota/reset") {
+    const payload = await readJsonBody(req);
+    const resetRes = defaultAgyQuotaLedger.resetFamily(payload.familyId || payload.family || "all");
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ...resetRes,
+        quota: defaultAgyQuotaLedger.getSnapshot()
+      })
+    );
+    return true;
+  }
+
+  if (
+    req.method === "GET" &&
+    (pathname === "/v1/agy/knowledge" ||
+      pathname === "/v1/agy/skills" ||
+      pathname === "/v1/agy/workflows")
+  ) {
+    const queryStr = rawUrl.includes("?") ? rawUrl.split("?")[1] : "";
+    const params = new URLSearchParams(queryStr);
+    const appParam = params.get("app") || params.get("service") || "";
+    const body = appParam
+      ? { ok: true, app: getAppKnowledgeAndSkills(appParam) }
+      : listAllNineAppsKnowledgeCatalog();
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(body));
     return true;
   }
 
@@ -673,6 +714,8 @@ export async function handleAgyNodeHttpRequest(
         service: payload.service || payload.app || "gemiai",
         services: payload.services || payload.apps || [],
         task: payload.task || "general-reasoning",
+        skillId: payload.skillId || payload.skill || null,
+        workflowId: payload.workflowId || payload.workflow || null,
         model: payload.model || "auto",
         effort: payload.effort || "auto",
         authMode: payload.authMode || "agy-mcp-host",
@@ -692,6 +735,8 @@ export async function handleAgyNodeHttpRequest(
       service: payload.service || payload.app || "gemiai",
       services: Array.isArray(payload.services) ? payload.services : [],
       task: payload.task || "general-reasoning",
+      skillId: payload.skillId || payload.skill || null,
+      workflowId: payload.workflowId || payload.workflow || null,
       model: payload.model || "auto",
       effort: payload.effort || "auto",
       nodeId: effectiveNodeId,

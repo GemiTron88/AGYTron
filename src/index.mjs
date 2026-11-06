@@ -10,6 +10,34 @@
  *   6. LightTron  (lighttron  / .lcraft)
  */
 
+import {
+  QUOTA_LEDGER_SCHEMA,
+  AGY_MODEL_FAMILIES,
+  resolveModelFamilyId,
+  createAgyQuotaLedger,
+  defaultAgyQuotaLedger
+} from "./quota-ledger.mjs";
+import {
+  KNOWLEDGE_SKILLS_SCHEMA,
+  NINE_CORE_APPS,
+  APP_KNOWLEDGE_SKILLS_REGISTRY,
+  getAppKnowledgeAndSkills,
+  listAllNineAppsKnowledgeCatalog
+} from "./knowledge-skills.mjs";
+
+export {
+  QUOTA_LEDGER_SCHEMA,
+  AGY_MODEL_FAMILIES,
+  resolveModelFamilyId,
+  createAgyQuotaLedger,
+  defaultAgyQuotaLedger,
+  KNOWLEDGE_SKILLS_SCHEMA,
+  NINE_CORE_APPS,
+  APP_KNOWLEDGE_SKILLS_REGISTRY,
+  getAppKnowledgeAndSkills,
+  listAllNineAppsKnowledgeCatalog
+};
+
 export const TRON_AGY_VERSION = "1.0.0";
 export const TRON_AGY_SCHEMA = "tronagy.global_brain.v1";
 
@@ -844,6 +872,8 @@ export function buildGlobalAgySmartMindPlan({
   service = null,
   services = [],
   task = "general-reasoning",
+  skillId = null,
+  workflowId = null,
   model = "auto",
   effort = "auto",
   authMode = "agy-mcp-host",
@@ -889,24 +919,33 @@ export function buildGlobalAgySmartMindPlan({
   }
 
   const cleanPrompt = prompt.trim();
-  const stages = targetProfiles.map((prof, index) => ({
-    stage: index + 1,
-    serviceId: prof.id,
-    appId: prof.id,
-    serviceName: prof.name,
-    appName: prof.name,
-    category: prof.category || "creative-suite",
-    planSchema: prof.planSchema,
-    mcpRoute: prof.mcpRoute,
-    outputArtifact: `${workspaceRoot}/${prof.id}-master${prof.ext}`,
-    role: locale.startsWith("ar") ? prof.roleAr : prof.roleEn,
-    selectedTools: prof.nativeTools.slice(0, 5),
-    critiqueChecks: prof.critiqueChecks,
-    critiquePassesScheduled: selection.effortMeta.maxCritiquePasses
-  }));
+  const stages = targetProfiles.map((prof, index) => {
+    const appKnowledge = getAppKnowledgeAndSkills(prof.id);
+    return {
+      stage: index + 1,
+      serviceId: prof.id,
+      appId: prof.id,
+      serviceName: prof.name,
+      appName: prof.name,
+      category: prof.category || "creative-suite",
+      planSchema: prof.planSchema,
+      mcpRoute: prof.mcpRoute,
+      outputArtifact: `${workspaceRoot}/${prof.id}-master${prof.ext}`,
+      role: locale.startsWith("ar") ? prof.roleAr : prof.roleEn,
+      selectedTools: prof.nativeTools.slice(0, 5),
+      critiqueChecks: prof.critiqueChecks,
+      critiquePassesScheduled: selection.effortMeta.maxCritiquePasses,
+      knowledgeBase: appKnowledge?.knowledgeBase || null,
+      skills: appKnowledge?.skills || [],
+      workflows: appKnowledge?.workflows || []
+    };
+  });
 
   const scopeMeta = AGY_EXECUTION_SCOPES[normalizedScope];
   const targetIds = targetProfiles.map((p) => p.id);
+  const quotaRouting = defaultAgyQuotaLedger.selectQuotaSafeModel(selection.model);
+  const effectiveModelMeta =
+    resolveAgyModelMeta(quotaRouting.selectedModelId) || selection.modelMeta;
 
   return {
     ok: true,
@@ -916,13 +955,16 @@ export function buildGlobalAgySmartMindPlan({
     tosSafetyGuard: AGY_TOS_SAFETY_GUARD,
     prompt: cleanPrompt,
     task,
+    skillId,
+    workflowId,
     locale,
     service: primaryService,
     targetServices: targetIds,
     targetApps: targetIds,
-    model: selection.model,
-    modelLabel: locale.startsWith("ar") ? selection.modelMeta.labelAr : selection.modelMeta.labelEn,
-    modelProvider: selection.modelMeta.provider,
+    model: effectiveModelMeta.id,
+    modelLabel: locale.startsWith("ar") ? effectiveModelMeta.labelAr : effectiveModelMeta.labelEn,
+    modelProvider: effectiveModelMeta.provider,
+    quotaRouting,
     effort: selection.effort,
     thinkingBudgetTokens: selection.effortMeta.thinkingBudgetTokens,
     maxCritiquePasses: selection.effortMeta.maxCritiquePasses,
@@ -936,7 +978,7 @@ export function buildGlobalAgySmartMindPlan({
       normalizedScope === "account-remote-agent" ? AGY_REMOTE_AGENT_RELAY_URL : null,
     mcpTransport,
     stages,
-    cliCommand: `tron-agy smart-mind --service ${targetIds.join(",")} --task "${task}" --prompt "${cleanPrompt.replace(/"/g, '\\"')}" --model ${selection.model} --effort ${selection.effort} --node ${nodeId}`
+    cliCommand: `tron-agy smart-mind --service ${targetIds.join(",")} --task "${task}" --prompt "${cleanPrompt.replace(/"/g, '\\"')}" --model ${effectiveModelMeta.id} --effort ${selection.effort} --node ${nodeId}`
   };
 }
 
@@ -956,6 +998,8 @@ export async function executeGlobalAgySmartMind({
   service = "gemiai",
   services = [],
   task = "general-reasoning",
+  skillId = null,
+  workflowId = null,
   model = "auto",
   effort = "auto",
   nodeId = "vps-01",
@@ -963,6 +1007,7 @@ export async function executeGlobalAgySmartMind({
   executionScope = "device-fleet",
   locale = "ar-EG",
   context = {},
+  quotaLedger = defaultAgyQuotaLedger,
   fetchFn = globalThis.fetch,
   timeoutMs = 6000
 } = {}) {
@@ -977,6 +1022,8 @@ export async function executeGlobalAgySmartMind({
     service,
     services,
     task,
+    skillId,
+    workflowId,
     model,
     effort,
     authMode,
@@ -990,10 +1037,36 @@ export async function executeGlobalAgySmartMind({
   }
 
   const profile = resolveGemitronServiceProfile(plan.service);
+  const rawAppKnowledge = getAppKnowledgeAndSkills(profile.id);
+  const skillsList = rawAppKnowledge?.skills || [];
+  const workflowsList = rawAppKnowledge?.workflows || [];
+  const activeSkill =
+    (skillId &&
+      skillsList.find(
+        (s) => s.id === skillId || (Array.isArray(s.aliases) && s.aliases.includes(skillId))
+      )) ||
+    skillsList[0] ||
+    null;
+  const activeWorkflow =
+    (workflowId &&
+      workflowsList.find(
+        (w) => w.id === workflowId || (Array.isArray(w.aliases) && w.aliases.includes(workflowId))
+      )) ||
+    workflowsList[0] ||
+    null;
+  const appKnowledge = rawAppKnowledge
+    ? {
+        ...rawAppKnowledge,
+        activeSkill,
+        activeWorkflow
+      }
+    : null;
+
   const isAr = String(locale || "ar-EG").startsWith("ar");
   let upstreamProvider = "agy-smart-mind-engine";
   let generatedText = null;
   let structuredOutput = null;
+  let rateLimited = false;
 
   // Attempt local GemiAI / TRON loopback (127.0.0.1:18090 or AGY_LOCAL_LLM_URL) if available
   const localLlmUrl =
@@ -1005,9 +1078,12 @@ export async function executeGlobalAgySmartMind({
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), Math.min(timeoutMs, 3500));
     try {
+      const domainRulesText = appKnowledge?.knowledgeBase?.domainRules
+        ? `Domain Rules: ${appKnowledge.knowledgeBase.domainRules.join(" ")}`
+        : "";
       const sys =
         systemPrompt ||
-        `You are AGYTron Smart Mind (${plan.model}, effort=${plan.effort}) operating as the brain for ${profile.name} (${profile.roleEn}). Return concise, production-ready output.`;
+        `You are AGYTron Smart Mind (${plan.model}, effort=${plan.effort}) operating as the brain for ${profile.name} (${profile.roleEn}). ${domainRulesText} Return concise, production-ready output.`;
       const res = await fetchFn(`${localLlmUrl.replace(/\/+$/, "")}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1025,7 +1101,9 @@ export async function executeGlobalAgySmartMind({
         signal: controller.signal
       });
       clearTimeout(timer);
-      if (res && res.ok && typeof res.json === "function") {
+      if (res && res.status === 429) {
+        rateLimited = true;
+      } else if (res && res.ok && typeof res.json === "function") {
         const data = await res.json();
         const content = data?.choices?.[0]?.message?.content || data?.response || null;
         if (typeof content === "string" && content.trim().length > 0) {
@@ -1048,7 +1126,14 @@ export async function executeGlobalAgySmartMind({
     isAr
   });
 
-  structuredOutput = domainSynthesis.structured;
+  structuredOutput = {
+    ...domainSynthesis.structured,
+    knowledgeBase: appKnowledge?.knowledgeBase || null,
+    activeSkill,
+    activeWorkflow,
+    activeSkills: skillsList,
+    availableWorkflows: workflowsList
+  };
   if (!generatedText) {
     generatedText = domainSynthesis.text;
   }
@@ -1066,6 +1151,22 @@ export async function executeGlobalAgySmartMind({
     });
   }
 
+  const promptTokens = Math.max(12, Math.ceil(plan.prompt.length / 4));
+  const thinkingTokens = Math.min(plan.thinkingBudgetTokens, 2048);
+  const completionTokens = Math.max(32, Math.ceil(generatedText.length / 4));
+
+  const familyQuotaStatus =
+    quotaLedger && typeof quotaLedger.recordUsage === "function"
+      ? quotaLedger.recordUsage({
+          modelId: plan.model,
+          serviceId: profile.id,
+          promptTokens,
+          thinkingTokens,
+          completionTokens,
+          rateLimited
+        })
+      : null;
+
   return {
     ok: true,
     id: `agy-sm-${Date.now().toString(36)}`,
@@ -1082,6 +1183,9 @@ export async function executeGlobalAgySmartMind({
     critiquePassesCompleted: critiquePasses.length,
     critiqueReport: critiquePasses,
     upstreamProvider,
+    quotaStatus: familyQuotaStatus,
+    appKnowledge,
+    knowledgeAndSkills: appKnowledge,
     plan,
     structured: structuredOutput,
     content: generatedText,
@@ -1097,13 +1201,10 @@ export async function executeGlobalAgySmartMind({
       }
     ],
     usage: {
-      prompt_tokens: Math.max(12, Math.ceil(plan.prompt.length / 4)),
-      thinking_tokens: Math.min(plan.thinkingBudgetTokens, 2048),
-      completion_tokens: Math.max(32, Math.ceil(generatedText.length / 4)),
-      total_tokens:
-        Math.max(12, Math.ceil(plan.prompt.length / 4)) +
-        Math.min(plan.thinkingBudgetTokens, 2048) +
-        Math.max(32, Math.ceil(generatedText.length / 4))
+      prompt_tokens: promptTokens,
+      thinking_tokens: thinkingTokens,
+      completion_tokens: completionTokens,
+      total_tokens: promptTokens + thinkingTokens + completionTokens
     }
   };
 }
