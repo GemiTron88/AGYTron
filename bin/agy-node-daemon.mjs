@@ -33,9 +33,22 @@ function flag(name, fallback) {
   return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : fallback;
 }
 
+function detectPrimaryExternalIpv4() {
+  const nets = os.networkInterfaces();
+  for (const entries of Object.values(nets)) {
+    for (const entry of entries || []) {
+      if (entry && entry.family === "IPv4" && !entry.internal && entry.address) {
+        return entry.address;
+      }
+    }
+  }
+  return "";
+}
+
 const NODE_ID = flag("--node-id", process.env.AGY_NODE_ID || "vps-01");
 const PORT = parseInt(flag("--port", process.env.AGY_NODE_PORT || "18220"), 10);
 const HOST = flag("--host", process.env.AGY_NODE_HOST || "0.0.0.0");
+const ADVERTISED_ADDRESS = flag("--address", process.env.AGY_NODE_ADDRESS || "");
 const HUB_URL = flag(
   "--hub",
   flag("--hub-url", process.env.AGY_HUB_URL || "")
@@ -314,14 +327,21 @@ if (isMain) {
     nodeId: NODE_ID,
     clusterSecret: CLUSTER_SECRET
   });
-  server.listen(PORT, HOST, async () => {
+  const extIp = detectPrimaryExternalIpv4();
+  let boundHost = HOST;
+
+  const onListening = async () => {
+    const advertisedAddr =
+      ADVERTISED_ADDRESS ||
+      (extIp ? `${extIp}:${PORT}` : DEFAULT_FLEET_ADDRESSES[NODE_ID] || `${boundHost}:${PORT}`);
     console.log(
-      `[AGY Node Daemon] Online (${NODE_ID}) listening on http://${HOST}:${PORT}/v1/agy/chat-stream`
+      `[AGY Node Daemon] Online (${NODE_ID}) listening on http://${boundHost}:${PORT}/v1/agy/chat-stream (advertised: ${advertisedAddr})`
     );
     if (HUB_URL) {
       const reg = await registerNodeWithHub({
         nodeId: NODE_ID,
         port: PORT,
+        address: advertisedAddr,
         hubUrl: HUB_URL,
         clusterSecret: CLUSTER_SECRET
       });
@@ -329,5 +349,16 @@ if (isMain) {
         console.log(`[AGY Node Daemon] Registered ${NODE_ID} with hub ${reg.registerUrl}`);
       }
     }
+  };
+
+  server.once("error", (err) => {
+    if (err && err.code === "EADDRINUSE" && boundHost === "0.0.0.0" && extIp) {
+      boundHost = extIp;
+      server.listen(PORT, boundHost, onListening);
+      return;
+    }
+    throw err;
   });
+
+  server.listen(PORT, boundHost, onListening);
 }
