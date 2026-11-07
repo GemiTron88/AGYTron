@@ -513,8 +513,8 @@ test("AGYTron enforces 100% Google-ToS-Safe Model Family Quota Tracking with aut
   ]);
   const catalog = listAllNineAppsKnowledgeCatalog();
   assert.equal(catalog.totalApps, 9);
-  assert.equal(catalog.totalSkills, 59);
-  assert.equal(catalog.totalWorkflows, 38);
+  assert.equal(catalog.totalSkills, 60);
+  assert.equal(catalog.totalWorkflows, 39);
   assert.ok(catalog.totalPlaybooks >= 17);
   assert.ok(catalog.totalMcpBindings >= 85);
 
@@ -529,8 +529,8 @@ test("AGYTron enforces 100% Google-ToS-Safe Model Family Quota Tracking with aut
     assert.ok(Array.isArray(profile.skills) && profile.skills.length >= 4);
     assert.ok(Array.isArray(profile.workflows) && profile.workflows.length >= 2);
   }
-  assert.equal(getAppKnowledgeAndSkills("rankly").skills.length, 19);
-  assert.equal(getAppKnowledgeAndSkills("rankly").workflows.length, 14);
+  assert.equal(getAppKnowledgeAndSkills("rankly").skills.length, 20);
+  assert.equal(getAppKnowledgeAndSkills("rankly").workflows.length, 15);
   assert.equal(getAppKnowledgeAndSkills("tarweeg").skills.length, 12);
   assert.equal(getAppKnowledgeAndSkills("tarweeg").workflows.length, 7);
 
@@ -578,6 +578,8 @@ test("AGYTron enforces 100% Google-ToS-Safe Model Family Quota Tracking with aut
     assert.ok(kbBody.app.skills.some((s) => s.id === "rankly.tiered_link_architect"));
     assert.ok(kbBody.app.skills.some((s) => s.id === "rankly.seo_drift_guardian"));
     assert.ok(kbBody.app.skills.some((s) => s.id === "rankly.llms_txt_wikidata_schema_engineer"));
+    assert.ok(kbBody.app.skills.some((s) => s.id === "rankly.gemimail_66family_stealth_registrar"));
+    assert.ok(kbBody.app.workflows.some((w) => w.id === "rankly.wf.day1_website_gemimail_66family_onboarding"));
 
     const execRes = await fetch(`${base}/v1/agy/smart-mind`, {
       method: "POST",

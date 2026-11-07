@@ -739,12 +739,13 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       architectureAndCapabilities: [
         "8-Pillar 100% Zero-Cost Webmaster, Analytics & Behavioral Intelligence Suite: (1) Deep Google Search Console (Search Analytics, URL Inspection, Sitemaps, Google Indexing API v3 urlNotifications:publish, Google Site Verification API v1, Striking-Distance/Cannibalization/Decay/CTR Opportunity Engine), (2) Deep Google Analytics 4 (Realtime & Data API v1beta, Admin API v1beta discovery, Measurement Protocol mp/collect, and GSC×GA4 Query->LandingPage->Conversion->Revenue Correlator), (3) Google CrUX 25-Week History API (queryHistoryRecord) & PageSpeed Insights v5 CWV Remediation Extractor, (4) Expanded Bing Webmaster Tools (GetQueryStats, GetCrawlStats, GetPageStats, GetRankAndTrafficStats, GetLinkCounts free inbound backlinks, GetUrlInfo, GetKeywordStats, SubmitUrlBatch, SubmitContent direct HTML push), (5) Yandex Webmaster API v4 (SQI Site Quality Index, popular queries, links/external/samples free backlinks, recrawl/queue, diagnostics), (6) Microsoft Clarity Live Insights API (Rage Clicks, Dead Clicks, Quickbacks/pogo-sticking, Scroll Depth, Active Time), (7) Cloudflare GraphQL Bot & AI-Crawler Log Analyzer (Googlebot, Bingbot, YandexBot, Applebot, GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot), and (8) Google Business Profile (GBP Local Posts & Reviews) + Breakout Trends & AI Overview / GEO Citation Tracker.",
         "d4vinci/Scrapling v0.5 Stealth Spider Engine (StealthyFetcher, DynamicFetcher, Fetcher) with adaptive=True self-healing DOM selector relocation, site audit spider, zero-cost SERP/PAA scraper, CMS footprint harvester, and CommonCrawl + live DOM backlink verifier.",
-        "Money-Robot Style Autonomous Publishing Engine: 12 Zero-Cost API Adapters (Telegraph, Dev.to, Hashnode, Medium, Ghost, WordPress REST+XML-RPC, Blogger, Tumblr, GitHub Gist/Pages, Mastodon ActivityPub, Discourse, MediaWiki/BookStack) + 27 Stealth Browser Recipes across 1,000 classified publication sources.",
+        "Money-Robot Style Autonomous Publishing & Onboarding Engine: Day-1 1-Click Website Onboarding (rankly.project.create), Encrypted Provider & Publishing Adapter Vault (rankly.providers.credential.store, rankly.adapters.credential.bind), Autonomous GemiMail (@gemitron.net) Mailbox Provisioning & IMAP/API Verification Link/OTP Extraction (rankly.mailboxes.provision, rankly.mailboxes.track_verification), and Scrapling Stealth Autonomous Account Registration (rankly.accounts.auto_register) across 66 Platform Families and 10,000+ classified backlink & authority sources + 12 Zero-Cost API Adapters (Telegraph, Dev.to, Hashnode, Medium, Ghost, WordPress REST+XML-RPC, Blogger, Tumblr, GitHub Gist/Pages, Mastodon ActivityPub, Discourse, MediaWiki/BookStack).",
         "Tiered Link Topology Engine (Tier 1 -> Tier 2 -> Tier 3 Pyramid, Closed/Open Link Wheel, Star) with recursive {a|b|{c|d}} SpintaxService (>= 75% shingle uniqueness) and Omni-Engine Indexer (Google Indexing API + Bing SubmitContent/UrlBatch + Yandex Recrawl + IndexNow + WebSub/PubSubHubbub + Ping-O-Matic XML-RPC + Wayback Machine).",
         "Phase P22 7-Pillar Ultimate Next-Gen SEO & GEO Intelligence Suite: (1) 24/7 SEO Drift & Production Guardrail Monitor (17 rules + SSR vs JS Hydration Parity in seo_drift_baselines), (2) Internal Link Graph, GSC Equity Map & Okapi BM25 Semantic Interlinker (DOM zone weights: main 1.0x vs nav 0.35x vs footer 0.15x), (3) Cross-Engine Matrix (Google vs Bing rank delta) & GA4 AI Referral Tracker (ChatGPT, Perplexity, Claude, Gemini, Copilot, DeepSeek), (4) Advanced GSC Intelligence (Discover/News/Image/Video surfaces, Z-Score Anomaly Detector, Concentration Risk, Sitemap Dead-Weight Pruner), (5) AI Crawler Governance (14 AI bots in robots.txt), Standardized /llms.txt & /llms-full.txt Generator, and Live Wikidata Q-ID Entity Schema Linker, (6) Deep Technical SEO (LCP 4-Subpart Decomposer, Speculation Rules & bfcache Blocker Auditor, Hreflang Reciprocity Matrix, H1-H6 Hierarchy, Parasite-SEO Guard, GBP Q&A Seed), and (7) Automated Broken-Link Hijacker (404/410 Dead Outbound Link Hunter + Wayback Context + Replacement Outreach Pitch)."
       ],
       domainRules: [
         "Enforce strict per-project encrypted credential isolation (ProviderCredential + GoogleProjectSelection) across all 8 Webmaster & Analytics pillars.",
+        "On Day-1 website onboarding, automatically provision dedicated @gemitron.net mailboxes via GemiMail, register accounts across all 66 platform families (10,000+ sources) via Scrapling StealthyFetcher, verify inbound activation emails/OTPs, and bind credentials to the project vault.",
         "Capture a MariaDB SEO Drift baseline before and after every major deployment and evaluate all 17 drift rules + SSR vs JS hydration parity.",
         "Use DOM zone-weighted internal link graphs (main content 1.0x vs nav 0.35x vs footer 0.15x) and Okapi BM25 semantic matching to route internal link equity from top GSC pages to striking-distance pages (positions 4–20).",
         "Generate standardized /llms.txt and /llms-full.txt Markdown files and link Schema.org JSON-LD entities to verified Wikidata Q-IDs (sameAs / about / mentions) for AI Overview, ChatGPT, and Perplexity citation authority.",
@@ -758,7 +759,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
         "Generate deeply nested {a|b|{c|d}} Spintax with >= 75% shingle uniqueness and embed TronCS infographics/videos in every Tier 1 property."
       ],
       invariants: [
-        "100% Zero-Cost Guard: Never call paid third-party SEO APIs; use official first-party Webmaster/Analytics APIs, native protocols, Wikidata Action API, and d4vinci/Scrapling.",
+        "100% Zero-Cost Guard: Never call paid third-party SEO APIs; use official first-party Webmaster/Analytics APIs, native protocols, Wikidata Action API, GemiMail (@gemitron.net), and d4vinci/Scrapling.",
         "Zero fabricated URLs, zero fake crc32/md5 backlink metrics, and zero counting of seed catalog rows as published links without HTTP 200 + live anchor readback proof.",
         "Never leak cross-project OAuth credentials; R2 write mutations require owner approval assertions and idempotency keys."
       ],
@@ -813,6 +814,12 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
         }
       ],
       mcpToolBindings: [
+        "rankly.project.create",
+        "rankly.providers.credential.store",
+        "rankly.adapters.credential.bind",
+        "rankly.mailboxes.provision",
+        "rankly.mailboxes.track_verification",
+        "rankly.accounts.auto_register",
         "rankly.seo.drift.monitor",
         "rankly.links.equity_bm25",
         "rankly.webmaster.cross_engine",
@@ -983,11 +990,20 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.12api_27recipe_publisher",
-        aliases: ["skill.rankly.12api_27recipe_publisher"],
-        labelEn: "12 Zero-Cost API + 27 Stealth Recipe Autonomous Publisher",
-        labelAr: "الناشر التلقائي عبر ١٢ واجهة API مجانية و٢٧ وصفة متصفح خفية",
+        aliases: ["skill.rankly.12api_27recipe_publisher", "rankly.gemimail_66family_stealth_registrar"],
+        labelEn: "66-Family Stealth Account Registrar (@gemitron.net) + 12 Zero-Cost API & 10,000+ Source Autonomous Publisher",
+        labelAr: "المسجل والناشر التلقائي عبر بريد @gemitron.net و٦٦ عائلة منصات (+١٠,٠٠٠ مصدر) و١٢ واجهة API مجانية",
         model: "claude-sonnet-5-5-high",
-        tools: ["rankly.autopilot.publish", "rankly.backlinks.verify"]
+        tools: [
+          "rankly.project.create",
+          "rankly.mailboxes.provision",
+          "rankly.mailboxes.track_verification",
+          "rankly.accounts.auto_register",
+          "rankly.providers.credential.store",
+          "rankly.adapters.credential.bind",
+          "rankly.autopilot.publish",
+          "rankly.backlinks.verify"
+        ]
       },
       {
         id: "rankly.zero_cost_indexer",
@@ -996,6 +1012,21 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
         labelAr: "مُفهرس الروابط الشامل الفوري (جوجل + بينج + ياندكس + IndexNow + WebSub)",
         model: "gemini-3.8-flash-medium",
         tools: ["rankly.webmaster.omni_index", "rankly.indexer.ping", "rankly.google.indexing.notify"]
+      },
+      {
+        id: "rankly.gemimail_66family_stealth_registrar",
+        aliases: ["skill.rankly.gemimail_66family_stealth_registrar"],
+        labelEn: "Autonomous GemiMail (@gemitron.net) & 66-Family Stealth Account Registrar (10,000+ Sources)",
+        labelAr: "مسجل الحسابات الذاتي عبر بريد @gemitron.net ومتصفح Scrapling الخفي (٦٦ عائلة منصات و+١٠,٠٠٠ مصدر)",
+        model: "gemini-4-argon-high",
+        tools: [
+          "rankly.project.create",
+          "rankly.mailboxes.provision",
+          "rankly.mailboxes.track_verification",
+          "rankly.accounts.auto_register",
+          "rankly.providers.credential.store",
+          "rankly.adapters.credential.bind"
+        ]
       },
       {
         id: "rankly.closed_loop_growth_orchestrator",
@@ -1007,6 +1038,18 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       }
     ]),
     workflows: Object.freeze([
+      {
+        id: "rankly.wf.day1_website_gemimail_66family_onboarding",
+        aliases: ["wf.rankly.day1_website_gemimail_66family_onboarding"],
+        labelEn: "Day-1 1-Click Website Onboarding, @gemitron.net Mailbox Pool & 66-Family Stealth Account Signup",
+        labelAr: "تهيئة الموقع في اليوم الأول وتجهيز صناديق بريد @gemitron.net والتسجيل الذاتي عبر ٦٦ عائلة منصات (+١٠,٠٠٠ مصدر)",
+        steps: [
+          "Create Rankly project via rankly.project.create and store webmaster/analytics credentials via rankly.providers.credential.store",
+          "Provision dedicated @gemitron.net mailboxes via rankly.mailboxes.provision for autonomous platform signups",
+          "Execute Scrapling StealthyFetcher account registration across all 66 platform families (10,000+ sources) via rankly.accounts.auto_register",
+          "Extract OTPs & verification links via rankly.mailboxes.track_verification and bind verified publishing credentials via rankly.adapters.credential.bind"
+        ]
+      },
       {
         id: "rankly.wf.drift_and_hydration_guard",
         labelEn: "24/7 SEO Drift & SSR vs JS Hydration Guardrail Loop",
@@ -1079,10 +1122,11 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.wf.full_seo_autopilot",
-        aliases: ["wf.rankly.full_money_robot_autopilot"],
-        labelEn: "End-to-End Money-Robot 3-Tier SEO Autopilot + TronCS Visuals",
-        labelAr: "التشغيل التلقائي الشامل للسيو والباك لينك الهرمي مع إنفوجرافيك TronCS",
+        aliases: ["wf.rankly.full_money_robot_autopilot", "rankly.wf.day1_website_gemimail_66family_onboarding"],
+        labelEn: "End-to-End Day-1 Website Onboarding, @gemitron.net 66-Family Stealth Signup & 3-Tier SEO Autopilot",
+        labelAr: "التشغيل التلقائي الشامل من تهيئة الموقع وبريد @gemitron.net والتسجيل عبر ٦٦ عائلة إلى الباك لينك الهرمي",
         steps: [
+          "Onboard website via rankly.project.create, provision dedicated @gemitron.net mailboxes via rankly.mailboxes.provision, and auto-register verified accounts across 66 platform families (10,000+ sources) via rankly.accounts.auto_register",
           "Crawl target site & live SERP/PAA via d4vinci/Scrapling to extract semantic keyword gaps",
           "Generate nested Spintax E-E-A-T articles (Claude Opus 5.5) + PhotoTron/FigTron infographic link-bait",
           "Publish Tier 1 contextual properties across Telegraph, Dev.to, Hashnode, Medium & WordPress",
@@ -1136,7 +1180,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.wf.local_gbp_map_pack_dominator",
-        aliases: ["rankly.wf.local_gbp_authority_blitz"],
+        aliases: ["rankly.wf.local_gbp_map_pack_dominator", "rankly.wf.local_gbp_authority_blitz"],
         labelEn: "Google Business Profile (GBP) Local 3-Pack & Citation Dominator",
         labelAr: "خطة السيطرة على نتائج الخرائط المحلية (Google Maps 3-Pack)",
         steps: [
@@ -1209,6 +1253,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
         }
       ],
       mcpToolBindings: [
+        "tarweeg.providers.connect",
         "tarweeg.providers.sync",
         "tarweeg.campaign.launch_saga",
         "tarweeg.campaign.pause",
@@ -1226,10 +1271,10 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       {
         id: "tarweeg.9platform_saga_compiler",
         aliases: ["skill.tarweeg.9platform_saga_compiler"],
-        labelEn: "9-Platform LaunchSaga Campaign Architect",
-        labelAr: "مهندس إطلاق الحملات الموحدة عبر ٩ منصات إعلانية (LaunchSaga)",
+        labelEn: "9-Platform Provider Onboarding & LaunchSaga Campaign Architect",
+        labelAr: "مهندس ربط الحسابات وإطلاق الحملات الموحدة عبر ٩ منصات إعلانية (LaunchSaga)",
         model: "gemini-4-argon-high",
-        tools: ["tarweeg.campaign.launch_saga", "tarweeg.audiences.manage", "tarweeg.providers.sync"]
+        tools: ["tarweeg.providers.connect", "tarweeg.campaign.launch_saga", "tarweeg.audiences.manage", "tarweeg.providers.sync"]
       },
       {
         id: "tarweeg.google_pmax_search_shopping_master",
