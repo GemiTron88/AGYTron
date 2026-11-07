@@ -740,36 +740,58 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
         "8-Pillar 100% Zero-Cost Webmaster, Analytics & Behavioral Intelligence Suite: (1) Deep Google Search Console (Search Analytics, URL Inspection, Sitemaps, Google Indexing API v3 urlNotifications:publish, Google Site Verification API v1, Striking-Distance/Cannibalization/Decay/CTR Opportunity Engine), (2) Deep Google Analytics 4 (Realtime & Data API v1beta, Admin API v1beta discovery, Measurement Protocol mp/collect, and GSC×GA4 Query->LandingPage->Conversion->Revenue Correlator), (3) Google CrUX 25-Week History API (queryHistoryRecord) & PageSpeed Insights v5 CWV Remediation Extractor, (4) Expanded Bing Webmaster Tools (GetQueryStats, GetCrawlStats, GetPageStats, GetRankAndTrafficStats, GetLinkCounts free inbound backlinks, GetUrlInfo, GetKeywordStats, SubmitUrlBatch, SubmitContent direct HTML push), (5) Yandex Webmaster API v4 (SQI Site Quality Index, popular queries, links/external/samples free backlinks, recrawl/queue, diagnostics), (6) Microsoft Clarity Live Insights API (Rage Clicks, Dead Clicks, Quickbacks/pogo-sticking, Scroll Depth, Active Time), (7) Cloudflare GraphQL Bot & AI-Crawler Log Analyzer (Googlebot, Bingbot, YandexBot, Applebot, GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot), and (8) Google Business Profile (GBP Local Posts & Reviews) + Breakout Trends & AI Overview / GEO Citation Tracker.",
         "d4vinci/Scrapling v0.5 Stealth Spider Engine (StealthyFetcher, DynamicFetcher, Fetcher) with adaptive=True self-healing DOM selector relocation, site audit spider, zero-cost SERP/PAA scraper, CMS footprint harvester, and CommonCrawl + live DOM backlink verifier.",
         "Money-Robot Style Autonomous Publishing Engine: 12 Zero-Cost API Adapters (Telegraph, Dev.to, Hashnode, Medium, Ghost, WordPress REST+XML-RPC, Blogger, Tumblr, GitHub Gist/Pages, Mastodon ActivityPub, Discourse, MediaWiki/BookStack) + 27 Stealth Browser Recipes across 1,000 classified publication sources.",
-        "Tiered Link Topology Engine (Tier 1 -> Tier 2 -> Tier 3 Pyramid, Closed/Open Link Wheel, Star) with recursive {a|b|{c|d}} SpintaxService (>= 75% shingle uniqueness) and Omni-Engine Indexer (Google Indexing API + Bing SubmitContent/UrlBatch + Yandex Recrawl + IndexNow + WebSub/PubSubHubbub + Ping-O-Matic XML-RPC + Wayback Machine)."
+        "Tiered Link Topology Engine (Tier 1 -> Tier 2 -> Tier 3 Pyramid, Closed/Open Link Wheel, Star) with recursive {a|b|{c|d}} SpintaxService (>= 75% shingle uniqueness) and Omni-Engine Indexer (Google Indexing API + Bing SubmitContent/UrlBatch + Yandex Recrawl + IndexNow + WebSub/PubSubHubbub + Ping-O-Matic XML-RPC + Wayback Machine).",
+        "Phase P22 7-Pillar Ultimate Next-Gen SEO & GEO Intelligence Suite: (1) 24/7 SEO Drift & Production Guardrail Monitor (17 rules + SSR vs JS Hydration Parity in seo_drift_baselines), (2) Internal Link Graph, GSC Equity Map & Okapi BM25 Semantic Interlinker (DOM zone weights: main 1.0x vs nav 0.35x vs footer 0.15x), (3) Cross-Engine Matrix (Google vs Bing rank delta) & GA4 AI Referral Tracker (ChatGPT, Perplexity, Claude, Gemini, Copilot, DeepSeek), (4) Advanced GSC Intelligence (Discover/News/Image/Video surfaces, Z-Score Anomaly Detector, Concentration Risk, Sitemap Dead-Weight Pruner), (5) AI Crawler Governance (14 AI bots in robots.txt), Standardized /llms.txt & /llms-full.txt Generator, and Live Wikidata Q-ID Entity Schema Linker, (6) Deep Technical SEO (LCP 4-Subpart Decomposer, Speculation Rules & bfcache Blocker Auditor, Hreflang Reciprocity Matrix, H1-H6 Hierarchy, Parasite-SEO Guard, GBP Q&A Seed), and (7) Automated Broken-Link Hijacker (404/410 Dead Outbound Link Hunter + Wayback Context + Replacement Outreach Pitch)."
       ],
       domainRules: [
         "Enforce strict per-project encrypted credential isolation (ProviderCredential + GoogleProjectSelection) across all 8 Webmaster & Analytics pillars.",
+        "Capture a MariaDB SEO Drift baseline before and after every major deployment and evaluate all 17 drift rules + SSR vs JS hydration parity.",
+        "Use DOM zone-weighted internal link graphs (main content 1.0x vs nav 0.35x vs footer 0.15x) and Okapi BM25 semantic matching to route internal link equity from top GSC pages to striking-distance pages (positions 4–20).",
+        "Generate standardized /llms.txt and /llms-full.txt Markdown files and link Schema.org JSON-LD entities to verified Wikidata Q-IDs (sameAs / about / mentions) for AI Overview, ChatGPT, and Perplexity citation authority.",
         "Prioritize GSC Striking-Distance queries (average position 4.0 to 20.0 with high impressions) for immediate content refresh, TronCS infographic embed, and Tier 1->2 link wheel boost.",
         "Detect and resolve Keyword Cannibalization whenever >= 2 URLs split clicks for the same GSC query by consolidating content, setting canonicals, or differentiating search intent.",
-        "Correlate GSC query impressions/clicks with GA4 Organic Search engagedSessions, keyEvents, and totalRevenue so link building and content creation focus on revenue-generating topics.",
-        "Cross-check Microsoft Clarity Quickbacks (pogo-sticking) and Rage/Dead Clicks alongside Google CrUX 25-week LCP/INP/CLS history; trigger FigTron layout fixes and ScaleTron WebP optimization when UX friction threatens rankings.",
-        "Monitor Cloudflare server-side bot logs to ensure both traditional search bots (Googlebot, Bingbot, YandexBot) and AI Search crawlers (GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot) receive HTTP 200 without 404/5xx crawl budget waste.",
-        "Harvest free verified competitor and domain backlinks by combining Bing GetLinkCounts, Yandex links/external/samples, and CommonCrawl CDX + Scrapling live DOM verification.",
+        "Correlate GSC query impressions/clicks with GA4 Organic Search engagedSessions, keyEvents, totalRevenue, and AI Engine referral channels.",
+        "Cross-check Microsoft Clarity Quickbacks (pogo-sticking) and Rage/Dead Clicks alongside Google CrUX 25-week LCP/INP/CLS history and LCP 4-subparts; trigger FigTron layout fixes and ScaleTron WebP optimization when UX friction threatens rankings.",
+        "Monitor Cloudflare server-side bot logs and robots.txt rules for all 14 AI crawlers (GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended) so search/retrieval bots are allowed while training bots follow owner policy.",
+        "Harvest free verified backlinks and broken-link hijacking opportunities via Bing GetLinkCounts, Yandex links/external/samples, CommonCrawl CDX, and BrokenLinkHijackerService.",
         "Enforce natural anchor-text safety ratios across Tier 1 -> Tier 2 -> Tier 3 topologies (35% branded, 25% naked URL, 20% generic, 15% topical partial-match, <= 5% exact-match).",
         "Generate deeply nested {a|b|{c|d}} Spintax with >= 75% shingle uniqueness and embed TronCS infographics/videos in every Tier 1 property."
       ],
       invariants: [
-        "100% Zero-Cost Guard: Never call paid third-party SEO APIs; use official first-party Webmaster/Analytics APIs, native protocols, and d4vinci/Scrapling.",
+        "100% Zero-Cost Guard: Never call paid third-party SEO APIs; use official first-party Webmaster/Analytics APIs, native protocols, Wikidata Action API, and d4vinci/Scrapling.",
         "Zero fabricated URLs, zero fake crc32/md5 backlink metrics, and zero counting of seed catalog rows as published links without HTTP 200 + live anchor readback proof.",
         "Never leak cross-project OAuth credentials; R2 write mutations require owner approval assertions and idempotency keys."
       ],
       diagnosticPlaybooks: [
         {
+          trigger: "Production deployment accidentally introduces noindex, canonical mismatch, H1 removal, or SSR vs JS hydration divergence",
+          diagnosis: "17-Rule SEO Drift Monitor detects critical regression against stored MariaDB baseline",
+          automatedAction: "Emit CRITICAL drift alert with exact field diff + verify robots.txt/meta tags + block indexing of broken state until reverted",
+          targetTools: ["rankly.seo.drift.monitor", "rankly.scrapling.audit"]
+        },
+        {
           trigger: "GSC Striking-Distance query detected at position 4–15 with > 500 impressions",
-          diagnosis: "Page is on the cusp of Top 3 exponentially higher CTR but needs E-E-A-T depth, fresh visual media, and contextual Tier 1 authority",
-          automatedAction: "Expand section with PAA answers + generate PhotoTron/FigTron infographic + publish 3 Tier 1 contextual properties (Telegraph/Dev.to/WordPress) boosted by Tier 2 social bookmarks + fire Omni-Index",
-          targetTools: ["rankly.google.gsc.opportunities", "rankly.content.generate", "photo.document.place", "rankly.tiered.build", "rankly.webmaster.omni_index"]
+          diagnosis: "Page is on the cusp of Top 3 exponentially higher CTR but needs internal link equity, E-E-A-T depth, and contextual Tier 1 authority",
+          automatedAction: "Run Okapi BM25 internal link matcher to add 3 contextual links from high-authority pages + expand PAA section + generate PhotoTron infographic + publish 3 Tier 1 properties + fire Omni-Index",
+          targetTools: ["rankly.google.gsc.opportunities", "rankly.links.equity_bm25", "rankly.content.generate", "photo.document.place", "rankly.tiered.build", "rankly.webmaster.omni_index"]
+        },
+        {
+          trigger: "High Bing Webmaster rankings (Top 3) but poor Google rankings (> Pos 15), or low AI referral traffic from ChatGPT/Perplexity",
+          diagnosis: "Cross-engine indexing/authority gap or missing /llms.txt and Wikidata entity disambiguation",
+          automatedAction: "Run cross-engine comparison + generate /llms.txt & Wikidata-linked JSON-LD schema + audit 14 AI crawlers in robots.txt",
+          targetTools: ["rankly.webmaster.cross_engine", "rankly.geo.llms_schema", "rankly.google.gsc.advanced_intelligence"]
+        },
+        {
+          trigger: "Slow mobile LCP (> 2.5s) or zero bfcache/instant-navigation hits",
+          diagnosis: "LCP 4-subparts bottleneck (TTFB, Resource Load Delay, Resource Load Duration, Element Render Delay) or missing Speculation Rules",
+          automatedAction: "Decompose LCP into 4 subparts + compress hero image via ScaleTron + inject <script type=\"speculationrules\"> prefetch/prerender JSON + remove unload/no-store bfcache blockers",
+          targetTools: ["rankly.technical.deep_audit", "scale.enhance.oklab_guided", "figtron.frame.create_autolayout"]
         },
         {
           trigger: "GSC Impressions are high (> 1,000) in Top 5 positions but CTR < 2.0%",
           diagnosis: "Uncompelling title/meta hook or missing FAQ/Product/Review JSON-LD rich result eligibility",
-          automatedAction: "Rewrite title tag with power numbers/brackets + inject validated JSON-LD schema + notify Google Indexing API (URL_UPDATED)",
-          targetTools: ["rankly.google.gsc.opportunities", "rankly.scrapling.audit", "rankly.google.indexing.notify"]
+          automatedAction: "Rewrite title tag with power numbers/brackets + inject validated Wikidata JSON-LD schema + notify Google Indexing API (URL_UPDATED)",
+          targetTools: ["rankly.google.gsc.opportunities", "rankly.geo.llms_schema", "rankly.google.indexing.notify"]
         },
         {
           trigger: "Microsoft Clarity shows Quickbacks > 22% or Dead Clicks > 5% on a high-ranking organic page",
@@ -791,6 +813,13 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
         }
       ],
       mcpToolBindings: [
+        "rankly.seo.drift.monitor",
+        "rankly.links.equity_bm25",
+        "rankly.webmaster.cross_engine",
+        "rankly.google.gsc.advanced_intelligence",
+        "rankly.geo.llms_schema",
+        "rankly.technical.deep_audit",
+        "rankly.outreach.broken_link_hijack",
         "rankly.google.accounts.list",
         "rankly.google.account.select",
         "rankly.google.index.inspect",
@@ -825,8 +854,64 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
     }),
     skills: Object.freeze([
       {
+        id: "rankly.seo_drift_guardian",
+        aliases: ["skill.rankly.seo_drift_guardian"],
+        labelEn: "24/7 SEO Drift & Production Guardrail Monitor (17 Rules + Hydration Parity)",
+        labelAr: "مراقب انحراف السيو وحارس الإنتاج (١٧ قاعدة وفحص تطابق SSR/JS)",
+        model: "gemini-3.8-flash-high",
+        tools: ["rankly.seo.drift.monitor", "rankly.scrapling.audit"]
+      },
+      {
+        id: "rankly.internal_link_bm25_architect",
+        aliases: ["skill.rankly.internal_link_bm25_architect"],
+        labelEn: "Internal Link Graph, GSC Equity Map & Okapi BM25 Semantic Interlinker",
+        labelAr: "مهندس خريطة الروابط الداخلية وتوزيع القوة عبر خوارزمية Okapi BM25",
+        model: "gemini-4-argon-high",
+        tools: ["rankly.links.equity_bm25", "rankly.google.gsc.opportunities"]
+      },
+      {
+        id: "rankly.cross_engine_ai_attribution",
+        aliases: ["skill.rankly.cross_engine_ai_attribution"],
+        labelEn: "Cross-Engine Matrix (Google vs Bing) & GA4 AI Referral Attribution Analyst",
+        labelAr: "محلل مقارنة المحركات (جوجل مقابل بينج) وتتبع زيارات محركات الذكاء الاصطناعي GA4",
+        model: "claude-sonnet-5-5-high",
+        tools: ["rankly.webmaster.cross_engine", "rankly.google.ga4.revenue_correlate", "rankly.bing.intelligence"]
+      },
+      {
+        id: "rankly.gsc_discover_prune_strategist",
+        aliases: ["skill.rankly.gsc_discover_prune_strategist"],
+        labelEn: "GSC Discover/News Surfaces, Z-Score Anomaly Detector & Sitemap Pruner",
+        labelAr: "خبير Google Discover وكاشف الشذوذ الإحصائي وتقليم الصفحات الميتة",
+        model: "gemini-4-argon-high",
+        tools: ["rankly.google.gsc.advanced_intelligence", "rankly.google.sitemaps.list"]
+      },
+      {
+        id: "rankly.llms_txt_wikidata_schema_engineer",
+        aliases: ["skill.rankly.llms_txt_wikidata_schema_engineer"],
+        labelEn: "AI Crawler Governance (14 Bots), /llms.txt Generator & Wikidata Entity Schema Engineer",
+        labelAr: "مهندس حوكمة عناكب AI وتوليد /llms.txt وربط الكيانات بمعرفات Wikidata Q-ID",
+        model: "claude-opus-5-5-high",
+        tools: ["rankly.geo.llms_schema", "rankly.trends_geo.analyze"]
+      },
+      {
+        id: "rankly.cwv_lcp_subparts_speculation_doctor",
+        aliases: ["skill.rankly.cwv_lcp_subparts_speculation_doctor"],
+        labelEn: "LCP 4-Subparts Decomposer, Speculation Rules, bfcache & Hreflang Doctor",
+        labelAr: "طبيب تفكيك مؤشر LCP الرباعي و Speculation Rules ومصفوفة Hreflang",
+        model: "claude-sonnet-5-5-high",
+        tools: ["rankly.technical.deep_audit", "rankly.google.pagespeed.inspect", "rankly.google.crux.history"]
+      },
+      {
+        id: "rankly.broken_link_hijacker",
+        aliases: ["skill.rankly.broken_link_hijacker"],
+        labelEn: "Automated Broken-Link Hijacker (404/410 Dead Outbound Link Hunter + Outreach Pitch)",
+        labelAr: "صائد الروابط الخارجية المعطلة (404/410) ومولّد عروض الاستبدال الآلية",
+        model: "gemini-4-argon-high",
+        tools: ["rankly.outreach.broken_link_hijack", "rankly.scrapling.footprints", "rankly.backlinks.verify"]
+      },
+      {
         id: "rankly.gsc_opportunity_strategist",
-        aliases: ["skill.rankly.gsc_opportunity_strategist"],
+        aliases: ["skill.rankly.gsc_opportunity_strategist", "rankly.gsc_opportunity_miner"],
         labelEn: "GSC Striking-Distance, Cannibalization & Decay Strategist",
         labelAr: "محلل فرص Google Search Console (الكلمات القريبة، التآكل، وتراجع النقرات)",
         model: "gemini-4-argon-high",
@@ -842,7 +927,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.bing_yandex_backlink_intelligence",
-        aliases: ["skill.rankly.bing_yandex_backlink_intelligence"],
+        aliases: ["skill.rankly.bing_yandex_backlink_intelligence", "rankly.bing_yandex_intelligence"],
         labelEn: "Bing & Yandex Webmaster Intelligence + Free Backlink Harvester",
         labelAr: "محلل أدوات مشرفي المواقع Bing وYandex واكتشاف الباك لينك المجاني",
         model: "gemini-4-argon-medium",
@@ -850,7 +935,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.clarity_crux_ux_cwv_healer",
-        aliases: ["skill.rankly.clarity_crux_ux_cwv_healer"],
+        aliases: ["skill.rankly.clarity_crux_ux_cwv_healer", "rankly.crux_cwv_doctor", "rankly.clarity_ux_behavior_analyst"],
         labelEn: "Microsoft Clarity UX Signals + CrUX 25-Week CWV Auto-Healer",
         labelAr: "معالج تجربة المستخدم (Clarity) ومؤشرات السرعة (CrUX & PageSpeed)",
         model: "claude-sonnet-5-5-high",
@@ -858,7 +943,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.cloudflare_bot_ai_log_analyzer",
-        aliases: ["skill.rankly.cloudflare_bot_ai_log_analyzer"],
+        aliases: ["skill.rankly.cloudflare_bot_ai_log_analyzer", "rankly.cloudflare_ai_bot_log_auditor"],
         labelEn: "Cloudflare Server-Side Googlebot & AI-Crawler (GPTBot/ClaudeBot) Log Analyzer",
         labelAr: "محلل سجلات زحف Googlebot وبوتات الذكاء الاصطناعي عبر Cloudflare",
         model: "gemini-3.8-flash-high",
@@ -866,7 +951,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.gbp_local_and_geo_trends",
-        aliases: ["skill.rankly.gbp_local_and_geo_trends"],
+        aliases: ["skill.rankly.gbp_local_and_geo_trends", "rankly.gbp_local_seo_commander", "rankly.geo_ai_citation_optimizer"],
         labelEn: "Google Business Profile (GBP) Local SEO + Breakout Trends & AI GEO Optimizer",
         labelAr: "مدير السيو المحلي (خرائط جوجل) والترندات والظهور في محركات AI (GEO)",
         model: "gemini-4-argon-high",
@@ -923,6 +1008,76 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
     ]),
     workflows: Object.freeze([
       {
+        id: "rankly.wf.drift_and_hydration_guard",
+        labelEn: "24/7 SEO Drift & SSR vs JS Hydration Guardrail Loop",
+        labelAr: "حلقة حراسة الإنتاج ضد انحراف السيو وفحص تطابق SSR/JS (١٧ قاعدة)",
+        steps: [
+          "Capture baseline snapshot of canonical, robots, title, H1, JSON-LD, and word count in MariaDB",
+          "Compare live HTTP + hydrated DOM against baseline via rankly.seo.drift.monitor (17 rules)",
+          "Emit severity-graded drift alerts and remediation diffs before search engines de-index affected pages"
+        ]
+      },
+      {
+        id: "rankly.wf.internal_link_bm25_sculptor",
+        labelEn: "Internal Link Equity Graph & Okapi BM25 Semantic Sculptor",
+        labelAr: "بناء خريطة القوة الداخلية وحقن روابط Okapi BM25 الدلالية",
+        steps: [
+          "Map DOM zone-weighted internal links (main 1.0x vs nav 0.35x vs footer 0.15x) and identify orphan/deep pages",
+          "Join with GSC performance to locate striking-distance pages (positions 4–20) needing internal equity",
+          "Compute Okapi BM25 relevance across site corpus and generate exact contextual anchor insertion snippets"
+        ]
+      },
+      {
+        id: "rankly.wf.cross_engine_and_ai_referrals",
+        labelEn: "Cross-Engine Rank Matrix (GSC vs Bing) & GA4 AI Referral Attribution",
+        labelAr: "مقارنة الترتيب عبر محركات البحث وتتبع زيارات وإيرادات محركات الذكاء الاصطناعي",
+        steps: [
+          "Compare query and page rankings across Google Search Console and Bing Webmaster via rankly.webmaster.cross_engine",
+          "Attribute GA4 sessions, engaged sessions, conversions, and revenue from ChatGPT, Perplexity, Claude, Gemini, Copilot, and DeepSeek",
+          "Prioritize high-converting AI referral landing pages for /llms.txt and Wikidata entity schema enrichment"
+        ]
+      },
+      {
+        id: "rankly.wf.gsc_discover_anomaly_and_prune",
+        labelEn: "GSC Discover/News Optimizer, Z-Score Anomaly Guard & Sitemap Pruner",
+        labelAr: "تحسين الظهور في Google Discover وكشف الشذوذ الإحصائي وتقليم المحتوى الميت",
+        steps: [
+          "Analyze Web vs Image vs Video vs News vs Discover surface breakdown via rankly.google.gsc.advanced_intelligence",
+          "Run rolling Z-score anomaly detection and top-3 URL concentration risk checks",
+          "Audit XML sitemaps for zero-impression dead weight and classify URLs into Keep, Refresh, Consolidate (301), or Prune"
+        ]
+      },
+      {
+        id: "rankly.wf.geo_llms_txt_and_wikidata_schema",
+        labelEn: "AI Crawler Governance, /llms.txt Generator & Wikidata Entity Schema Graph",
+        labelAr: "توليد حزمة /llms.txt وفحص ١٤ زاحف ذكاء اصطناعي وربط كيانات Wikidata JSON-LD",
+        steps: [
+          "Audit robots.txt permissions across 14 AI search vs training crawlers (OAI-SearchBot, GPTBot, ClaudeBot, PerplexityBot...)",
+          "Generate standardized /llms.txt and /llms-full.txt Markdown files from top project pages",
+          "Query live Wikidata Action API (wbsearchentities) to inject verified Q-IDs into Organization/Article/FAQPage JSON-LD"
+        ]
+      },
+      {
+        id: "rankly.wf.lcp_subparts_and_speculation_rules",
+        labelEn: "Deep CWV LCP 4-Subpart Decomposer, Speculation Rules & Hreflang Matrix",
+        labelAr: "تفكيك مؤشر LCP الرباعي وتوليد Speculation Rules وفحص مصفوفة Hreflang",
+        steps: [
+          "Decompose LCP into TTFB, Resource Load Delay, Resource Load Duration, and Element Render Delay via rankly.technical.deep_audit",
+          "Audit <script type=\"speculationrules\"> and bfcache blockers (unload listeners, Cache-Control: no-store)",
+          "Validate hreflang reciprocity, x-default, H1-H6 hierarchy, and ScaleTron WebP compression"
+        ]
+      },
+      {
+        id: "rankly.wf.broken_link_404_hijacker",
+        labelEn: "Automated Broken-Link Hijacker (404/410 Outbound Link Hunter + Outreach Pitch)",
+        labelAr: "صيد الروابط الخارجية الميتة (404/410) في صفحات المصادر وتوليد عروض الاستبدال",
+        steps: [
+          "Scan niche resource pages via rankly.outreach.broken_link_hijack to detect dead 404/410 outbound links",
+          "Verify historical snapshot context via Archive.org Wayback CDX API",
+          "Generate personalized replacement outreach emails pitching our live high-E-E-A-T URL"
+        ]
+      },
+      {
         id: "rankly.wf.full_seo_autopilot",
         aliases: ["wf.rankly.full_money_robot_autopilot"],
         labelEn: "End-to-End Money-Robot 3-Tier SEO Autopilot + TronCS Visuals",
@@ -948,6 +1103,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.wf.striking_distance_top3_accelerator",
+        aliases: ["rankly.wf.gsc_striking_distance_booster"],
         labelEn: "GSC Striking-Distance (Pos 4–15) to Top-3 Accelerator",
         labelAr: "مسرّع دفع الكلمات القريبة (المراكز ٤-١٥ في جوجل) إلى المراكز الثلاثة الأولى",
         steps: [
@@ -958,6 +1114,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.wf.clarity_crux_bounce_recovery",
+        aliases: ["rankly.wf.cwv_clarity_ux_remediation"],
         labelEn: "Clarity Pogo-Sticking & CrUX Core Web Vitals Recovery",
         labelAr: "معالجة ارتداد الزوار (Pogo-Sticking) وتحسين مؤشرات Core Web Vitals",
         steps: [
@@ -968,6 +1125,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.wf.ai_search_geo_and_bot_log_optimizer",
+        aliases: ["rankly.wf.ai_geo_visibility_and_bot_audit"],
         labelEn: "AI Search (GEO) Citation & Cloudflare Crawler Budget Optimizer",
         labelAr: "تحسين الظهور في إجابات الذكاء الاصطناعي (ChatGPT/Perplexity/AI Overviews) وسجلات الزحف",
         steps: [
@@ -978,6 +1136,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.wf.local_gbp_map_pack_dominator",
+        aliases: ["rankly.wf.local_gbp_authority_blitz"],
         labelEn: "Google Business Profile (GBP) Local 3-Pack & Citation Dominator",
         labelAr: "خطة السيطرة على نتائج الخرائط المحلية (Google Maps 3-Pack)",
         steps: [
@@ -988,7 +1147,7 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
       },
       {
         id: "rankly.wf.scrapling_audit_and_footprint_harvest",
-        aliases: ["wf.rankly.scrapling_audit_and_footprint_harvest"],
+        aliases: ["wf.rankly.scrapling_audit_and_footprint_harvest", "rankly.wf.omni_engine_instant_indexing", "rankly.wf.ga4_gsc_revenue_funnel_bridge"],
         labelEn: "Deep Scrapling Technical Audit + Bing/Yandex/CommonCrawl Backlink Harvester",
         labelAr: "الفحص التقني العميق واكتشاف الباك لينك ومنصات النشر عبر Scrapling وBing وYandex",
         steps: [
