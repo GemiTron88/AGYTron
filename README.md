@@ -1,6 +1,6 @@
 # AGYTron (`GemiTron88/AGYTron` · `@gemitron/agy-tron`)
 
-**Global AGY AI Creative Director, ToS-Safe Host-Inversion SDK, Dual Cloud/Local GemiMCP Bridge, and Premium Control Studio** for all 6 **TronCS Creative Suite** applications:
+**Global AGY AI Creative Director, ToS-Safe Host-Inversion SDK, Multi-Provider Hybrid LLM Router, 7-App Closed-Loop Mathematical Critics, Dual Cloud/Local GemiMCP Bridge, and Control Studio** for all 7 **TronCS Creative Suite** applications (Desktop + Mobile):
 
 1. **PhotoTron** (`.pcraft` / `.psd`) — Key art compositing, hero retouching, Arabic display typography
 2. **AfterTron** (`.acraft` / `.aep`) — Node/layer VFX, 3D camera tracking, easy-ease keyframe choreography
@@ -71,5 +71,12 @@ node ./bin/tron-agy.mjs skills --app phototron
 node ./bin/tron-agy.mjs workflows --app phototron
 node ./bin/tron-agy.mjs quota
 node ./bin/tron-agy.mjs fleet --probe
+
+# Run FigTron Creative Director, Closed-Loop Critique & Flutter/React Codegen
+node ./bin/tron-agy.mjs figtron-director --preset bilingual-rtl-ltr-mirror --prompt "تطبيق بنكي عربي متجاوب"
+node ./bin/tron-agy.mjs codegen --target flutter --palette inferno-dark
+
+# Launch AGY Node Daemon (:18220) with /ui Control Studio & /v1/agy/suite/* APIs
+node ./bin/agy-node-daemon.mjs --node-id win-local --port 18220
 ```
 

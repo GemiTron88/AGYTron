@@ -28,7 +28,13 @@ import {
   executeGlobalAgySmartMind,
   buildFilmEditorialDirections,
   translateSubjectiveArabicFeedback,
-  critiqueFilmTimeline
+  critiqueFilmTimeline,
+  FIGTRON_DESIGN_PRESETS,
+  buildSuiteCreativeDirection,
+  translateSubjectiveSuiteFeedback,
+  critiqueAndRepairSuitePlan,
+  generateFigTronCodeSnippet,
+  callGemiMcpTool
 } from "../src/index.mjs";
 import { AGY_FLEET_NODES, DEFAULT_FLEET_ADDRESSES } from "../src/fleet-router.mjs";
 import { resolveMcpTransportConfig } from "../src/mcp-bridge.mjs";
@@ -165,6 +171,72 @@ export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
       fps,
       durationSec,
       locale
+    });
+  }
+
+  const directorAppMap = {
+    "suite-director": service,
+    "figtron-director": "figtron",
+    "photo-director": "phototron",
+    "after-director": "aftertron",
+    "motion-director": "gemimotion",
+    "light-director": "lighttron",
+    "scale-director": "scaletron"
+  };
+  if (Object.hasOwn(directorAppMap, firstArg)) {
+    return buildSuiteCreativeDirection({
+      appId: directorAppMap[firstArg],
+      prompt,
+      presetId: readFlag("--preset", null),
+      paletteId: readFlag("--palette", "inferno-dark"),
+      fps,
+      durationSec,
+      locale
+    });
+  }
+
+  if (firstArg === "suite-feedback") {
+    return translateSubjectiveSuiteFeedback({
+      appId: service,
+      feedbackText: feedback || prompt,
+      currentFps: fps,
+      locale
+    });
+  }
+
+  if (firstArg === "suite-critique") {
+    return critiqueAndRepairSuitePlan({
+      appId: service,
+      spec: {},
+      maxPasses: AGY_EFFORT_TIERS[effort]?.maxCritiquePasses || 3
+    });
+  }
+
+  if (firstArg === "codegen") {
+    const target = readFlag("--target", "flutter");
+    const paletteId = readFlag("--palette", "inferno-dark");
+    return generateFigTronCodeSnippet({
+      target,
+      spec: { paletteId, locale, frames: [] }
+    });
+  }
+
+  if (firstArg === "figtron-presets") {
+    return {
+      ok: true,
+      command: "figtron-presets",
+      presets: Object.values(FIGTRON_DESIGN_PRESETS)
+    };
+  }
+
+  if (firstArg === "mcp-call") {
+    const toolName = readFlag("--tool", "figtron.frame.create_autolayout");
+    return callGemiMcpTool({
+      product: service,
+      transport: mcpTransport,
+      authMode,
+      toolName,
+      args: {}
     });
   }
 

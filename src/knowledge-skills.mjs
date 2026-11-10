@@ -1454,6 +1454,9 @@ export function getAppKnowledgeAndSkills(appId = "rankly") {
     "film-mobile": "filmtron",
     motion: "gemimotion",
     fig: "figtron",
+    "figtron-mobile": "figtron",
+    "fig-mobile": "figtron",
+    figtronmobile: "figtron",
     light: "lighttron",
     scale: "scaletron"
   };

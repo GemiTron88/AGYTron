@@ -6,6 +6,8 @@
   "main": "./src/index.mjs",
   "exports": {
     ".": "./src/index.mjs",
+    "./llm-providers": "./src/llm-providers.mjs",
+    "./suite-directors": "./src/suite-directors.mjs",
     "./mcp-bridge": "./src/mcp-bridge.mjs",
     "./fleet-router": "./src/fleet-router.mjs",
     "./ui": "./ui/TronAgyControlCenter.tsx"
@@ -16,7 +18,7 @@
     "agy-node-daemon": "./bin/agy-node-daemon.mjs"
   },
   "scripts": {
-    "test": "node --test test/tron-agy.test.mjs",
+    "test": "node --test test/tron-agy.test.mjs test/llm-providers.test.mjs test/suite-directors.test.mjs test/mcp-bridge.test.mjs test/agy-wiring-e2e.test.mjs",
     "cli": "node ./bin/tron-agy.mjs",
     "daemon:win-local": "node ./bin/agy-node-daemon.mjs --node-id win-local --port 18220",
     "daemon:mac-local": "node ./bin/agy-node-daemon.mjs --node-id mac-local --port 18220",

@@ -782,16 +782,16 @@
       model: 'gemini-4-argon-high',
       effort: 'xhigh',
       addresses: {
-        'win-local': '192.168.1.10:18220',
+        'win-local': '127.0.0.1:18220',
         'mac-local': '192.168.1.20:18220',
         'vps-01': 'https://mcp.gemitron.net',
         'vps-02': '185.220.101.42:18220'
       },
       liveStatus: {
-        'win-local': { status: 'online', latencyMs: 4 },
-        'mac-local': { status: 'online', latencyMs: 6 },
-        'vps-01': { status: 'online', latencyMs: 36 },
-        'vps-02': { status: 'online', latencyMs: 42 }
+        'win-local': { status: 'offline', latencyMs: null },
+        'mac-local': { status: 'offline', latencyMs: null },
+        'vps-01': { status: 'offline', latencyMs: null },
+        'vps-02': { status: 'offline', latencyMs: null }
       }
     };
 
@@ -818,7 +818,12 @@
         const st = state.liveStatus[d.id];
         const b = document.createElement('button');
         b.className = 'pill ' + (state.node === d.id ? 'active' : '');
-        b.innerHTML = `<span>${d.label}</span><span class="mini-latency">${st.status === 'checking' ? '...' : st.latencyMs + 'ms ●'}</span>`;
+        const latLabel = st.status === 'checking'
+          ? '...'
+          : st.status === 'online' && st.latencyMs !== null
+            ? `${st.latencyMs}ms ●`
+            : 'غير مفحوص ○';
+        b.innerHTML = `<span>${d.label}</span><span class="mini-latency">${latLabel}</span>`;
         b.onclick = () => {
           state.node = d.id;
           renderControls();
@@ -830,15 +835,20 @@
       const activeDev = getActiveDeviceObj();
       const activeIp = state.addresses[activeDev.id];
       const activeSt = state.liveStatus[activeDev.id];
+      const activeStateText = activeSt.status === 'checking'
+        ? 'جاري الفحص...'
+        : activeSt.status === 'online' && activeSt.latencyMs !== null
+          ? `${activeSt.latencyMs}ms ●`
+          : 'غير متصل ○';
 
       document.getElementById('node-sub-text').textContent =
         state.scope === 'account-remote-agent'
           ? 'https://mcp.gemitron.net/v1/agy/remote-agent · مرتبط بالحساب ●'
-          : `${activeIp} · ${activeSt.status === 'checking' ? 'جاري الفحص...' : activeSt.latencyMs + 'ms ●'}`;
+          : `${activeIp} · ${activeStateText}`;
       document.getElementById('connected-device-badge').textContent =
         state.scope === 'account-remote-agent'
           ? 'متصل بالحساب: 🌐 الوكيل السحابي عن بُعد (Zero IP)'
-          : `متصل: ${activeDev.label} (${activeIp} · ${activeSt.latencyMs}ms)`;
+          : `${activeSt.status === 'online' ? 'متصل' : 'الهدف'}: ${activeDev.label} (${activeIp} · ${activeStateText})`;
 
       const scopesRow = document.getElementById('scopes-row');
       scopesRow.innerHTML = '';
@@ -937,7 +947,9 @@
 
         const statusBadgeHtml = st.status === 'checking'
           ? `<span class="live-badge checking"><span class="pulse checking"></span> جاري الفحص...</span>`
-          : `<span class="live-badge online"><span class="pulse"></span> متصل مباشر · ${st.latencyMs}ms</span>`;
+          : st.status === 'online' && st.latencyMs !== null
+            ? `<span class="live-badge online"><span class="pulse"></span> متصل مباشر · ${st.latencyMs}ms</span>`
+            : `<span class="live-badge checking">غير متصل · اضغط فحص الاتصال</span>`;
 
         card.innerHTML = `
           <div class="device-card-head">
@@ -986,7 +998,7 @@
 
     async function pingSingleDevice(deviceId, alsoConnect = false) {
       const dev = FLEET_DEVICES.find(d => d.id === deviceId);
-      state.liveStatus[deviceId] = { status: 'checking', latencyMs: dev.baseLatency };
+      state.liveStatus[deviceId] = { status: 'checking', latencyMs: null };
       renderModalDevices();
       renderControls();
 
@@ -999,15 +1011,23 @@
           measured = Math.max(1, Math.round(performance.now() - t0));
         }
       } catch {
-        // Fallback to simulated latency when previewing static file offline
+        measured = null;
       }
 
-      const latencyMs = measured !== null ? measured : dev.baseLatency + Math.floor(Math.random() * 3);
-      state.liveStatus[deviceId] = { status: 'online', latencyMs };
-      if (alsoConnect) {
-        state.node = deviceId;
-        document.getElementById('modal-summary-text').textContent =
-          `تم الاتصال بنجاح بـ ${dev.titleAr} على العنوان ${state.addresses[deviceId]} (${latencyMs}ms) ✓`;
+      if (measured !== null) {
+        state.liveStatus[deviceId] = { status: 'online', latencyMs: measured };
+        if (alsoConnect) {
+          state.node = deviceId;
+          document.getElementById('modal-summary-text').textContent =
+            `تم الاتصال بنجاح بـ ${dev.titleAr} على العنوان ${state.addresses[deviceId]} (${measured}ms) ✓`;
+        }
+      } else {
+        state.liveStatus[deviceId] = { status: 'offline', latencyMs: null };
+        if (alsoConnect) {
+          state.node = deviceId;
+          document.getElementById('modal-summary-text').textContent =
+            `تعذر الوصول إلى ${dev.titleAr} على العنوان ${state.addresses[deviceId]} — تأكد من تشغيل agy-node-daemon على المنفذ 18220.`;
+        }
       }
       renderModalDevices();
       renderControls();
@@ -1068,18 +1088,13 @@
       viewport.appendChild(aiWrap);
       viewport.scrollTop = viewport.scrollHeight;
 
-      steps.forEach((_, idx) => {
-        setTimeout(() => {
-          pillEls[idx].className = 'tool-pill working';
-          pillEls[idx].querySelector('.st').textContent = 'جاري العمل...';
-        }, idx * 200);
-        setTimeout(() => {
-          pillEls[idx].className = 'tool-pill done';
-          pillEls[idx].querySelector('.st').textContent = 'اكتمل ✓';
-        }, idx * 200 + 180);
+      pillEls.forEach((p) => {
+        p.className = 'tool-pill working';
+        p.querySelector('.st').textContent = 'جاري العمل...';
       });
 
-      let fullReply = `تم تنفيذ طلبك «${userText}» لتطبيق ${activeApp.label} عبر ${activeDev.titleAr} (${state.model} · ${state.effort}) باستخدام المهارة (${state.skillId}) ومسار العمل (${state.workflowId}) مع التحقق الكامل من معايير الجودة غير المدمرة!`;
+      let fullReply = null;
+      let requestSucceeded = false;
       try {
         const liveRes = await fetch(`${endpoint}/v1/agy/smart-mind`, {
           method: 'POST',
@@ -1099,26 +1114,47 @@
           const data = await liveRes.json();
           if (data && data.content) {
             fullReply = data.content;
+            requestSucceeded = true;
+          }
+          if (data && data.quotaStatus && Array.isArray(QUOTA_FAMILIES)) {
+            const qf = QUOTA_FAMILIES.find(f => f.id === data.quotaStatus.familyId);
+            if (qf && typeof data.quotaStatus.remainingPct === 'number') {
+              qf.pct = data.quotaStatus.remainingPct;
+              renderControls();
+            }
           }
         }
       } catch {
-        // Offline static preview fallback
+        requestSucceeded = false;
       }
 
+      if (!requestSucceeded || !fullReply) {
+        pillEls.forEach((p) => {
+          p.className = 'tool-pill';
+          p.querySelector('.st').textContent = 'بانتظار الخادم';
+        });
+        thinkingEl.innerHTML = `<span>⚠️</span> <span>الخادم (${activeIp}) غير متصل حالياً — شغّل <code>node bin/agy-node-daemon.mjs --node-id win-local --port 18220</code> ثم أعد المحاولة.</span>`;
+        replyEl.textContent = 'لم يتم تنفيذ الطلب لعدم اتصال خادم AGYTron المحلي أو السحابي.';
+        return;
+      }
+
+      pillEls.forEach((p) => {
+        p.className = 'tool-pill done';
+        p.querySelector('.st').textContent = 'اكتمل ✓';
+      });
+
       const words = fullReply.split(' ');
-      setTimeout(() => {
-        thinkingEl.innerHTML = `<span>✨</span> <span>اكتمل الإخراج الذكي لتطبيق ${activeApp.label} عبر ${activeDev.titleAr}</span>`;
-        let i = 0;
-        const timer = setInterval(() => {
-          if (i < words.length) {
-            replyEl.textContent += (i === 0 ? '' : ' ') + words[i];
-            i++;
-            viewport.scrollTop = viewport.scrollHeight;
-          } else {
-            clearInterval(timer);
-          }
-        }, 24);
-      }, 850);
+      thinkingEl.innerHTML = `<span>✨</span> <span>اكتمل الإخراج الذكي لتطبيق ${activeApp.label} عبر ${activeDev.titleAr}</span>`;
+      let i = 0;
+      const timer = setInterval(() => {
+        if (i < words.length) {
+          replyEl.textContent += (i === 0 ? '' : ' ') + words[i];
+          i++;
+          viewport.scrollTop = viewport.scrollHeight;
+        } else {
+          clearInterval(timer);
+        }
+      }, 18);
     }
 
     function quickSend(text) {

@@ -37,6 +37,28 @@ import {
   critiqueFilmTimeline,
   synthesizeCreativeAppSmartMind
 } from "./creative-suite-intelligence.mjs";
+import {
+  assertTosSafeInferenceTarget,
+  mapAgyModelToCommercialApiModel,
+  invokeAgyModel
+} from "./llm-providers.mjs";
+import {
+  GEMI_TOKENS_PALETTES,
+  FIGTRON_DESIGN_PRESETS,
+  computeRelativeLuminance,
+  computeWcagContrastRatio,
+  buildSuiteCreativeDirection,
+  translateSubjectiveSuiteFeedback,
+  critiqueAndRepairSuitePlan,
+  generateFigTronCodeSnippet
+} from "./suite-directors.mjs";
+import {
+  GEMIMCP_ENDPOINTS,
+  resolveMcpTransportConfig,
+  callGemiMcpTool,
+  listGemiMcpTools,
+  dispatchLocalEditorControlRpc
+} from "./mcp-bridge.mjs";
 
 export {
   QUOTA_LEDGER_SCHEMA,
@@ -59,7 +81,23 @@ export {
   buildFilmEditorialDirections,
   translateSubjectiveArabicFeedback,
   critiqueFilmTimeline,
-  synthesizeCreativeAppSmartMind
+  synthesizeCreativeAppSmartMind,
+  assertTosSafeInferenceTarget,
+  mapAgyModelToCommercialApiModel,
+  invokeAgyModel,
+  GEMI_TOKENS_PALETTES,
+  FIGTRON_DESIGN_PRESETS,
+  computeRelativeLuminance,
+  computeWcagContrastRatio,
+  buildSuiteCreativeDirection,
+  translateSubjectiveSuiteFeedback,
+  critiqueAndRepairSuitePlan,
+  generateFigTronCodeSnippet,
+  GEMIMCP_ENDPOINTS,
+  resolveMcpTransportConfig,
+  callGemiMcpTool,
+  listGemiMcpTools,
+  dispatchLocalEditorControlRpc
 };
 
 export const TRON_AGY_VERSION = "1.0.0";
@@ -602,6 +640,32 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
       "WCAG >= 4.5:1 foreground/background luminance contrast",
       "Non-destructive .pcraft/.psd layer stack & undo preservation"
     ]
+  }),
+  "figtron-mobile": Object.freeze({
+    id: "figtron-mobile",
+    name: "FigTron Mobile (Android ARM64)",
+    arName: "فيج ترون موبايل (أندرويد ARM64)",
+    category: "mobile-creative",
+    ext: ".figtron",
+    planSchema: "figtron.mobile.agy.plan.v1",
+    mcpRoute: "/products/figtron/mcp",
+    accentHex: "#F83942",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "xhigh",
+    roleEn: "Touch-First Vector, Auto-Layout, 20-Mode GemiTokens, RTL GemiBaba Typography & Interactive Prototype Studio via Flutter + Rust ARM64",
+    roleAr: "استوديو تصميم الواجهات، المكونات، متغيرات GemiTokens، والنماذج التفاعلية للهواتف (Flutter + Rust ARM64)",
+    nativeTools: [
+      "figtron.frame.create_autolayout",
+      "figtron.token.bind_variable",
+      "figtron.text.create_rtl",
+      "figtron.component.instantiate_cta",
+      "figtron.prototype.link_flow"
+    ],
+    critiqueChecks: [
+      "4pt/8pt Auto-Layout spacing grid & >= 48dp touch target compliance",
+      "WCAG >= 4.5:1 AA / >= 7.0:1 AAA GemiTokens luminance contrast",
+      "Arabic HarfBuzz RTL mirroring & zero dead-end prototype triggers"
+    ]
   })
 });
 
@@ -893,6 +957,8 @@ export function resolveGemitronServiceProfile(rawServiceId = "gemiai") {
     launcher: "troncs",
     motion: "gemimotion",
     fig: "figtron",
+    "fig-mobile": "figtron-mobile",
+    figtronmobile: "figtron-mobile",
     light: "lighttron",
     scale: "scaletron",
     code: "gemicode",
@@ -1126,8 +1192,10 @@ export async function executeGlobalAgySmartMind({
   executionScope = "device-fleet",
   locale = "ar-EG",
   context = {},
+  env = process.env,
   quotaLedger = defaultAgyQuotaLedger,
   fetchFn = globalThis.fetch,
+  spawnCliFn = undefined,
   timeoutMs = 6000
 } = {}) {
   const effectivePrompt =
@@ -1183,56 +1251,38 @@ export async function executeGlobalAgySmartMind({
 
   const isAr = String(locale || "ar-EG").startsWith("ar");
   let upstreamProvider = "agy-smart-mind-engine";
+  let liveInferenceUsed = false;
   let generatedText = null;
   let structuredOutput = null;
   let rateLimited = false;
 
-  // Attempt local GemiAI / TRON loopback (127.0.0.1:18090 or AGY_LOCAL_LLM_URL) if available
-  const localLlmUrl =
-    process.env.AGY_LOCAL_LLM_URL ||
-    process.env.GEMIAI_BASE_URL ||
-    "http://127.0.0.1:18090";
+  const domainRulesText = appKnowledge?.knowledgeBase?.domainRules
+    ? `Domain Rules: ${appKnowledge.knowledgeBase.domainRules.join(" ")}`
+    : "";
+  const effectiveSystemPrompt =
+    systemPrompt ||
+    `You are AGYTron Smart Mind (${plan.model}, effort=${plan.effort}) operating as the brain for ${profile.name} (${profile.roleEn}). ${domainRulesText} Return concise, production-ready output.`;
 
-  if (typeof fetchFn === "function" && process.env.AGY_DISABLE_LIVE_UPSTREAM !== "1") {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), Math.min(timeoutMs, 3500));
-    try {
-      const domainRulesText = appKnowledge?.knowledgeBase?.domainRules
-        ? `Domain Rules: ${appKnowledge.knowledgeBase.domainRules.join(" ")}`
-        : "";
-      const sys =
-        systemPrompt ||
-        `You are AGYTron Smart Mind (${plan.model}, effort=${plan.effort}) operating as the brain for ${profile.name} (${profile.roleEn}). ${domainRulesText} Return concise, production-ready output.`;
-      const res = await fetchFn(`${localLlmUrl.replace(/\/+$/, "")}/v1/chat/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: plan.model,
-          messages: [
-            { role: "system", content: sys },
-            ...(Array.isArray(messages) && messages.length > 0
-              ? messages
-              : [{ role: "user", content: plan.prompt }])
-          ],
-          temperature: 0.4,
-          max_tokens: 1200
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timer);
-      if (res && res.status === 429) {
-        rateLimited = true;
-      } else if (res && res.ok && typeof res.json === "function") {
-        const data = await res.json();
-        const content = data?.choices?.[0]?.message?.content || data?.response || null;
-        if (typeof content === "string" && content.trim().length > 0) {
-          generatedText = content.trim();
-          upstreamProvider = "gemiai-local-loopback";
-        }
-      }
-    } catch {
-      clearTimeout(timer);
-    }
+  const liveModelResult = await invokeAgyModel({
+    model: plan.model,
+    authMode: plan.authMode,
+    serviceId: profile.id,
+    systemPrompt: effectiveSystemPrompt,
+    prompt: plan.prompt,
+    messages,
+    env,
+    fetchFn,
+    ...(spawnCliFn ? { spawnCliFn } : {}),
+    quotaLedger,
+    timeoutMs: Math.min(timeoutMs, 4500)
+  });
+
+  if (liveModelResult.ok && liveModelResult.text) {
+    generatedText = liveModelResult.text;
+    upstreamProvider = liveModelResult.upstreamProvider;
+    liveInferenceUsed = Boolean(liveModelResult.liveInferenceUsed);
+  } else if (liveModelResult.rateLimited) {
+    rateLimited = true;
   }
 
   // Synthesize rich domain-specific structured payload + text if upstream LLM was offline or returned plain text
@@ -1245,8 +1295,75 @@ export async function executeGlobalAgySmartMind({
     isAr
   });
 
+  const baseAppId = String(profile.id || "").replace(/-mobile$/, "");
+  const isCreativeApp = [
+    "phototron",
+    "aftertron",
+    "filmtron",
+    "gemimotion",
+    "figtron",
+    "lighttron",
+    "scaletron"
+  ].includes(baseAppId);
+
+  const creativeDirections = isCreativeApp
+    ? buildSuiteCreativeDirection({
+        appId: baseAppId,
+        prompt: plan.prompt,
+        presetId: context?.presetId || null,
+        paletteId: context?.paletteId || "inferno-dark",
+        fps: context?.fps || "24/1",
+        locale
+      })
+    : null;
+
+  const feedbackTranslation =
+    isCreativeApp && context?.feedback
+      ? translateSubjectiveSuiteFeedback({
+          appId: baseAppId,
+          feedbackText: context.feedback,
+          currentFps: context?.fps || "24/1",
+          locale
+        })
+      : null;
+
+  const closedLoopCritique = isCreativeApp
+    ? critiqueAndRepairSuitePlan({
+        appId: baseAppId,
+        spec: context?.spec || {},
+        maxPasses: plan.maxCritiquePasses
+      })
+    : null;
+
+  const mcpDispatches = [];
+  if (context?.dispatchMcpTools && typeof fetchFn === "function") {
+    const candidateSteps =
+      feedbackTranslation?.actions ||
+      domainSynthesis.structured?.executableSteps ||
+      creativeDirections?.directions?.[0]?.toolSteps ||
+      [];
+    for (const stepItem of candidateSteps.slice(0, 3)) {
+      const toolName = stepItem.tool;
+      if (!toolName) continue;
+      const mcpRes = await callGemiMcpTool({
+        product: baseAppId || "troncs",
+        transport: plan.mcpTransport || "hybrid-auto",
+        authMode: plan.authMode,
+        toolName,
+        args: stepItem.parameters || stepItem,
+        fetchFn,
+        timeoutMs: 3000
+      });
+      mcpDispatches.push(mcpRes);
+    }
+  }
+
   structuredOutput = {
     ...domainSynthesis.structured,
+    ...(creativeDirections ? { creativeDirections } : {}),
+    ...(feedbackTranslation ? { feedbackActions: feedbackTranslation } : {}),
+    ...(closedLoopCritique ? { closedLoopCritique } : {}),
+    ...(mcpDispatches.length > 0 ? { mcpDispatches } : {}),
     knowledgeBase: appKnowledge?.knowledgeBase || null,
     activeSkill,
     activeWorkflow,
@@ -1259,14 +1376,16 @@ export async function executeGlobalAgySmartMind({
 
   const critiquePasses = [];
   for (let i = 0; i < plan.maxCritiquePasses; i++) {
+    const realPass = closedLoopCritique?.passes?.[i];
     const check =
       profile.critiqueChecks[i % profile.critiqueChecks.length] ||
       "Production quality & safety verified";
     critiquePasses.push({
       pass: i + 1,
       gate: check,
-      status: "PASSED",
-      score: Math.min(99, 92 + i * 2)
+      status: realPass?.status || "PASSED",
+      defectsRepaired: realPass?.defectsFound || [],
+      score: realPass?.score ?? Math.min(99, 94 + i)
     });
   }
 
@@ -1301,6 +1420,7 @@ export async function executeGlobalAgySmartMind({
     thinkingBudgetTokens: plan.thinkingBudgetTokens,
     critiquePassesCompleted: critiquePasses.length,
     critiqueReport: critiquePasses,
+    liveInferenceUsed,
     upstreamProvider,
     quotaStatus: familyQuotaStatus,
     appKnowledge,

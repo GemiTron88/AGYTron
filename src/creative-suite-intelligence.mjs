@@ -1070,16 +1070,19 @@ export function synthesizeCreativeAppSmartMind({
     };
   }
 
-  if (appId === "figtron") {
+  if (appId === "figtron" || appId === "figtron-mobile") {
     const structured = {
-      engine: "figtron-agy-smart-mind",
+      engine: `${profile.id}-agy-smart-mind`,
       service: profile.id,
       serviceName: profile.name,
       model: plan.model,
       effort: plan.effort,
       task,
+      presetId: context.presetId || "auto-layout-responsive-system",
       designTokenSystem: {
         theme: "Inferno Pixel Glass",
+        paletteId: context.paletteId || "inferno-dark",
+        modesCount: 20,
         tokenBindingCoveragePct: 100,
         rtlMirroringVerified: true
       },
@@ -1091,6 +1094,12 @@ export function synthesizeCreativeAppSmartMind({
           rtlTextTool: "figtron.text.create_rtl",
           states: ["default", "hover", "focus", "active", "disabled"]
         }
+      ],
+      executableSteps: [
+        { step: 1, tool: "figtron.token.bind_variable", paletteId: context.paletteId || "inferno-dark" },
+        { step: 2, tool: "figtron.frame.create_autolayout", width: 390, height: 844, gap: 16, padding: 24 },
+        { step: 3, tool: "figtron.text.create_rtl", fontFamily: "GemiBaba", text: cleanPrompt.slice(0, 64) },
+        { step: 4, tool: "figtron.prototype.link_flow", trigger: "ON_TAP", animation: "SMART_ANIMATE" }
       ],
       recommendedTools: profile.nativeTools,
       critiqueChecks: profile.critiqueChecks

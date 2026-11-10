@@ -45,6 +45,14 @@ import {
   buildFilmEditorialDirections,
   translateSubjectiveArabicFeedback,
   critiqueFilmTimeline,
+  FIGTRON_DESIGN_PRESETS,
+  GEMI_TOKENS_PALETTES,
+  buildSuiteCreativeDirection,
+  translateSubjectiveSuiteFeedback,
+  critiqueAndRepairSuitePlan,
+  generateFigTronCodeSnippet,
+  callGemiMcpTool,
+  dispatchLocalEditorControlRpc,
   auditAgySmartMindReadiness
 } from "../src/index.mjs";
 
@@ -800,14 +808,116 @@ export async function handleAgyNodeHttpRequest(
     }
   }
 
+  if (
+    req.method === "GET" &&
+    (pathname === "/ui" ||
+      pathname === "/ui/" ||
+      pathname === "/ui/tron-agy-control-studio.html")
+  ) {
+    const uiFilePath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "../ui/tron-agy-control-studio.html"
+    );
+    try {
+      const html = fs.readFileSync(uiFilePath, "utf8");
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(html);
+      return true;
+    } catch {
+      res.writeHead(404, { "Content-Type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify({ ok: false, error: "UI_STUDIO_NOT_FOUND" }));
+      return true;
+    }
+  }
+
   if (req.method === "GET" && pathname === "/v1/agy/presets") {
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(
       JSON.stringify({
         ok: true,
-        presets: Object.values(FILMTRON_EDITORIAL_PRESETS)
+        presets: Object.values(FILMTRON_EDITORIAL_PRESETS),
+        figtronPresets: Object.values(FIGTRON_DESIGN_PRESETS),
+        gemiTokensPalettesCount: Object.keys(GEMI_TOKENS_PALETTES).length
       })
     );
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/suite/direct") {
+    const payload = await readJsonBody(req);
+    const result = buildSuiteCreativeDirection({
+      appId: payload.appId || payload.service || "figtron",
+      prompt: payload.prompt || "تصميم واجهة تطبيق عربي متجاوب",
+      presetId: payload.presetId || payload.preset || null,
+      paletteId: payload.paletteId || "inferno-dark",
+      fps: payload.fps || "24/1",
+      durationSec: payload.durationSec || 15,
+      locale: payload.locale || "ar-EG"
+    });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/suite/feedback") {
+    const payload = await readJsonBody(req);
+    const result = translateSubjectiveSuiteFeedback({
+      appId: payload.appId || payload.service || "figtron",
+      feedbackText: payload.feedback || payload.feedbackText || payload.prompt || "",
+      currentFps: payload.fps || "24/1",
+      locale: payload.locale || "ar-EG"
+    });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/suite/critique") {
+    const payload = await readJsonBody(req);
+    const result = critiqueAndRepairSuitePlan({
+      appId: payload.appId || payload.service || "figtron",
+      spec: payload.spec || {},
+      maxPasses: payload.maxPasses || 3
+    });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/suite/codegen") {
+    const payload = await readJsonBody(req);
+    const result = generateFigTronCodeSnippet({
+      target: payload.target || "flutter",
+      spec: payload.spec || {}
+    });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/mcp/dispatch") {
+    const payload = await readJsonBody(req);
+    const result = payload.localEditorUrl
+      ? await dispatchLocalEditorControlRpc({
+          endpointUrl: payload.localEditorUrl,
+          token: payload.token || "",
+          tokenFilePath: payload.tokenFilePath || "",
+          expectedRevision: payload.expectedRevision ?? null,
+          method: payload.method || payload.toolName || "doc.identity",
+          params: payload.params || payload.args || {},
+          fetchFn
+        })
+      : await callGemiMcpTool({
+          product: payload.product || payload.appId || "troncs",
+          transport: payload.transport || "hybrid-auto",
+          toolName: payload.toolName || payload.method,
+          args: payload.args || payload.params || {},
+          accessToken: payload.accessToken || "",
+          leaseToken: payload.leaseToken || "",
+          fetchFn
+        });
+    res.writeHead(result.ok ? 200 : 422, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
     return true;
   }
 
