@@ -36,11 +36,15 @@ import {
   AGY_AUTH_MODES,
   AGY_EXECUTION_SCOPES,
   GEMITRON_GLOBAL_SERVICES,
+  FILMTRON_EDITORIAL_PRESETS,
   defaultAgyQuotaLedger,
   getAppKnowledgeAndSkills,
   listAllNineAppsKnowledgeCatalog,
   buildGlobalAgySmartMindPlan,
-  executeGlobalAgySmartMind
+  executeGlobalAgySmartMind,
+  buildFilmEditorialDirections,
+  translateSubjectiveArabicFeedback,
+  critiqueFilmTimeline
 } from "../src/index.mjs";
 
 const args = process.argv.slice(2);
@@ -793,6 +797,56 @@ export async function handleAgyNodeHttpRequest(
       );
       return true;
     }
+  }
+
+  if (req.method === "GET" && pathname === "/v1/agy/presets") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        presets: Object.values(FILMTRON_EDITORIAL_PRESETS)
+      })
+    );
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/film/direct") {
+    const payload = await readJsonBody(req);
+    const result = buildFilmEditorialDirections({
+      prompt: payload.prompt || "إعلان سينمائي فاخر",
+      presetId: payload.presetId || payload.preset || "cinema-narrative-cut",
+      fps: payload.fps || null,
+      durationSec: payload.durationSec || null,
+      locale: payload.locale || "ar-EG"
+    });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/film/feedback") {
+    const payload = await readJsonBody(req);
+    const result = translateSubjectiveArabicFeedback({
+      feedbackText: payload.feedback || payload.feedbackText || payload.prompt || "",
+      currentFps: payload.fps || "24/1",
+      locale: payload.locale || "ar-EG"
+    });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
+  }
+
+  if (req.method === "POST" && pathname === "/v1/agy/film/critique") {
+    const payload = await readJsonBody(req);
+    const result = critiqueFilmTimeline({
+      sequence: payload.sequence || {},
+      presetId: payload.presetId || payload.preset || "cinema-narrative-cut",
+      effort: payload.effort || "high",
+      locale: payload.locale || "ar-EG"
+    });
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(result));
+    return true;
   }
 
   return false;

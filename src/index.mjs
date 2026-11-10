@@ -24,6 +24,19 @@ import {
   getAppKnowledgeAndSkills,
   listAllNineAppsKnowledgeCatalog
 } from "./knowledge-skills.mjs";
+import {
+  AUTHORITATIVE_TICKS_PER_SECOND,
+  RATIONAL_FRAME_RATES,
+  resolveRationalFps,
+  frameToTicks,
+  secondsToFrameAlignedTicks,
+  FILMTRON_EDITORIAL_PRESETS,
+  resolveFilmTronPreset,
+  buildFilmEditorialDirections,
+  translateSubjectiveArabicFeedback,
+  critiqueFilmTimeline,
+  synthesizeCreativeAppSmartMind
+} from "./creative-suite-intelligence.mjs";
 
 export {
   QUOTA_LEDGER_SCHEMA,
@@ -35,7 +48,18 @@ export {
   NINE_CORE_APPS,
   APP_KNOWLEDGE_SKILLS_REGISTRY,
   getAppKnowledgeAndSkills,
-  listAllNineAppsKnowledgeCatalog
+  listAllNineAppsKnowledgeCatalog,
+  AUTHORITATIVE_TICKS_PER_SECOND,
+  RATIONAL_FRAME_RATES,
+  resolveRationalFps,
+  frameToTicks,
+  secondsToFrameAlignedTicks,
+  FILMTRON_EDITORIAL_PRESETS,
+  resolveFilmTronPreset,
+  buildFilmEditorialDirections,
+  translateSubjectiveArabicFeedback,
+  critiqueFilmTimeline,
+  synthesizeCreativeAppSmartMind
 };
 
 export const TRON_AGY_VERSION = "1.0.0";
@@ -496,6 +520,61 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
       "Natural native Arabic & English fluency",
       "Self-critique passes completed within token budget"
     ]
+  }),
+  "filmtron-mobile": Object.freeze({
+    id: "filmtron-mobile",
+    name: "FilmTron Mobile (Android ARM64)",
+    arName: "فيلم ترون موبايل (أندرويد ARM64)",
+    category: "mobile-creative",
+    ext: ".fcproj",
+    planSchema: "filmtron.mobile.agy.plan.v1",
+    mcpRoute: "/products/film/mcp",
+    accentHex: "#f43f5e",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "high",
+    roleEn: "Touch-First 3-Track NLE, J/L Cuts, Lumetri Mobile Scopes, Fairlight -14 LUFS Ducking & Unified AI Brain Switcher",
+    roleAr: "مونتاج الهواتف الاحترافي (٣ مسارات، تلوين Lumetri، مكساج -14 LUFS، ومبدل العقل الذكي الموحد)",
+    nativeTools: [
+      "film.timeline.place_clip",
+      "film.timeline.ripple_trim",
+      "film.transitions.apply",
+      "film.color.set_lumetri",
+      "film.audio.set_gain",
+      "film.captions.add"
+    ],
+    critiqueChecks: [
+      "254,016,000,000 ticks/sec rational frame boundary alignment",
+      "Touch-safe 48dp controls & 90% SafeRect RTL caption margin",
+      "-14.0 LUFS broadcast master loudness & voiceover ducking"
+    ]
+  }),
+  troncs: Object.freeze({
+    id: "troncs",
+    name: "TronCS Creative Suite & Launcher",
+    arName: "جناح ترون الإبداعي (TronCS)",
+    category: "creative-suite",
+    ext: ".troncs.json",
+    planSchema: "troncs.agy.plan.v1",
+    mcpRoute: "/products/troncs/mcp",
+    accentHex: "#ef4444",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "high",
+    roleEn: "Cross-App Creative Suite Orchestration, Dynamic Link Interchange & Signed Package Lifecycle",
+    roleAr: "تنسيق تطبيقات جناح ترون الإبداعي، الربط الديناميكي، وإدارة التثبيت والتحديث الآمن",
+    nativeTools: [
+      "film.timeline.place_clip",
+      "photo.document.place",
+      "after.keyframe.easy_ease",
+      "motion.timeline.clip.scene3d",
+      "figtron.frame.create_autolayout",
+      "lighttron.develop.tone_curve",
+      "scale.enhance.steerable_sr"
+    ],
+    critiqueChecks: [
+      "Non-destructive native project preservation (.pcraft/.fcraft/.acraft/.gmotion)",
+      "254,016,000,000 ticks/sec cross-app rational synchronization",
+      "Signed SHA-256 package & rollback readiness verified"
+    ]
   })
 });
 
@@ -779,6 +858,10 @@ export function resolveGemitronServiceProfile(rawServiceId = "gemiai") {
     photo: "phototron",
     after: "aftertron",
     film: "filmtron",
+    "film-mobile": "filmtron-mobile",
+    filmtronmobile: "filmtron-mobile",
+    mobile: "filmtron-mobile",
+    launcher: "troncs",
     motion: "gemimotion",
     fig: "figtron",
     light: "lighttron",
@@ -1372,6 +1455,18 @@ function synthesizeServiceSmartMindOutput({
         ? `[AGYTron Smart Mind · ${plan.model}] خطة ترويج + TronCS الإعلانية جاهزة لـ «${cleanPrompt}» عبر ٩ منصات (Google PMax, Meta Reels/CTWA, TikTok Spark, Snapchat, OpenAI Ads, LinkedIn, X, Pinterest, Microsoft) مع إنتاج البوسترات والفيديو السينمائي عبر تطبيقات TronCS السبعة (PhotoTron, GemiMotion, AfterTron, FilmTron, LightTron, ScaleTron, FigTron).`
         : `[AGYTron Smart Mind · ${plan.model}] Tarweeg 9-Platform + TronCS Ad Plan ready for "${cleanPrompt}" across Google PMax, Meta Reels/CTWA, TikTok Spark, Snapchat, OpenAI Ads, LinkedIn, X, Pinterest, and Microsoft Ads with full TronCS studio creative production (PhotoTron, GemiMotion, AfterTron, FilmTron, LightTron, ScaleTron, FigTron).`
     };
+  }
+
+  const creativeSynthesis = synthesizeCreativeAppSmartMind({
+    profile,
+    plan,
+    task,
+    prompt: cleanPrompt,
+    context,
+    isAr
+  });
+  if (creativeSynthesis) {
+    return creativeSynthesis;
   }
 
   const structured = {

@@ -612,6 +612,153 @@ test("AGYTron enforces 100% Google-ToS-Safe Model Family Quota Tracking with aut
   }
 });
 
+test("AGYTron Creative Suite Intelligence powers FilmTron, FilmTron-Mobile, and all 7 TronCS apps with 10 presets, Direction A/B, 254,016,000,000 ticks/sec math, and 7 Arabic feedback loops", async () => {
+  const {
+    AUTHORITATIVE_TICKS_PER_SECOND,
+    FILMTRON_EDITORIAL_PRESETS,
+    frameToTicks,
+    secondsToFrameAlignedTicks,
+    buildFilmEditorialDirections,
+    translateSubjectiveArabicFeedback,
+    critiqueFilmTimeline,
+    executeGlobalAgySmartMind
+  } = await import("../src/index.mjs");
+  const { runTronAgyCli } = await import("../bin/tron-agy.mjs");
+  const { createAgyNodeDaemonServer } = await import("../bin/agy-node-daemon.mjs");
+
+  assert.equal(AUTHORITATIVE_TICKS_PER_SECOND, 254_016_000_000);
+  assert.equal(frameToTicks(24, "24/1"), 254_016_000_000);
+  assert.equal(secondsToFrameAlignedTicks(2, "30/1"), 508_032_000_000);
+  assert.equal(Object.keys(FILMTRON_EDITORIAL_PRESETS).length, 10);
+
+  // Verify Direction A vs Direction B
+  const dirBundle = buildFilmEditorialDirections({
+    prompt: "إعلان ساعة تيتانيوم فاخرة",
+    presetId: "cinema-narrative-cut",
+    fps: "24/1",
+    durationSec: 24,
+    locale: "ar-EG"
+  });
+  assert.equal(dirBundle.ok, true);
+  assert.equal(dirBundle.directions.length, 2);
+  assert.equal(dirBundle.directions[0].directionId, "direction-a-dynamic-rhythmic");
+  assert.equal(dirBundle.directions[1].directionId, "direction-b-narrative-filmic");
+  assert.ok(dirBundle.directions[0].toolSteps.some((s) => s.tool === "film.timeline.place_clip"));
+  assert.ok(dirBundle.directions[0].toolSteps.some((s) => s.tool === "film.color.set_lumetri"));
+
+  // Verify all 7 Arabic feedback categories translate into deterministic film.* tool calls
+  const multiFeedback = translateSubjectiveArabicFeedback({
+    feedbackText:
+      "الإيقاع بطيء في البداية، الألوان باهتة، الصوت واطي والموسيقى عالية، الكتابة مش واضحة، القطعات حادة والمشهد ثابت",
+    currentFps: "24/1",
+    locale: "ar-EG"
+  });
+  assert.equal(multiFeedback.ok, true);
+  assert.equal(multiFeedback.matchedCategories.length, 7);
+  assert.equal(multiFeedback.actions.length, 7);
+
+  // Verify timeline critique
+  const critique = critiqueFilmTimeline({
+    sequence: {
+      fps: "24/1",
+      integratedLufs: -14.0,
+      clips: [
+        { startTicks: 0, endTicks: 254_016_000_000 * 5 },
+        { startTicks: 254_016_000_000 * 5, endTicks: 254_016_000_000 * 12 }
+      ]
+    },
+    presetId: "aces-filmic-grade"
+  });
+  assert.equal(critique.ok, true);
+  assert.equal(critique.overallStatus, "PASSED");
+  assert.equal(critique.gates.length, 4);
+
+  // Verify rich Smart Mind synthesis across all 7 creative apps + filmtron-mobile
+  for (const svc of [
+    "filmtron",
+    "filmtron-mobile",
+    "phototron",
+    "aftertron",
+    "gemimotion",
+    "figtron",
+    "lighttron",
+    "scaletron"
+  ]) {
+    const res = await executeGlobalAgySmartMind({
+      service: svc,
+      prompt: "حملة إطلاق منتج إبداعي",
+      model: "gemini-4-argon-high",
+      effort: "high",
+      context: { presetId: "beat-synced-reel-montage", feedback: "سرع الإيقاع" },
+      fetchFn: null
+    });
+    assert.equal(res.ok, true);
+    assert.equal(res.service, svc);
+    assert.equal(res.structured.engine, `${svc}-agy-smart-mind`);
+  }
+
+  // Verify CLI subcommands (`smart-mind`, `film-director`, `feedback`, `presets`, `audit`)
+  const cliPresets = await runTronAgyCli(["presets"]);
+  assert.equal(cliPresets.ok, true);
+  assert.equal(cliPresets.presets.length, 10);
+
+  const cliAudit = await runTronAgyCli(["audit"]);
+  assert.equal(cliAudit.ok, true);
+  assert.equal(cliAudit.filmtronPresetsCount, 10);
+
+  const cliSmartMind = await runTronAgyCli([
+    "smart-mind",
+    "--service",
+    "filmtron",
+    "--preset",
+    "aces-filmic-grade",
+    "--prompt",
+    "فيلم وثائقي قصير"
+  ]);
+  assert.equal(cliSmartMind.ok, true);
+  assert.equal(cliSmartMind.service, "filmtron");
+  assert.equal(cliSmartMind.structured.activePreset.id, "aces-filmic-grade");
+
+  // Verify HTTP endpoints on agy-node-daemon
+  const daemon = createAgyNodeDaemonServer({ nodeId: "vps-01" });
+  await new Promise((resolve) => daemon.listen(0, "127.0.0.1", resolve));
+  const { port } = daemon.address();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const pRes = await fetch(`${base}/v1/agy/presets`);
+    assert.equal(pRes.status, 200);
+    const pBody = await pRes.json();
+    assert.equal(pBody.presets.length, 10);
+
+    const dRes = await fetch(`${base}/v1/agy/film/direct`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: "إعلان سيارات رياضي",
+        presetId: "dialogue-loudness-master"
+      })
+    });
+    assert.equal(dRes.status, 200);
+    const dBody = await dRes.json();
+    assert.equal(dBody.ok, true);
+    assert.equal(dBody.directions.length, 2);
+
+    const fRes = await fetch(`${base}/v1/agy/film/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        feedback: "دفي الألوان وعلي صوت الحوار"
+      })
+    });
+    assert.equal(fRes.status, 200);
+    const fBody = await fRes.json();
+    assert.equal(fBody.ok, true);
+    assert.equal(fBody.actions.length, 2);
+  } finally {
+    await new Promise((resolve) => daemon.close(resolve));
+  }
+});
+
 
 
 

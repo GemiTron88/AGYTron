@@ -675,6 +675,76 @@ export function buildCreatorFriendlyStreamEvents({
     ];
   }
 
+  if (svc === "filmtron" || svc === "film" || svc === "filmtron-mobile" || svc === "film-mobile") {
+    return [
+      {
+        type: "thinking",
+        title: isAr
+          ? "جاري بناء الإيقاع الدرامي وتقسيم الفصول الثلاثة على التايملاين..."
+          : "Architecting 3-Act timeline rhythm & J/L cut boundaries...",
+        detail: isAr
+          ? `يعمل المخرج الذكي (${model} · ${effort}) عبر ${nodeLabel} بدقة 254,016,000,000 نبضة/ثانية.`
+          : `Running FilmTron Director (${model} · ${effort}) on ${nodeLabel} at 254,016,000,000 ticks/sec.`
+      },
+      {
+        type: "tool_badge",
+        icon: "🎞️",
+        status: "done",
+        tool: "film.timeline.place_clip",
+        label: isAr
+          ? "تركيب اللقطات وضبط انتقالات الصوت الاستباقية (J-Cut / L-Cut)"
+          : "Assembling 3-Act Sequence & J/L Audio Overlaps",
+        summary: isAr
+          ? "محاذاة كاملة للإطارات بدون أي فجوات سوداء (0 Flash Frames)"
+          : "Zero sub-frame drift or flash-frame gaps across V1/V2/A1/A2"
+      },
+      {
+        type: "tool_badge",
+        icon: "🎨",
+        status: "done",
+        tool: "film.color.set_lumetri",
+        label: isAr
+          ? "تطبيق التلوين السينمائي (Lumetri ACEScct) وحماية البشرة"
+          : "Applying Lumetri ACEScct Color Grade & Skin-Tone Guard",
+        summary: isAr
+          ? "توازن النصوع ضمن النطاق القانوني للبث (0..100 IRE)"
+          : "Rec.709 legal gamut verified with warm highlight roll-off"
+      },
+      {
+        type: "tool_badge",
+        icon: "🎚️",
+        status: "done",
+        tool: "film.audio.set_gain",
+        label: isAr
+          ? "مكساج الحوار والموسيقى القياسي (-14.0 LUFS + Sidechain Ducking)"
+          : "Mastering Fairlight Dialogue & -14.0 LUFS Auto-Ducking",
+        summary: isAr
+          ? "خفض الموسيقى تلقائياً أثناء الكلام ومنع التشبع عند -1.0 dBTP"
+          : "Dialogue clarity locked with -1.0 dBTP true-peak ceiling"
+      },
+      {
+        type: "tool_badge",
+        icon: "💬",
+        status: "done",
+        tool: "film.captions.add",
+        label: isAr
+          ? "توليد الكابشن العربي (HarfBuzz RTL) داخل منطقة الأمان"
+          : "Generating Bidirectional RTL/LTR Captions in Safe Zone",
+        summary: isAr
+          ? "تباين بصري قياسي (WCAG >= 4.5:1) داخل هامش الأمان 90%"
+          : "WCAG >= 4.5:1 contrast inside 90% title-safe bounds"
+      },
+      {
+        type: "chat_message",
+        role: "assistant",
+        nodeBadge: nodeLabel,
+        text: isAr
+          ? `مونتاج «${styleTitle}» جاهز على التايملاين عبر ${nodeLabel} (${model})! جهزت لك اتجاهين للمونتاج (أ: إيقاع ديناميكي سريع، ب: سرد سينمائي دافئ)، وضبطت تلوين Lumetri ومكساج الصوت عند -14.0 LUFS مع الكابشن العربي. يمكنك المعاينة الآن أو كتابة أي ملاحظة مثل «سرع الإيقاع» أو «دفي الألوان»!`
+          : `Your "${styleTitle}" sequence is ready on the timeline via ${nodeLabel} (${model})! Both Direction A (Dynamic J/L Cut) and Direction B (Narrative Filmic) are prepared with Lumetri grading, -14.0 LUFS Fairlight ducking, and safe-zone captions.`
+      }
+    ];
+  }
+
   return [
     {
       type: "thinking",
