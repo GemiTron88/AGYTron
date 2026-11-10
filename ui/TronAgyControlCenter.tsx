@@ -14,13 +14,26 @@ export type AgyFleetDeviceId = 'win-local' | 'mac-local' | 'vps-01' | 'vps-02';
 export type AgyExecutionScope = 'device-fleet' | 'account-remote-agent';
 
 export type AgyModelId =
+  | 'gemini-4-argon-high'
+  | 'gemini-4-argon-medium'
+  | 'gemini-4-argon-low'
+  | 'gemini-3.8-flash-high'
+  | 'gemini-3.8-flash-medium'
+  | 'gemini-3.8-flash-low'
+  | 'claude-opus-5-5-high'
+  | 'claude-opus-5-5-medium'
+  | 'claude-opus-5-5-low'
+  | 'claude-sonnet-5-5-high'
+  | 'claude-sonnet-5-5-medium'
+  | 'claude-sonnet-5-5-low'
+  | 'gpt-oss-120b-medium'
+  | 'qwen3.5:4b-q4_K_M'
   | 'gemini-3.1-pro'
   | 'gemini-3-flash'
   | 'claude-opus-4-6'
-  | 'claude-sonnet-4-6'
-  | 'qwen3.5:4b-q4_K_M';
+  | 'claude-sonnet-4-6';
 
-export type AgyEffortTier = 'low' | 'medium' | 'high' | 'max';
+export type AgyEffortTier = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 
 export interface FleetDeviceLiveStatus {
   state: 'online' | 'checking' | 'offline';
@@ -29,9 +42,18 @@ export interface FleetDeviceLiveStatus {
   latencyMs: number;
 }
 
+export interface QuotaFamilyPill {
+  familyId: string;
+  labelAr: string;
+  labelEn: string;
+  remainingPct: number;
+}
+
 export interface TronAgyPlanRequest {
   prompt: string;
   apps: TronCsAppId[];
+  skillId?: string;
+  workflowId?: string;
   executionScope?: AgyExecutionScope;
   deviceId: AgyFleetDeviceId;
   deviceAddress: string;
@@ -53,6 +75,146 @@ export const FLEET_ACTIVE_NODE_STORAGE_KEY = 'agy.fleet.activeNode.v1';
 export const FLEET_EXECUTION_SCOPE_STORAGE_KEY = 'agy.fleet.executionScope.v1';
 export const REMOTE_AGENT_RELAY_URL = 'https://mcp.gemitron.net/v1/agy/remote-agent';
 
+export const AGY_MODEL_CATALOG: Array<{
+  id: AgyModelId;
+  labelAr: string;
+  labelEn: string;
+  familyId: string;
+}> = [
+  { id: 'gemini-4-argon-high', labelAr: 'Gemini 4 Argon (High) ✦', labelEn: 'Gemini 4 Argon (High) ✦', familyId: 'gemini-4-argon' },
+  { id: 'gemini-4-argon-medium', labelAr: 'Gemini 4 Argon (Medium)', labelEn: 'Gemini 4 Argon (Medium)', familyId: 'gemini-4-argon' },
+  { id: 'gemini-4-argon-low', labelAr: 'Gemini 4 Argon (Low)', labelEn: 'Gemini 4 Argon (Low)', familyId: 'gemini-4-argon' },
+  { id: 'gemini-3.8-flash-high', labelAr: 'Gemini 3.8 Flash (High) ⚡', labelEn: 'Gemini 3.8 Flash (High) ⚡', familyId: 'gemini-3.8-flash' },
+  { id: 'gemini-3.8-flash-medium', labelAr: 'Gemini 3.8 Flash (Medium)', labelEn: 'Gemini 3.8 Flash (Medium)', familyId: 'gemini-3.8-flash' },
+  { id: 'gemini-3.8-flash-low', labelAr: 'Gemini 3.8 Flash (Low)', labelEn: 'Gemini 3.8 Flash (Low)', familyId: 'gemini-3.8-flash' },
+  { id: 'claude-opus-5-5-high', labelAr: 'Claude Opus 5.5 (High) 🎬', labelEn: 'Claude Opus 5.5 (High) 🎬', familyId: 'claude-opus-5-5' },
+  { id: 'claude-opus-5-5-medium', labelAr: 'Claude Opus 5.5 (Medium)', labelEn: 'Claude Opus 5.5 (Medium)', familyId: 'claude-opus-5-5' },
+  { id: 'claude-opus-5-5-low', labelAr: 'Claude Opus 5.5 (Low)', labelEn: 'Claude Opus 5.5 (Low)', familyId: 'claude-opus-5-5' },
+  { id: 'claude-sonnet-5-5-high', labelAr: 'Claude Sonnet 5.5 (High)', labelEn: 'Claude Sonnet 5.5 (High)', familyId: 'claude-sonnet-5-5' },
+  { id: 'claude-sonnet-5-5-medium', labelAr: 'Claude Sonnet 5.5 (Medium)', labelEn: 'Claude Sonnet 5.5 (Medium)', familyId: 'claude-sonnet-5-5' },
+  { id: 'claude-sonnet-5-5-low', labelAr: 'Claude Sonnet 5.5 (Low)', labelEn: 'Claude Sonnet 5.5 (Low)', familyId: 'claude-sonnet-5-5' },
+  { id: 'gpt-oss-120b-medium', labelAr: 'GPT-OSS 120B (Medium)', labelEn: 'GPT-OSS 120B (Medium)', familyId: 'gpt-oss-120b' },
+  { id: 'qwen3.5:4b-q4_K_M', labelAr: 'Local TRON Qwen 3.5 🔒', labelEn: 'Local TRON Qwen 3.5 🔒', familyId: 'local-tron' },
+];
+
+export const AGY_EFFORT_CATALOG: Array<{
+  id: AgyEffortTier;
+  labelAr: string;
+  labelEn: string;
+  tokens: number;
+  passes: number;
+}> = [
+  { id: 'low', labelAr: 'سريع (1,024t · 1)', labelEn: 'Low (1,024t · 1 Pass)', tokens: 1024, passes: 1 },
+  { id: 'medium', labelAr: 'متوازن (4,096t · 2)', labelEn: 'Medium (4,096t · 2 Passes)', tokens: 4096, passes: 2 },
+  { id: 'high', labelAr: 'عميق (16,384t · 3)', labelEn: 'High (16,384t · 3 Passes)', tokens: 16384, passes: 3 },
+  { id: 'xhigh', labelAr: 'فائق الدقة (24,576t · 4)', labelEn: 'XHigh (24,576t · 4 Passes)', tokens: 24576, passes: 4 },
+  { id: 'max', labelAr: 'إتقان كامل ✦ (32,768t · 5)', labelEn: 'Max ✦ (32,768t · 5 Passes)', tokens: 32768, passes: 5 },
+];
+
+export const DEFAULT_QUOTA_FAMILIES: QuotaFamilyPill[] = [
+  { familyId: 'gemini-4-argon', labelAr: 'Gemini 4 Argon', labelEn: 'Gemini 4 Argon', remainingPct: 100 },
+  { familyId: 'gemini-3.8-flash', labelAr: 'Gemini 3.8 Flash', labelEn: 'Gemini 3.8 Flash', remainingPct: 100 },
+  { familyId: 'claude-opus-5-5', labelAr: 'Claude Opus 5.5', labelEn: 'Claude Opus 5.5', remainingPct: 100 },
+  { familyId: 'claude-sonnet-5-5', labelAr: 'Claude Sonnet 5.5', labelEn: 'Claude Sonnet 5.5', remainingPct: 100 },
+  { familyId: 'gpt-oss-120b', labelAr: 'GPT-OSS 120B', labelEn: 'GPT-OSS 120B', remainingPct: 100 },
+  { familyId: 'local-tron', labelAr: 'Local TRON ∞', labelEn: 'Local TRON ∞', remainingPct: 100 },
+];
+
+export const APP_SKILLS_AND_WORKFLOWS: Record<
+  TronCsAppId,
+  {
+    skills: Array<{ id: string; ar: string; en: string }>;
+    workflows: Array<{ id: string; ar: string; en: string }>;
+  }
+> = {
+  phototron: {
+    skills: [
+      { id: 'skill.phototron.arabic_key_art', ar: 'تصميم البوسترات والخطوط العربية (٤ مقاسات)', en: 'Arabic RTL Key Art & 4-Ratio Poster' },
+      { id: 'skill.phototron.product_retouch', ar: 'معالجة وعزل صور المنتجات غير المدمرة', en: 'Non-Destructive Product Retouch & Mask' },
+      { id: 'skill.phototron.infographic_linkbait', ar: 'تصميم إنفوجرافيك السيو وبطاقات المشاركة', en: 'High-DR SEO Infographic Designer' },
+      { id: 'skill.phototron.gbp_local_offer_card', ar: 'بطاقات عروض خرائط جوجل (GBP)', en: 'Google Business Profile Offer Card' },
+    ],
+    workflows: [
+      { id: 'wf.phototron.4ratio_ad_pack', ar: 'حزمة إعلانات ٤ مقاسات (ترويج)', en: '4-Ratio Ad Key Art Pack' },
+      { id: 'wf.phototron.seo_infographic_card', ar: 'إنفوجرافيك مرجعي لبناء الباك لينك', en: 'Linkable E-E-A-T Infographic' },
+      { id: 'wf.phototron.gbp_and_social_bundle', ar: 'حزمة صور خرائط جوجل والمشاركة', en: 'Local SEO GBP + OpenGraph Bundle' },
+    ],
+  },
+  aftertron: {
+    skills: [
+      { id: 'skill.aftertron.kinetic_arabic_typography', ar: 'تحريك النصوص السينمائية', en: 'Kinetic Arabic & English Typography' },
+      { id: 'skill.aftertron.vfx_optical_glow', ar: 'تتبع الكاميرا 3D والتوهج البصري', en: '3D Camera Callouts & Optical Glow' },
+      { id: 'skill.aftertron.animated_data_charts', ar: 'تحريك الرسوم البيانية وإحصائيات النمو', en: 'Animated ROI & SEO Data Charts' },
+      { id: 'skill.aftertron.logo_sonic_stinger', ar: 'تحريك الشعار وبطاقة النهاية', en: 'Brand Logo Reveal & End-Card Stinger' },
+    ],
+    workflows: [
+      { id: 'wf.aftertron.hero_product_reveal', ar: 'مقدمة خطاف بصري ٣ ثوانٍ لريلز وتيك توك', en: '3-Second Hook & Product VFX Reveal' },
+      { id: 'wf.aftertron.animated_case_study_reel', ar: 'فيديو دراسة حالة متحرك بالبيانات', en: 'Animated Case Study & Data Proof Reel' },
+    ],
+  },
+  filmtron: {
+    skills: [
+      { id: 'skill.filmtron.3act_commercial_cut', ar: 'مونتاج الإعلانات ثلاثية الفصول', en: '3-Act Direct-Response Ad Editor' },
+      { id: 'skill.filmtron.lumetri_fairlight_master', ar: 'تلوين Lumetri ومكساج Fairlight (-14 LUFS)', en: 'Lumetri Grade & -14 LUFS Mix' },
+      { id: 'skill.filmtron.youtube_seo_chapter_editor', ar: 'مونتاج يوتيوب المتوافق مع السيو', en: 'YouTube SEO & Chapter Producer' },
+      { id: 'skill.filmtron.multi_ratio_reframe', ar: 'إعادة تأطير 9:16 و16:9 و1:1', en: 'Multi-Platform Video Reframer' },
+    ],
+    workflows: [
+      { id: 'wf.filmtron.tiktok_reels_shorts_master', ar: 'ماستر فيديو إعلاني لـ TikTok وReels', en: 'Vertical Video Ad Master' },
+      { id: 'wf.filmtron.explainer_video_backlink', ar: 'فيديو شرح مرجعي ٦٠ ثانية', en: '60s Authority Explainer Video' },
+      { id: 'wf.filmtron.b2b_linkedin_spotlight', ar: 'فيديو إعلاني احترافي للشركات', en: 'B2B Executive Video Ad' },
+    ],
+  },
+  gemimotion: {
+    skills: [
+      { id: 'skill.gemimotion.pbr_3d_shader_director', ar: 'إخراج مشاهد 3D PBR وشيدر WGSL', en: '3D PBR Scene & WGSL Shader Director' },
+      { id: 'skill.gemimotion.vibe_audio_sfx', ar: 'تأليف الموسيقى التصويرية والمؤثرات 48kHz', en: '48kHz Vibe Soundtrack & SFX Composer' },
+      { id: 'skill.gemimotion.karaoke_rtl_captions', ar: 'مزامنة الكابشن العربي التفاعلي', en: 'Beat-Synced Arabic RTL Karaoke Captions' },
+      { id: 'skill.gemimotion.interactive_webgl_embed', ar: 'مشهد 3D تفاعلي لصفحات الهبوط', en: 'Interactive 3D Hero Loop' },
+    ],
+    workflows: [
+      { id: 'wf.gemimotion.luxury_arabic_commercial', ar: 'إعلان 3D عربي فاخر بموسيقى Vibe', en: 'Luxury Arabic 3D Commercial' },
+      { id: 'wf.gemimotion.social_reel_loop', ar: 'فيديو 3D حلقي متكرر (Seamless Loop)', en: 'Seamless 9:16 Viral 3D Loop' },
+      { id: 'wf.gemimotion.dwell_time_hero_motion', ar: 'مشهد تفاعلي لرفع مدة بقاء الزائر', en: 'Landing Page Dwell-Time Booster' },
+    ],
+  },
+  figtron: {
+    skills: [
+      { id: 'skill.figtron.conversion_landing_ui', ar: 'تصميم صفحات الهبوط عالية التحويل', en: 'High-Converting Landing Page UI' },
+      { id: 'skill.figtron.seo_data_study_chart', ar: 'جداول المقارنة التفاعلية للسيو', en: 'Interactive Data Study Matrix' },
+      { id: 'skill.figtron.clarity_ux_remediator', ar: 'معالج احتكاك تجربة المستخدم (Clarity)', en: 'Clarity Rage-Click UX Healer' },
+      { id: 'skill.figtron.cls_cwv_layout_guard', ar: 'ضابط استقرار التخطيط (Zero CLS)', en: 'Core Web Vitals CLS Stabilizer' },
+    ],
+    workflows: [
+      { id: 'wf.figtron.ad_landing_funnel', ar: 'صفحة هبوط لحملات ترويج الإعلانية', en: 'Ad-to-Landing Conversion Funnel' },
+      { id: 'wf.figtron.clarity_crux_ux_overhaul', ar: 'إعادة هندسة الواجهة ببيانات Clarity وCrUX', en: 'Clarity + CrUX UX Overhaul' },
+    ],
+  },
+  lighttron: {
+    skills: [
+      { id: 'skill.lighttron.raw_catalog_develop', ar: 'تحميض الصور الخام ومعايرة الألوان', en: 'RAW Product Develop & Filmic Tone' },
+      { id: 'skill.lighttron.radial_mask_batch_sync', ar: 'الأقنعة الشعاعية ومزامنة الكتالوج', en: 'Radial Masking & Multi-Shoot Sync' },
+      { id: 'skill.lighttron.google_images_exif_seo', ar: 'تحسين بيانات EXIF/IPTC للسيو', en: 'Google Images EXIF/IPTC Enricher' },
+      { id: 'skill.lighttron.skin_tone_portrait_grade', ar: 'معايرة ألوان البشرة والبورتريه', en: 'Natural Skin-Tone Portrait Colorist' },
+    ],
+    workflows: [
+      { id: 'wf.lighttron.ecommerce_catalog_grade', ar: 'توحيد ألوان كتالوج المتجر', en: 'Batch E-Commerce Catalog Color Sync' },
+      { id: 'wf.lighttron.local_seo_photo_pack', ar: 'حزمة صور خرائط جوجل وبحث الصور', en: 'GBP & Image Search Authority Pack' },
+    ],
+  },
+  scaletron: {
+    skills: [
+      { id: 'skill.scaletron.zero_halo_upscale', ar: 'تكبير ٤-٨ أضعاف بدون هالات + WebP', en: '4x/8x Zero-Halo Super-Resolution' },
+      { id: 'skill.scaletron.xbr_pixel_vector_restore', ar: 'استعادة حواف الشعارات (xBR)', en: 'xBR Logo & Icon Edge Restoration' },
+      { id: 'skill.scaletron.cwv_lcp_image_surgeon', ar: 'مسرّع مؤشر LCP عبر ضغط الصور', en: 'Core Web Vitals LCP Image Compressor' },
+      { id: 'skill.scaletron.ugc_ad_frame_enhancer', ar: 'تحسين صور ومصغرات الإعلانات', en: 'Low-Light UGC Thumbnail Restorer' },
+    ],
+    workflows: [
+      { id: 'wf.scaletron.ad_and_seo_asset_master', ar: 'ماستر تكبير صور الإعلانات والسيو', en: 'Ultra-Sharp Asset Upscale' },
+      { id: 'wf.scaletron.pagespeed_lcp_auto_remediation', ar: 'معالجة بطء الصور في PageSpeed', en: 'PageSpeed LCP Auto-Remediation' },
+    ],
+  },
+};
 
 export const DEFAULT_FLEET_DEVICE_ADDRESSES: Record<AgyFleetDeviceId, string> = {
   'win-local': '192.168.1.10:18220',
@@ -213,11 +375,27 @@ export function TronAgyControlCenter({
     'vps-01': { state: 'online', online: true, checking: false, latencyMs: 36 },
     'vps-02': { state: 'online', online: true, checking: false, latencyMs: 42 },
   });
-  const [model] = useState<AgyModelId>('gemini-3.1-pro');
-  const [effort] = useState<AgyEffortTier>('max');
+  const [model, setModel] = useState<AgyModelId>('gemini-4-argon-high');
+  const [effort, setEffort] = useState<AgyEffortTier>('xhigh');
+  const primaryApp: TronCsAppId = selectedApps[0] ?? defaultApp;
+  const appSw = APP_SKILLS_AND_WORKFLOWS[primaryApp] ?? APP_SKILLS_AND_WORKFLOWS.gemimotion;
+  const [skillId, setSkillId] = useState<string>(appSw.skills[0]?.id ?? '');
+  const [workflowId, setWorkflowId] = useState<string>(appSw.workflows[0]?.id ?? '');
+  const [quotaFamilies] = useState<QuotaFamilyPill[]>(DEFAULT_QUOTA_FAMILIES);
   const [prompt, setPrompt] = useState<string>(
     'أورورا كرونوغراف X1 — فخامة التيتانيوم السويسري | حملة متكاملة عبر جناح TronCS الإبداعي',
   );
+
+  useEffect(() => {
+    const nextSw = APP_SKILLS_AND_WORKFLOWS[primaryApp];
+    if (!nextSw) return;
+    if (!nextSw.skills.some((s) => s.id === skillId)) {
+      setSkillId(nextSw.skills[0]?.id ?? '');
+    }
+    if (!nextSw.workflows.some((w) => w.id === workflowId)) {
+      setWorkflowId(nextSw.workflows[0]?.id ?? '');
+    }
+  }, [primaryApp, skillId, workflowId]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.localStorage) return;
@@ -589,6 +767,86 @@ export function TronAgyControlCenter({
         </div>
       </div>
 
+      <div className="tron-agy-section" data-testid="tron-agy-model-effort-panel">
+        <label>{isArabic ? 'النموذج الذكي (١٤ نموذجاً) وعمق التفكير (٥ مستويات)' : 'AGY Model (14 Models) & Reasoning Effort (5 Tiers)'}</label>
+        <select
+          data-testid="tron-agy-model-select"
+          value={model}
+          onChange={(e) => setModel(e.target.value as AgyModelId)}
+        >
+          {AGY_MODEL_CATALOG.map((m) => (
+            <option key={m.id} value={m.id}>
+              {isArabic ? m.labelAr : m.labelEn}
+            </option>
+          ))}
+        </select>
+        <div className="tron-agy-pill-row" data-testid="tron-agy-effort-pills">
+          {AGY_EFFORT_CATALOG.map((tier) => (
+            <button
+              key={tier.id}
+              type="button"
+              data-testid={`tron-agy-effort-${tier.id}`}
+              aria-pressed={effort === tier.id}
+              onClick={() => setEffort(tier.id)}
+            >
+              {isArabic ? tier.labelAr : tier.labelEn}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="tron-agy-section" data-testid="tron-agy-skills-workflows-panel">
+        <label>
+          {isArabic
+            ? 'المهارة الإبداعية ومسار العمل المتكامل (Skills & Workflows)'
+            : 'Specialized Skill & Multi-Step Workflow'}
+        </label>
+        <div className="tron-agy-pill-row">
+          <select
+            data-testid="tron-agy-skill-select"
+            value={skillId}
+            onChange={(e) => setSkillId(e.target.value)}
+          >
+            {appSw.skills.map((sk) => (
+              <option key={sk.id} value={sk.id}>
+                {isArabic ? sk.ar : sk.en}
+              </option>
+            ))}
+          </select>
+          <select
+            data-testid="tron-agy-workflow-select"
+            value={workflowId}
+            onChange={(e) => setWorkflowId(e.target.value)}
+          >
+            {appSw.workflows.map((wf) => (
+              <option key={wf.id} value={wf.id}>
+                {isArabic ? wf.ar : wf.en}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="tron-agy-section" data-testid="tron-agy-quota-ledger">
+        <label>
+          {isArabic
+            ? '🛡️ سجل الحصص الآمن لعائلات النماذج الست (100% Google-ToS-Safe Quota Ledger)'
+            : '🛡️ 6-Family Google-ToS-Safe Model Quota Ledger'}
+        </label>
+        <div className="tron-agy-pill-row">
+          {quotaFamilies.map((fam) => (
+            <span
+              key={fam.familyId}
+              data-testid={`tron-agy-quota-family-${fam.familyId}`}
+            >
+              {isArabic
+                ? `${fam.labelAr}: ${fam.remainingPct}%`
+                : `${fam.labelEn}: ${fam.remainingPct}%`}
+            </span>
+          ))}
+        </div>
+      </div>
+
       <div className="tron-agy-section">
         <label>{isArabic ? 'اكتب فكرتك للمخرج الذكي' : 'Chat with your AI Director'}</label>
         <textarea
@@ -607,6 +865,8 @@ export function TronAgyControlCenter({
             onExecutePlan?.({
               prompt,
               apps: selectedApps,
+              skillId,
+              workflowId,
               executionScope,
               deviceId: activeDevice,
               deviceAddress:

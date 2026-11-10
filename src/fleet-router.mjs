@@ -745,6 +745,97 @@ export function buildCreatorFriendlyStreamEvents({
     ];
   }
 
+  const normalizedPhotoSvc = svc === "phototron-mobile" ? "phototron" : svc;
+  const creativeAppStreams = {
+    phototron: {
+      thinkingAr: "جاري هندسة طبقات البوستر وتباين الخط العربي في PhotoTron...",
+      thinkingEn: "Architecting non-destructive .pcraft layers & Arabic HarfBuzz typography in PhotoTron...",
+      badges: [
+        ["🖼️", "photo.document.place", "إدراج طبقة العنصر الذكية غير المدمرة", "Placing Non-Destructive Hero Smart Layer", "أبعاد 1:1 و 4:5 و 9:16 و 1.91:1 جاهزة", "4 aspect ratios (1:1, 4:5, 9:16, 1.91:1) aligned"],
+        ["🎚️", "photo.adjustment.curves", "ضبط منحنيات التباين اللوني (Curves & Levels)", "Calibrating Filmic Curves & Tonal Separation", "فصل بصري ناعم بدون تسطيح الطبقات", "Parametric tonal separation without flattening"],
+        ["🌑", "photo.layerStyle.gradientOverlay", "توليد تدرج الحماية خلف العنوان (WCAG >= 4.5:1)", "Applying Readability Scrim (WCAG >= 4.5:1)", "ضمان وضوح النص على الجوال وسطح المكتب", "Verified >= 4.5:1 foreground/background contrast"],
+        ["✒️", "photo.text.create", "تشكيل النص العربي عبر HarfBuzz داخل منطقة الأمان", "Shaping HarfBuzz RTL Display Headline in SafeRect", "طواقم Cairo / Tajawal قابلة للتعديل الكامل", "Editable vector text inside 8% SafeRect margin"]
+      ],
+      doneAr: `جهزت تصميم PhotoTron (.pcraft) عبر ${nodeLabel} (${model})! أنشأت طبقات الإضاءة والمنحنيات غير المدمرة، وتدرج القراءة عالي التباين، والنص العربي المشكّل عبر HarfBuzz بأربعة مقاسات جاهزة للتصدير.`,
+      doneEn: `Your PhotoTron (.pcraft) multi-layer key art is ready via ${nodeLabel} (${model})! Non-destructive Curves, WCAG >= 4.5:1 scrim, and HarfBuzz typography are stacked across all 4 aspect ratios.`
+    },
+    aftertron: {
+      thinkingAr: "جاري تحريك المشهد ومنحنيات التسارع في AfterTron...",
+      thinkingEn: "Choreographing rational-clock keyframes & optical glow VFX in AfterTron...",
+      badges: [
+        ["⏱️", "after.comp.create", "ضبط الساعة الزمنية الدقيقة (60fps Rational Clock)", "Initializing 60fps Rational-Clock Composition", "٢٥٤ مليار نبضة/ثانية بدون انزلاق إطارات", "254,016,000,000 ticks/sec zero-drift grid"],
+        ["🔤", "after.layer.create_text", "تحريك عنوان الخطاف البصري (٠ - ٣ ثوانٍ)", "Animating 0-3s Kinetic Hook Typography", "جذب الانتباه الفوري في ريلز وتيك توك", "Pattern-interrupt entrance inside title-safe guides"],
+        ["📈", "after.keyframe.easy_ease", "تطبيق منحنيات السرعة Cubic-Bezier Easy-Ease", "Applying Cubic-Bezier Easy-Ease Velocity Curves", "حركة انسيابية خالية من التوقف الحاد", "Smooth spatial & opacity velocity curves"],
+        ["✨", "after.effect.apply", "إضافة التوهج البصري (Optical Glow) وتجهيز Alpha", "Binding Optical Glow & Alpha Stem Handoff", "جاهز للربط المباشر مع FilmTron", "Clean track-matte hierarchy ready for FilmTron"]
+      ],
+      doneAr: `جهزت تكوين AfterTron (.acraft) عبر ${nodeLabel} (${model})! صممت مقدمة خطاف بصري بسرعة 60 إطاراً ومنحنيات حركة انسيابية وتوهج بصري جاهز للدمج في FilmTron.`,
+      doneEn: `Your AfterTron (.acraft) VFX composition is ready via ${nodeLabel} (${model})! 60fps kinetic typography, cubic-bezier easy-ease curves, and optical glow stems are verified.`
+    },
+    figtron: {
+      thinkingAr: "جاري هندسة واجهة التحويل ومتغيرات التصميم في FigTron...",
+      thinkingEn: "Designing zero-CLS responsive auto-layout & GemiTokens bindings in FigTron...",
+      badges: [
+        ["📐", "figtron.frame.create_autolayout", "إنشاء إطارات Auto-Layout متجاوبة (سطح مكتب + جوال)", "Creating Responsive Desktop & Mobile Auto-Layout", "منع إزاحة التخطيط التراكمية (Zero CLS)", "Locked intrinsic aspect ratios (CLS = 0)"],
+        ["🎨", "figtron.token.bind_variable", "ربط ١٠٠٪ من الألوان والمسافات بمتغيرات GemiTokens", "Binding 100% Design Token Variables", "دعم فوري للوضع الداكن والفاتح", "Zero hardcoded hex; full Dark/Light parity"],
+        ["↔️", "figtron.text.create_rtl", "عكس تخطيط RTL/LTR وفحص التباين WCAG AA", "Mirroring Bidirectional RTL/LTR Hierarchy", "وضوح تام للنصوص العربية والإنجليزية", "WCAG AA contrast verified on all CTAs"],
+        ["👆", "figtron.component.instantiate", "ضبط حالات المكونات التفاعلية وأهداف اللمس (>= 48px)", "Linking Interactive Component States (>= 48px)", "علاج نقاط الاحتكاك والـ Quickbacks", "Default/Hover/Focus/Disabled states wired"]
+      ],
+      doneAr: `جهزت تصميم FigTron (.figtron) عبر ${nodeLabel} (${model})! ربطت ١٠٠٪ من متغيرات التصميم مع دعم كامل للعربية RTL وأهداف لمس قياسية جاهزة للتنفيذ.`,
+      doneEn: `Your FigTron (.figtron) responsive UI system is ready via ${nodeLabel} (${model})! 100% token-bound auto-layout frames, RTL/LTR mirroring, and >=48px touch targets are verified.`
+    },
+    lighttron: {
+      thinkingAr: "جاري تحميض الصور الخام ومزامنة الكتالوج في LightTron...",
+      thinkingEn: "Developing RAW sensor exposure, filmic curve & batch XMP sync in LightTron...",
+      badges: [
+        ["☀️", "lighttron.develop.exposure_wb", "ضبط التعريض وتوازن اللون الأبيض (Kelvin WB)", "Normalizing RAW Exposure & Kelvin White Balance", "نسبة قص الإضاءة والظلال أقل من ٠.٥٪", "Highlight/shadow clipping strictly < 0.5%"],
+        ["🌈", "lighttron.develop.tone_curve", "تطبيق المنحنى السينمائي ومعايرة HSL غير المدمرة", "Applying Filmic Tone Curve & HSL Calibration", "حفظ الإعدادات في ملفات XMP الجانبية", "Non-destructive parametric XMP sidecar saved"],
+        ["🎯", "lighttron.mask.radial_gradient", "إضافة قناع شعاعي لإبراز المنتج الرئيسي", "Sculpting Radial Gradient Subject Mask", "عزل ضوئي ناعم بدون هالات", "Smooth feathering around hero SKU"],
+        ["🏷️", "lighttron.catalog.sync_settings", "مزامنة الكتالوج وحقن بيانات EXIF/IPTC للسيو", "Batch-Syncing Catalog & IPTC/EXIF SEO Metadata", "توحيد ألوان جلسة التصوير بالكامل", "Uniform SKU color + Google Images metadata"]
+      ],
+      doneAr: `اكتملت معايرة LightTron (.lcraft) عبر ${nodeLabel} (${model})! وحّدت الإضاءة والألوان عبر كامل الكتالوج بدون مساس بالملفات الخام مع تضمين بيانات السيو الصورية.`,
+      doneEn: `Your LightTron (.lcraft) catalog grade is ready via ${nodeLabel} (${model})! RAW exposure, filmic tone curves, and IPTC/EXIF metadata are synced with <0.5% clipping.`
+    },
+    scaletron: {
+      thinkingAr: "جاري التكبير الفائق وتصفية OKLab في ScaleTron...",
+      thinkingEn: "Running 4x steerable super-resolution & OKLab guided filtering in ScaleTron...",
+      badges: [
+        ["🔍", "scale.inspect.classify", "تحليل هندسة الحواف ومستوى الضوضاء اللونية", "Classifying Edge Geometry & Chroma Noise Floor", "تحديد أفضل خوارزمية تكبير تلقائياً", "Selected optimal steerable + OKLab pipeline"],
+        ["🔬", "scale.enhance.steerable_sr", "تكبير فائق ٤ أضعاف مع كبح الهالات (3x3 Clamp)", "Executing 4x Steerable Super-Resolution (3x3 Clamp)", "صفر هالات رنين وصفر فواصل بين المربعات", "Zero ringing halos & zero tile seams"],
+        ["💎", "scale.enhance.oklab_guided", "تنقية لونية في فضاء OKLab وزيادة حدة التفاصيل", "Filtering Chroma in Perceptual OKLab Space", "تحسن فعلي ومقاس في حدة الحواف (Acutance+)", "Verified positive acutance delta"],
+        ["⚡", "scale.topaz.neural_upscale", "تصدير WebP/AVIF فائق الخفة لتسريع LCP (< 2.5s)", "Encoding Next-Gen WebP/AVIF Masters (LCP < 2.5s)", "تخفيض الحجم بأكثر من ٦٥٪ مع نقاء كامل", "65%+ byte reduction for instant Core Web Vitals"]
+      ],
+      doneAr: `جهزت أصول ScaleTron (.stproj) المكبرة عبر ${nodeLabel} (${model})! ضاعفت الدقة ٤ مرات بدون أي هالات رنين مع ضغط WebP/AVIF فائق السرعة.`,
+      doneEn: `Your ScaleTron (.stproj) 4x super-resolution master is ready via ${nodeLabel} (${model})! Zero-halo 3x3 clamping, OKLab chroma clarity, and lightweight WebP/AVIF outputs are verified.`
+    }
+  };
+
+  if (Object.hasOwn(creativeAppStreams, normalizedPhotoSvc)) {
+    const spec = creativeAppStreams[normalizedPhotoSvc];
+    return [
+      {
+        type: "thinking",
+        title: isAr ? spec.thinkingAr : spec.thinkingEn,
+        detail: isAr
+          ? `يعمل العقل الذكي (${model} · ${effort}) عبر ${nodeLabel} لبناء خطة تنفيذ غير مدمرة.`
+          : `Running AGYTron Smart Mind (${model} · ${effort}) on ${nodeLabel} for non-destructive execution.`
+      },
+      ...spec.badges.map(([icon, tool, labelAr, labelEn, summaryAr, summaryEn]) => ({
+        type: "tool_badge",
+        icon,
+        tool,
+        status: "done",
+        label: isAr ? labelAr : labelEn,
+        summary: isAr ? summaryAr : summaryEn
+      })),
+      {
+        type: "chat_message",
+        role: "assistant",
+        nodeBadge: nodeLabel,
+        text: isAr ? spec.doneAr : spec.doneEn
+      }
+    ];
+  }
+
   return [
     {
       type: "thinking",

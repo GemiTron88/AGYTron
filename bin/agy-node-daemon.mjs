@@ -44,7 +44,8 @@ import {
   executeGlobalAgySmartMind,
   buildFilmEditorialDirections,
   translateSubjectiveArabicFeedback,
-  critiqueFilmTimeline
+  critiqueFilmTimeline,
+  auditAgySmartMindReadiness
 } from "../src/index.mjs";
 
 const args = process.argv.slice(2);
@@ -846,6 +847,20 @@ export async function handleAgyNodeHttpRequest(
     });
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(JSON.stringify(result));
+    return true;
+  }
+
+  if (req.method === "GET" && pathname === "/v1/agy/audit") {
+    const audit = auditAgySmartMindReadiness({ quotaLedger: defaultAgyQuotaLedger });
+    res.writeHead(audit.ok ? 200 : 503, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ...audit,
+        nodeId: nodeMeta.id,
+        defaultNodeId: effectiveRegistry.getDefaultNodeId(),
+        registeredNodesCount: effectiveRegistry.list().length
+      })
+    );
     return true;
   }
 

@@ -19,6 +19,10 @@ import {
   AGY_MODELS,
   AGY_EFFORT_TIERS,
   FILMTRON_EDITORIAL_PRESETS,
+  defaultAgyQuotaLedger,
+  getAppKnowledgeAndSkills,
+  listAllNineAppsKnowledgeCatalog,
+  auditAgySmartMindReadiness,
   buildTronAgyCreativePlan,
   buildGlobalAgySmartMindPlan,
   executeGlobalAgySmartMind,
@@ -26,6 +30,7 @@ import {
   translateSubjectiveArabicFeedback,
   critiqueFilmTimeline
 } from "../src/index.mjs";
+import { AGY_FLEET_NODES, DEFAULT_FLEET_ADDRESSES } from "../src/fleet-router.mjs";
 import { resolveMcpTransportConfig } from "../src/mcp-bridge.mjs";
 
 export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
@@ -45,8 +50,10 @@ export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
     "أورورا كرونوغراف X1 — فخامة التيتانيوم السويسري | حملة متكاملة عبر جناح TronCS الإبداعي"
   );
   const appsRaw = readFlag("--apps", readFlag("--service", "phototron,aftertron,gemimotion,filmtron"));
-  const service = readFlag("--service", "filmtron");
+  const service = readFlag("--service", readFlag("--app", "filmtron"));
   const task = readFlag("--task", "general-reasoning");
+  const skillId = readFlag("--skill", null);
+  const workflowId = readFlag("--workflow", null);
   const preset = readFlag("--preset", "cinema-narrative-cut");
   const feedback = readFlag("--feedback", "");
   const fps = readFlag("--fps", "24/1");
@@ -68,8 +75,10 @@ export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
   }
 
   if (firstArg === "audit") {
+    const readiness = auditAgySmartMindReadiness();
     return {
-      ok: true,
+      ...readiness,
+      ok: readiness.ok,
       command: "audit",
       tosSafetyGuard: AGY_TOS_SAFETY_GUARD,
       suiteAppsCount: Object.keys(TRONCS_SUITE_APPS).length,
@@ -77,6 +86,75 @@ export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
       modelsCount: AGY_MODELS.length,
       effortTiers: Object.keys(AGY_EFFORT_TIERS),
       filmtronPresetsCount: Object.keys(FILMTRON_EDITORIAL_PRESETS).length
+    };
+  }
+
+  if (firstArg === "skills") {
+    const appFilter = readFlag("--app", readFlag("--service", ""));
+    if (appFilter) {
+      const kb = getAppKnowledgeAndSkills(appFilter);
+      return {
+        ok: Boolean(kb),
+        command: "skills",
+        appId: kb?.appId || appFilter,
+        skills: kb?.skills || []
+      };
+    }
+    const cat = listAllNineAppsKnowledgeCatalog();
+    return {
+      ok: true,
+      command: "skills",
+      totalSkills: cat.totalSkills,
+      apps: cat.apps.map((a) => ({ appId: a.appId, skillsCount: a.skills.length, skills: a.skills }))
+    };
+  }
+
+  if (firstArg === "workflows") {
+    const appFilter = readFlag("--app", readFlag("--service", ""));
+    if (appFilter) {
+      const kb = getAppKnowledgeAndSkills(appFilter);
+      return {
+        ok: Boolean(kb),
+        command: "workflows",
+        appId: kb?.appId || appFilter,
+        workflows: kb?.workflows || []
+      };
+    }
+    const cat = listAllNineAppsKnowledgeCatalog();
+    return {
+      ok: true,
+      command: "workflows",
+      totalWorkflows: cat.totalWorkflows,
+      apps: cat.apps.map((a) => ({
+        appId: a.appId,
+        workflowsCount: a.workflows.length,
+        workflows: a.workflows
+      }))
+    };
+  }
+
+  if (firstArg === "quota") {
+    if (args.includes("--reset")) {
+      const family = readFlag("--family", "all");
+      const resetRes = defaultAgyQuotaLedger.resetFamily(family);
+      return {
+        ...resetRes,
+        command: "quota",
+        quota: defaultAgyQuotaLedger.getSnapshot()
+      };
+    }
+    return {
+      ...defaultAgyQuotaLedger.getSnapshot(),
+      command: "quota"
+    };
+  }
+
+  if (firstArg === "fleet") {
+    return {
+      ok: true,
+      command: "fleet",
+      defaultAddresses: DEFAULT_FLEET_ADDRESSES,
+      nodes: Object.values(AGY_FLEET_NODES)
     };
   }
 
@@ -107,17 +185,19 @@ export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
     });
   }
 
-  if (firstArg === "smart-mind") {
+  if (firstArg === "smart-mind" || firstArg === "execute") {
     const servicesList = appsRaw
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
-    if (args.includes("--plan-only")) {
+    if (args.includes("--plan-only") && firstArg !== "execute") {
       return buildGlobalAgySmartMindPlan({
         prompt,
         service: servicesList[0] || service,
         services: servicesList,
         task,
+        skillId,
+        workflowId,
         model,
         effort,
         authMode,
@@ -132,6 +212,8 @@ export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
       service: servicesList[0] || service,
       services: servicesList,
       task,
+      skillId,
+      workflowId,
       model,
       effort,
       nodeId,

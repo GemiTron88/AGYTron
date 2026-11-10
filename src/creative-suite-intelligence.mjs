@@ -885,17 +885,62 @@ export function synthesizeCreativeAppSmartMind({
     };
   }
 
-  if (appId === "phototron") {
+  if (appId === "phototron" || appId === "phototron-mobile") {
+    const executableSteps = [
+      {
+        step: 1,
+        tool: "photo.document.place",
+        params: {
+          layerName: "01_Hero_Composite_SmartObject",
+          blendMode: "Normal",
+          preserveNonDestructiveSource: true
+        },
+        expectedReceipt: "Non-destructive smart object placed with intact source bounds"
+      },
+      {
+        step: 2,
+        tool: "photo.adjustment.curves",
+        params: {
+          layerName: "02_Filmic_S_Curve_Grade",
+          shadowsLift: 6,
+          highlightsRollOff: -10
+        },
+        expectedReceipt: "Parametric Curves adjustment layer bound without pixel flattening"
+      },
+      {
+        step: 3,
+        tool: "photo.adjustment.levels",
+        params: {
+          layerName: "03_Subject_Rim_Light_Levels",
+          maskTool: "photo.mask.revealAll"
+        },
+        expectedReceipt: "Levels tonal separation & non-destructive mask verified"
+      },
+      {
+        step: 4,
+        tool: "photo.text.create",
+        params: {
+          layerName: "04_Arabic_HarfBuzz_Headline",
+          content: cleanPrompt.slice(0, 84),
+          fontFamily: "GemiCairo-Black",
+          direction: isAr ? "rtl" : "ltr",
+          wcagContrastTarget: 4.5
+        },
+        expectedReceipt: "Editable HarfBuzz RTL/LTR vector text created inside SafeRect"
+      }
+    ];
     const structured = {
-      engine: "phototron-agy-smart-mind",
+      engine: `${appId}-agy-smart-mind`,
       service: profile.id,
       serviceName: profile.name,
       model: plan.model,
       effort: plan.effort,
       task,
+      recommendedSkillId: context.skillId || "skill.phototron.arabic_key_art",
+      recommendedWorkflowId: context.workflowId || "wf.phototron.4ratio_ad_pack",
       canvasSpec: {
-        widthPx: context.widthPx || 3840,
-        heightPx: context.heightPx || 2160,
+        widthPx: context.widthPx || (appId === "phototron-mobile" ? 1080 : 3840),
+        heightPx: context.heightPx || (appId === "phototron-mobile" ? 1350 : 2160),
         colorSpace: "Display-P3 / sRGB IEC61966-2.1",
         bitDepth: 16
       },
@@ -926,6 +971,7 @@ export function synthesizeCreativeAppSmartMind({
           dropShadowTool: "photo.layerStyle.dropShadow"
         }
       ],
+      executableSteps,
       supportedFormats: [".pcraft", ".psd", ".psb", ".png", ".webp", ".tiff"],
       recommendedTools: profile.nativeTools,
       critiqueChecks: profile.critiqueChecks
@@ -933,8 +979,8 @@ export function synthesizeCreativeAppSmartMind({
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · فوتو ترون · ${plan.model}] تم بناء هيكل الطبقات غير التدميري لـ «${cleanPrompt}» بدقة 4K مع منحنيات إضاءة سينمائية وتشكيل خطوط عربية (HarfBuzz RTL) بتباين WCAG 8.6:1.`
-        : `[AGYTron Smart Mind · PhotoTron · ${plan.model}] Built non-destructive 16-bit layer stack for "${cleanPrompt}" with filmic S-curves, smart masks, and HarfBuzz RTL display typography.`
+        ? `[AGYTron Smart Mind · ${profile.arName} · ${plan.model}] تم بناء هيكل الطبقات غير التدميري لـ «${cleanPrompt}» مع منحنيات إضاءة سينمائية وتشكيل خطوط عربية (HarfBuzz RTL) بتباين WCAG 8.6:1.`
+        : `[AGYTron Smart Mind · ${profile.name} · ${plan.model}] Built non-destructive 16-bit layer stack for "${cleanPrompt}" with filmic S-curves, smart masks, and HarfBuzz RTL display typography.`
     };
   }
 

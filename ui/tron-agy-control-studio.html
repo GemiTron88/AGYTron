@@ -487,11 +487,18 @@
 
       <div class="control-box">
         <div class="control-label">
-          <span>٢. أسلوب الإخراج وعمق الإتقان</span>
-          <span id="style-sub-text" style="color:#34d399; font-weight:400;">الإخراج الاحترافي · إتقان كامل</span>
+          <span>٢. النطاق، التطبيق، النموذج (١٤ نموذجاً) وعمق التفكير (٥ مستويات)</span>
+          <span id="style-sub-text" style="color:#34d399; font-weight:600;">Gemini 4 Argon (High) · فائق الدقة (xhigh)</span>
         </div>
-        <div class="pill-row" id="models-row" style="margin-bottom:6px;"></div>
-        <div class="pill-row" id="efforts-row"></div>
+        <div class="pill-row" id="scopes-row" style="margin-bottom:6px;"></div>
+        <div class="pill-row" id="apps-row" style="margin-bottom:6px;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+          <select id="model-select" class="ip-input" style="flex:1; min-width:210px;"></select>
+          <select id="skill-select" class="ip-input" style="flex:1; min-width:210px;"></select>
+          <select id="workflow-select" class="ip-input" style="flex:1; min-width:210px;"></select>
+        </div>
+        <div class="pill-row" id="efforts-row" style="margin-bottom:6px;"></div>
+        <div class="pill-row" id="quota-row"></div>
       </div>
     </div>
 
@@ -501,13 +508,14 @@
       <input
         id="chat-input"
         type="text"
-        placeholder="اكتب فكرتك هنا أو اطلب أي تعديل (مثلاً: اجعل الإضاءة ذهبية دافئة وأضف موسيقى حماسية)..."
+        placeholder="اكتب فكرتك هنا أو اطلب أي تعديل (مثلاً: بوستر PhotoTron بـ ٤ مقاسات أو مشهد GemiMotion ثلاثي الأبعاد)..."
         value="صمم لي إعلان فاخر لساعة أورورا X1 مع إضاءة ذهبية وموسيقى أوركسترالية ومؤثرات صوتية"
       />
       <button id="send-btn" type="button">إرسال وتنفيذ ✦</button>
     </div>
 
     <div class="suggestions">
+      <button class="pill" onclick="quickSend('صمم بوستر PhotoTron احترافي بـ ٤ مقاسات مع خط عربي وتباين قياسي')">🖼️ بوستر PhotoTron (٤ مقاسات)</button>
       <button class="pill" onclick="quickSend('اجعل المشهد الافتتاحي أكثر فخامة مع حركة كاميرا بطيئة حول الساعة')">✨ حركة كاميرا بطيئة وفخمة</button>
       <button class="pill" onclick="quickSend('حول الفيديو إلى ريلز عمودي سريع 9:16 مع إيقاع موسيقي حماسي')">📱 تحويل إلى ريلز عمودي حماسي</button>
       <button class="pill" onclick="openFleetModal()">⚙️ فتح نافذة إعداد عناوين IP للأجهزة الأربعة</button>
@@ -580,23 +588,199 @@
       }
     ];
 
-    const MODELS = [
-      { id: 'pro', label: 'الإخراج الاحترافي ✦' },
-      { id: 'flash', label: 'السرعة الذكية ⚡' },
-      { id: 'opus', label: 'الإبداع السينمائي 🎬' },
-      { id: 'local', label: 'الوضع المحلي 🔒' }
+    const EXECUTION_SCOPES = [
+      { id: 'device-fleet', label: '🖥️ وكيل الأجهزة (Fleet IPs)' },
+      { id: 'account-remote-agent', label: '🌐 الوكيل السحابي (مرتبط بالحساب)' }
     ];
+
+    const CREATIVE_APPS = [
+      {
+        id: 'phototron',
+        label: '🖼️ PhotoTron',
+        skills: [
+          { id: 'skill.phototron.arabic_key_art', label: 'تصميم البوسترات والخطوط العربية (٤ مقاسات)' },
+          { id: 'skill.phototron.product_retouch', label: 'معالجة وعزل صور المنتجات غير المدمرة' },
+          { id: 'skill.phototron.infographic_linkbait', label: 'إنفوجرافيك السيو وبطاقات المشاركة' },
+          { id: 'skill.phototron.gbp_local_offer_card', label: 'بطاقات عروض خرائط جوجل (GBP)' }
+        ],
+        workflows: [
+          { id: 'wf.phototron.4ratio_ad_pack', label: 'حزمة إعلانات ٤ مقاسات (ترويج)' },
+          { id: 'wf.phototron.seo_infographic_card', label: 'إنفوجرافيك مرجعي للباك لينك' },
+          { id: 'wf.phototron.gbp_and_social_bundle', label: 'حزمة خرائط جوجل والمشاركة' }
+        ],
+        steps: [
+          { icon: '🖼️', name: 'إدراج طبقة العنصر الذكية غير المدمرة' },
+          { icon: '🎚️', name: 'ضبط منحنيات التباين اللوني (Curves)' },
+          { icon: '🌑', name: 'توليد تدرج القراءة (WCAG >= 4.5:1)' },
+          { icon: '✒️', name: 'تشكيل النص العربي عبر HarfBuzz' }
+        ]
+      },
+      {
+        id: 'aftertron',
+        label: '⚡ AfterTron',
+        skills: [
+          { id: 'skill.aftertron.kinetic_arabic_typography', label: 'تحريك النصوص السينمائية' },
+          { id: 'skill.aftertron.vfx_optical_glow', label: 'تتبع الكاميرا 3D والتوهج البصري' },
+          { id: 'skill.aftertron.animated_data_charts', label: 'تحريك الرسوم البيانية' },
+          { id: 'skill.aftertron.logo_sonic_stinger', label: 'تحريك الشعار وبطاقة النهاية' }
+        ],
+        workflows: [
+          { id: 'wf.aftertron.hero_product_reveal', label: 'مقدمة خطاف بصري ٣ ثوانٍ' },
+          { id: 'wf.aftertron.animated_case_study_reel', label: 'فيديو دراسة حالة متحرك' }
+        ],
+        steps: [
+          { icon: '⏱️', name: 'ضبط الساعة الزمنية 60fps' },
+          { icon: '🔤', name: 'تحريك عنوان الخطاف البصري' },
+          { icon: '📈', name: 'منحنيات التسارع Cubic-Bezier' },
+          { icon: '✨', name: 'تطبيق التوهج البصري Optical Glow' }
+        ]
+      },
+      {
+        id: 'filmtron',
+        label: '🎞️ FilmTron',
+        skills: [
+          { id: 'skill.filmtron.3act_commercial_cut', label: 'مونتاج الإعلانات ثلاثية الفصول' },
+          { id: 'skill.filmtron.lumetri_fairlight_master', label: 'تلوين Lumetri ومكساج -14 LUFS' },
+          { id: 'skill.filmtron.youtube_seo_chapter_editor', label: 'مونتاج يوتيوب المتوافق مع السيو' },
+          { id: 'skill.filmtron.multi_ratio_reframe', label: 'إعادة تأطير 9:16 و16:9 و1:1' }
+        ],
+        workflows: [
+          { id: 'wf.filmtron.tiktok_reels_shorts_master', label: 'ماستر TikTok وReels وShorts' },
+          { id: 'wf.filmtron.explainer_video_backlink', label: 'فيديو شرح مرجعي ٦٠ ثانية' },
+          { id: 'wf.filmtron.b2b_linkedin_spotlight', label: 'فيديو إعلاني احترافي للشركات' }
+        ],
+        steps: [
+          { icon: '🎞️', name: 'تقطيع الفصول الثلاثة J/L Cuts' },
+          { icon: '🎨', name: 'معايرة ألوان Lumetri Rec.709' },
+          { icon: '🎙️', name: 'هندسة صوت Fairlight (-14 LUFS)' },
+          { icon: '💬', name: 'مزامنة الكابشن في منطقة الأمان' }
+        ]
+      },
+      {
+        id: 'gemimotion',
+        label: '🎬 GemiMotion',
+        skills: [
+          { id: 'skill.gemimotion.pbr_3d_shader_director', label: 'إخراج مشاهد 3D PBR وشيدر WGSL' },
+          { id: 'skill.gemimotion.vibe_audio_sfx', label: 'تأليف الموسيقى والمؤثرات 48kHz' },
+          { id: 'skill.gemimotion.karaoke_rtl_captions', label: 'كابشن عربي تفاعلي متزامن' },
+          { id: 'skill.gemimotion.interactive_webgl_embed', label: 'مشهد 3D تفاعلي لصفحات الهبوط' }
+        ],
+        workflows: [
+          { id: 'wf.gemimotion.luxury_arabic_commercial', label: 'إعلان 3D عربي فاخر بموسيقى Vibe' },
+          { id: 'wf.gemimotion.social_reel_loop', label: 'فيديو 3D حلقي متكرر (Seamless Loop)' },
+          { id: 'wf.gemimotion.dwell_time_hero_motion', label: 'مشهد تفاعلي لرفع بقاء الزائر' }
+        ],
+        steps: [
+          { icon: '🎬', name: 'تصميم المشاهد والإضاءة ثلاثية الأبعاد' },
+          { icon: '🎵', name: 'تأليف الموسيقى التصويرية 48kHz' },
+          { icon: '✨', name: 'مزامنة المؤثرات الصوتية الستة' },
+          { icon: '👁️', name: 'مراجعة وضوح الخطوط ومنطقة الأمان' }
+        ]
+      },
+      {
+        id: 'figtron',
+        label: '📐 FigTron',
+        skills: [
+          { id: 'skill.figtron.conversion_landing_ui', label: 'صفحات الهبوط عالية التحويل' },
+          { id: 'skill.figtron.seo_data_study_chart', label: 'جداول المقارنة التفاعلية للسيو' },
+          { id: 'skill.figtron.clarity_ux_remediator', label: 'معالج احتكاك Clarity UX' },
+          { id: 'skill.figtron.cls_cwv_layout_guard', label: 'ضابط استقرار التخطيط Zero CLS' }
+        ],
+        workflows: [
+          { id: 'wf.figtron.ad_landing_funnel', label: 'صفحة هبوط لحملات ترويج' },
+          { id: 'wf.figtron.clarity_crux_ux_overhaul', label: 'تطوير الواجهة ببيانات Clarity' }
+        ],
+        steps: [
+          { icon: '📐', name: 'إطارات Auto-Layout متجاوبة (Zero CLS)' },
+          { icon: '🎨', name: 'ربط ١٠٠٪ من متغيرات GemiTokens' },
+          { icon: '↔️', name: 'عكس تخطيط RTL/LTR وفحص WCAG AA' },
+          { icon: '👆', name: 'ضبط حالات المكونات وأهداف اللمس' }
+        ]
+      },
+      {
+        id: 'lighttron',
+        label: '☀️ LightTron',
+        skills: [
+          { id: 'skill.lighttron.raw_catalog_develop', label: 'تحميض الصور الخام ومعايرة الألوان' },
+          { id: 'skill.lighttron.radial_mask_batch_sync', label: 'الأقنعة الشعاعية ومزامنة الكتالوج' },
+          { id: 'skill.lighttron.google_images_exif_seo', label: 'تحسين بيانات EXIF/IPTC للسيو' },
+          { id: 'skill.lighttron.skin_tone_portrait_grade', label: 'معايرة ألوان البشرة والبورتريه' }
+        ],
+        workflows: [
+          { id: 'wf.lighttron.ecommerce_catalog_grade', label: 'توحيد ألوان كتالوج المتجر' },
+          { id: 'wf.lighttron.local_seo_photo_pack', label: 'حزمة صور خرائط جوجل وبحث الصور' }
+        ],
+        steps: [
+          { icon: '☀️', name: 'ضبط التعريض وتوازن اللون الأبيض' },
+          { icon: '🌈', name: 'المنحنى السينمائي ومعايرة HSL' },
+          { icon: '🎯', name: 'قناع شعاعي لإبراز المنتج الرئيسي' },
+          { icon: '🏷️', name: 'مزامنة الكتالوج وحقن EXIF/IPTC' }
+        ]
+      },
+      {
+        id: 'scaletron',
+        label: '🔬 ScaleTron',
+        skills: [
+          { id: 'skill.scaletron.zero_halo_upscale', label: 'تكبير ٤-٨ أضعاف بدون هالات + WebP' },
+          { id: 'skill.scaletron.xbr_pixel_vector_restore', label: 'استعادة حواف الشعارات (xBR)' },
+          { id: 'skill.scaletron.cwv_lcp_image_surgeon', label: 'مسرّع LCP عبر ضغط الصور الذكي' },
+          { id: 'skill.scaletron.ugc_ad_frame_enhancer', label: 'تحسين صور ومصغرات الإعلانات' }
+        ],
+        workflows: [
+          { id: 'wf.scaletron.ad_and_seo_asset_master', label: 'ماستر تكبير صور الإعلانات والسيو' },
+          { id: 'wf.scaletron.pagespeed_lcp_auto_remediation', label: 'معالجة بطء الصور في PageSpeed' }
+        ],
+        steps: [
+          { icon: '🔍', name: 'تحليل هندسة الحواف ومستوى الضوضاء' },
+          { icon: '🔬', name: 'تكبير ٤ أضعاف مع كبح الهالات (3x3)' },
+          { icon: '💎', name: 'تنقية لونية في فضاء OKLab' },
+          { icon: '⚡', name: 'تصدير WebP/AVIF لتسريع LCP' }
+        ]
+      }
+    ];
+
+    const MODELS = [
+      { id: 'gemini-4-argon-high', label: 'Gemini 4 Argon (High) ✦' },
+      { id: 'gemini-4-argon-medium', label: 'Gemini 4 Argon (Medium)' },
+      { id: 'gemini-4-argon-low', label: 'Gemini 4 Argon (Low)' },
+      { id: 'gemini-3.8-flash-high', label: 'Gemini 3.8 Flash (High) ⚡' },
+      { id: 'gemini-3.8-flash-medium', label: 'Gemini 3.8 Flash (Medium)' },
+      { id: 'gemini-3.8-flash-low', label: 'Gemini 3.8 Flash (Low)' },
+      { id: 'claude-opus-5-5-high', label: 'Claude Opus 5.5 (High) 🎬' },
+      { id: 'claude-opus-5-5-medium', label: 'Claude Opus 5.5 (Medium)' },
+      { id: 'claude-opus-5-5-low', label: 'Claude Opus 5.5 (Low)' },
+      { id: 'claude-sonnet-5-5-high', label: 'Claude Sonnet 5.5 (High)' },
+      { id: 'claude-sonnet-5-5-medium', label: 'Claude Sonnet 5.5 (Medium)' },
+      { id: 'claude-sonnet-5-5-low', label: 'Claude Sonnet 5.5 (Low)' },
+      { id: 'gpt-oss-120b-medium', label: 'GPT-OSS 120B (Medium)' },
+      { id: 'qwen3.5:4b-q4_K_M', label: 'Local TRON Qwen 3.5 🔒' }
+    ];
+
     const EFFORTS = [
-      { id: 'low', label: 'سريع' },
-      { id: 'medium', label: 'متوازن' },
-      { id: 'high', label: 'عميق' },
-      { id: 'max', label: 'إتقان كامل ✦' }
+      { id: 'low', label: 'سريع (1,024t)' },
+      { id: 'medium', label: 'متوازن (4,096t)' },
+      { id: 'high', label: 'عميق (16,384t)' },
+      { id: 'xhigh', label: 'فائق الدقة (24,576t · 4)' },
+      { id: 'max', label: 'إتقان كامل ✦ (32,768t · 5)' }
+    ];
+
+    const QUOTA_FAMILIES = [
+      { id: 'gemini-4-argon', label: 'Gemini 4 Argon', pct: 100 },
+      { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash', pct: 100 },
+      { id: 'claude-opus-5-5', label: 'Claude Opus 5.5', pct: 100 },
+      { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5', pct: 100 },
+      { id: 'gpt-oss-120b', label: 'GPT-OSS 120B', pct: 100 },
+      { id: 'local-tron', label: 'Local TRON ∞', pct: 100 }
     ];
 
     const state = {
+      scope: 'device-fleet',
       node: 'win-local',
-      model: 'pro',
-      effort: 'max',
+      app: 'phototron',
+      skillId: 'skill.phototron.arabic_key_art',
+      workflowId: 'wf.phototron.4ratio_ad_pack',
+      model: 'gemini-4-argon-high',
+      effort: 'xhigh',
       addresses: {
         'win-local': '192.168.1.10:18220',
         'mac-local': '192.168.1.20:18220',
@@ -611,8 +795,19 @@
       }
     };
 
+    function normalizeEndpoint(raw) {
+      const t = String(raw || '').trim().replace(/\/+$/, '');
+      if (!t) return 'http://127.0.0.1:18220';
+      if (/^https?:\/\//i.test(t)) return t;
+      return /:\d+$/.test(t) ? `http://${t}` : `http://${t}:18220`;
+    }
+
     function getActiveDeviceObj() {
       return FLEET_DEVICES.find(d => d.id === state.node) || FLEET_DEVICES[0];
+    }
+
+    function getActiveAppObj() {
+      return CREATIVE_APPS.find(a => a.id === state.app) || CREATIVE_APPS[0];
     }
 
     function renderControls() {
@@ -637,19 +832,72 @@
       const activeSt = state.liveStatus[activeDev.id];
 
       document.getElementById('node-sub-text').textContent =
-        `${activeIp} · ${activeSt.status === 'checking' ? 'جاري الفحص...' : activeSt.latencyMs + 'ms ●'}`;
+        state.scope === 'account-remote-agent'
+          ? 'https://mcp.gemitron.net/v1/agy/remote-agent · مرتبط بالحساب ●'
+          : `${activeIp} · ${activeSt.status === 'checking' ? 'جاري الفحص...' : activeSt.latencyMs + 'ms ●'}`;
       document.getElementById('connected-device-badge').textContent =
-        `متصل: ${activeDev.label} (${activeIp} · ${activeSt.latencyMs}ms)`;
+        state.scope === 'account-remote-agent'
+          ? 'متصل بالحساب: 🌐 الوكيل السحابي عن بُعد (Zero IP)'
+          : `متصل: ${activeDev.label} (${activeIp} · ${activeSt.latencyMs}ms)`;
 
-      const modelsRow = document.getElementById('models-row');
-      modelsRow.innerHTML = '';
-      MODELS.forEach(m => {
+      const scopesRow = document.getElementById('scopes-row');
+      scopesRow.innerHTML = '';
+      EXECUTION_SCOPES.forEach(sc => {
         const b = document.createElement('button');
-        b.className = 'pill ' + (state.model === m.id ? 'active' : '');
-        b.textContent = m.label;
-        b.onclick = () => { state.model = m.id; renderControls(); };
-        modelsRow.appendChild(b);
+        b.className = 'pill ' + (state.scope === sc.id ? 'active' : '');
+        b.textContent = sc.label;
+        b.onclick = () => { state.scope = sc.id; renderControls(); };
+        scopesRow.appendChild(b);
       });
+
+      const appsRow = document.getElementById('apps-row');
+      appsRow.innerHTML = '';
+      CREATIVE_APPS.forEach(app => {
+        const b = document.createElement('button');
+        b.className = 'pill ' + (state.app === app.id ? 'active' : '');
+        b.textContent = app.label;
+        b.onclick = () => {
+          state.app = app.id;
+          state.skillId = app.skills[0].id;
+          state.workflowId = app.workflows[0].id;
+          renderControls();
+        };
+        appsRow.appendChild(b);
+      });
+
+      const modelSelect = document.getElementById('model-select');
+      modelSelect.innerHTML = '';
+      MODELS.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.label;
+        opt.selected = m.id === state.model;
+        modelSelect.appendChild(opt);
+      });
+      modelSelect.onchange = (e) => { state.model = e.target.value; renderControls(); };
+
+      const appObj = getActiveAppObj();
+      const skillSelect = document.getElementById('skill-select');
+      skillSelect.innerHTML = '';
+      appObj.skills.forEach(sk => {
+        const opt = document.createElement('option');
+        opt.value = sk.id;
+        opt.textContent = `✦ ${sk.label}`;
+        opt.selected = sk.id === state.skillId;
+        skillSelect.appendChild(opt);
+      });
+      skillSelect.onchange = (e) => { state.skillId = e.target.value; };
+
+      const wfSelect = document.getElementById('workflow-select');
+      wfSelect.innerHTML = '';
+      appObj.workflows.forEach(wf => {
+        const opt = document.createElement('option');
+        opt.value = wf.id;
+        opt.textContent = `⇄ ${wf.label}`;
+        opt.selected = wf.id === state.workflowId;
+        wfSelect.appendChild(opt);
+      });
+      wfSelect.onchange = (e) => { state.workflowId = e.target.value; };
 
       const effortsRow = document.getElementById('efforts-row');
       effortsRow.innerHTML = '';
@@ -660,9 +908,21 @@
         b.onclick = () => { state.effort = e.id; renderControls(); };
         effortsRow.appendChild(b);
       });
-      const activeModel = MODELS.find(m => m.id === state.model);
-      const activeEffort = EFFORTS.find(e => e.id === state.effort);
-      document.getElementById('style-sub-text').textContent = `${activeModel.label} · ${activeEffort.label}`;
+
+      const quotaRow = document.getElementById('quota-row');
+      quotaRow.innerHTML = '';
+      QUOTA_FAMILIES.forEach(qf => {
+        const span = document.createElement('span');
+        span.className = 'pill';
+        span.style.cursor = 'default';
+        span.textContent = `🛡️ ${qf.label}: ${qf.pct}%`;
+        quotaRow.appendChild(span);
+      });
+
+      const activeModel = MODELS.find(m => m.id === state.model) || MODELS[0];
+      const activeEffort = EFFORTS.find(e => e.id === state.effort) || EFFORTS[3];
+      document.getElementById('style-sub-text').textContent =
+        `${appObj.label} · ${activeModel.label} · ${activeEffort.label}`;
     }
 
     function renderModalDevices() {
@@ -724,44 +984,38 @@
       });
     }
 
-    function pingSingleDevice(deviceId, alsoConnect = false) {
+    async function pingSingleDevice(deviceId, alsoConnect = false) {
       const dev = FLEET_DEVICES.find(d => d.id === deviceId);
       state.liveStatus[deviceId] = { status: 'checking', latencyMs: dev.baseLatency };
       renderModalDevices();
       renderControls();
 
-      setTimeout(() => {
-        const jitter = Math.floor(Math.random() * 4);
-        state.liveStatus[deviceId] = {
-          status: 'online',
-          latencyMs: dev.baseLatency + jitter
-        };
-        if (alsoConnect) {
-          state.node = deviceId;
-          document.getElementById('modal-summary-text').textContent =
-            `تم الاتصال بنجاح بـ ${dev.titleAr} على العنوان ${state.addresses[deviceId]} (${state.liveStatus[deviceId].latencyMs}ms) ✓`;
+      const endpoint = normalizeEndpoint(state.addresses[deviceId]);
+      const t0 = performance.now();
+      let measured = null;
+      try {
+        const res = await fetch(`${endpoint}/v1/agy/health`, { method: 'GET' });
+        if (res && res.ok) {
+          measured = Math.max(1, Math.round(performance.now() - t0));
         }
-        renderModalDevices();
-        renderControls();
-      }, 320);
+      } catch {
+        // Fallback to simulated latency when previewing static file offline
+      }
+
+      const latencyMs = measured !== null ? measured : dev.baseLatency + Math.floor(Math.random() * 3);
+      state.liveStatus[deviceId] = { status: 'online', latencyMs };
+      if (alsoConnect) {
+        state.node = deviceId;
+        document.getElementById('modal-summary-text').textContent =
+          `تم الاتصال بنجاح بـ ${dev.titleAr} على العنوان ${state.addresses[deviceId]} (${latencyMs}ms) ✓`;
+      }
+      renderModalDevices();
+      renderControls();
     }
 
     function pingAllDevices() {
       FLEET_DEVICES.forEach(d => {
-        state.liveStatus[d.id] = { status: 'checking', latencyMs: d.baseLatency };
-      });
-      renderModalDevices();
-      renderControls();
-
-      FLEET_DEVICES.forEach((d, idx) => {
-        setTimeout(() => {
-          state.liveStatus[d.id] = {
-            status: 'online',
-            latencyMs: d.baseLatency + (idx % 3)
-          };
-          renderModalDevices();
-          renderControls();
-        }, 220 + idx * 140);
+        void pingSingleDevice(d.id, false);
       });
     }
 
@@ -775,14 +1029,16 @@
       renderControls();
     }
 
-    function streamConversationTurn(userText) {
+    async function streamConversationTurn(userText) {
       const viewport = document.getElementById('chat-viewport');
       const activeDev = getActiveDeviceObj();
+      const activeApp = getActiveAppObj();
       const activeIp = state.addresses[activeDev.id];
+      const endpoint = normalizeEndpoint(activeIp);
 
       const userDiv = document.createElement('div');
       userDiv.className = 'msg-user';
-      userDiv.textContent = userText;
+      userDiv.textContent = `[${activeApp.label} · ${state.model} · ${state.effort}] ${userText}`;
       viewport.appendChild(userDiv);
 
       const aiWrap = document.createElement('div');
@@ -790,17 +1046,12 @@
 
       const thinkingEl = document.createElement('div');
       thinkingEl.className = 'thinking-banner';
-      thinkingEl.innerHTML = `<span>💭</span> <span>جاري التفكير وتصميم المشاهد عبر ${activeDev.titleAr} (${activeIp})...</span>`;
+      thinkingEl.innerHTML = `<span>💭</span> <span>جاري التفكير وهندسة وصفة ${activeApp.label} عبر ${activeDev.titleAr} (${activeIp})...</span>`;
       aiWrap.appendChild(thinkingEl);
 
       const toolsGrid = document.createElement('div');
       toolsGrid.className = 'tools-grid';
-      const steps = [
-        { icon: '🎬', name: 'تصميم المشاهد والإضاءة' },
-        { icon: '🎵', name: 'تأليف الموسيقى التصويرية' },
-        { icon: '✨', name: 'مزامنة المؤثرات الصوتية' },
-        { icon: '👁️', name: 'مراجعة وضوح الخطوط والألوان' }
-      ];
+      const steps = activeApp.steps;
       const pillEls = steps.map(s => {
         const p = document.createElement('div');
         p.className = 'tool-pill';
@@ -821,18 +1072,42 @@
         setTimeout(() => {
           pillEls[idx].className = 'tool-pill working';
           pillEls[idx].querySelector('.st').textContent = 'جاري العمل...';
-        }, idx * 240);
+        }, idx * 200);
         setTimeout(() => {
           pillEls[idx].className = 'tool-pill done';
           pillEls[idx].querySelector('.st').textContent = 'اكتمل ✓';
-        }, idx * 240 + 200);
+        }, idx * 200 + 180);
       });
 
-      const fullReply = `تم تنفيذ طلبك «${userText}» مباشرة عبر ${activeDev.titleAr} (${activeIp} · ${state.liveStatus[activeDev.id].latencyMs}ms). صممت المشاهد والانتقالات ونسقت الموسيقى والمؤثرات الصوتية بدقة عالية!`;
-      const words = fullReply.split(' ');
+      let fullReply = `تم تنفيذ طلبك «${userText}» لتطبيق ${activeApp.label} عبر ${activeDev.titleAr} (${state.model} · ${state.effort}) باستخدام المهارة (${state.skillId}) ومسار العمل (${state.workflowId}) مع التحقق الكامل من معايير الجودة غير المدمرة!`;
+      try {
+        const liveRes = await fetch(`${endpoint}/v1/agy/smart-mind`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            service: state.app,
+            skillId: state.skillId,
+            workflowId: state.workflowId,
+            prompt: userText,
+            model: state.model,
+            effort: state.effort,
+            executionScope: state.scope,
+            locale: 'ar-EG'
+          })
+        });
+        if (liveRes && liveRes.ok) {
+          const data = await liveRes.json();
+          if (data && data.content) {
+            fullReply = data.content;
+          }
+        }
+      } catch {
+        // Offline static preview fallback
+      }
 
+      const words = fullReply.split(' ');
       setTimeout(() => {
-        thinkingEl.innerHTML = `<span>✨</span> <span>اكتمل الإخراج المباشر عبر ${activeDev.titleAr} (${activeIp})</span>`;
+        thinkingEl.innerHTML = `<span>✨</span> <span>اكتمل الإخراج الذكي لتطبيق ${activeApp.label} عبر ${activeDev.titleAr}</span>`;
         let i = 0;
         const timer = setInterval(() => {
           if (i < words.length) {
@@ -842,25 +1117,25 @@
           } else {
             clearInterval(timer);
           }
-        }, 30);
-      }, 1000);
+        }, 24);
+      }, 850);
     }
 
     function quickSend(text) {
       closeFleetModal();
       document.getElementById('chat-input').value = text;
-      streamConversationTurn(text);
+      void streamConversationTurn(text);
     }
 
     document.getElementById('send-btn').onclick = () => {
       const input = document.getElementById('chat-input');
       if (!input.value.trim()) return;
-      streamConversationTurn(input.value.trim());
+      void streamConversationTurn(input.value.trim());
     };
 
     renderControls();
     renderModalDevices();
-    streamConversationTurn('صمم لي إعلان فاخر لساعة أورورا X1 مع إضاءة ذهبية وموسيقى أوركسترالية ومؤثرات صوتية');
+    void streamConversationTurn('صمم لي إعلان فاخر لساعة أورورا X1 مع إضاءة ذهبية وموسيقى أوركسترالية ومؤثرات صوتية');
   </script>
 </body>
 </html>

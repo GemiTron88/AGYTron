@@ -9,6 +9,10 @@
 5. **FigTron** (`.figtron` / `.fig`) — Design system tokens, bidirectional RTL/LTR auto-layout, UX prototypes
 6. **LightTron** (`.lcraft`) — Non-destructive RAW demosaic develop, filmic tone curves, batch shoot calibration
 
+7. **ScaleTron** (`.stproj`) — 2x/4x/8x/16x edge-directed steerable super-resolution, OKLab guided chroma filtering, next-gen WebP/AVIF encoding
+
+Plus global Smart Mind orchestration for **Rankly** (SEO & Webmaster Autopilot) and **Tarweeg** (9-Platform Ad LaunchSaga), spanning **14 models**, **5 reasoning effort tiers** (`low`, `medium`, `high`, `xhigh`, `max`), **60 specialized skills**, **39 multi-step workflows**, and a **6-family Google-ToS-Safe Quota Ledger**.
+
 ---
 
 ## 1. How GemiMCP Works: Cloud (`mcp.gemitron.net`) + Local Workstation (`127.0.0.1:18210`)
@@ -35,18 +39,37 @@ Google strictly forbids third-party applications from scraping or reusing intern
 
 ---
 
-## 3. Quick Start
+## 3. Quick Start & CLI Subcommands
 
 ```bash
 # Run verification suite
 npm test
 
-# Run standalone multi-app CLI director
-node ./bin/tron-agy.mjs \
+# Run full architectural, ToS, knowledgebase & quota readiness audit
+node ./bin/tron-agy.mjs audit
+
+# Plan or execute a creative recipe for PhotoTron (or any of the 9 core apps)
+node ./bin/tron-agy.mjs execute \
+  --service phototron \
+  --skill skill.phototron.arabic_key_art \
+  --workflow wf.phototron.4ratio_ad_pack \
+  --model gemini-4-argon-high \
+  --effort xhigh \
+  --prompt "أورورا كرونوغراف X1 — بوستر إعلاني بـ ٤ مقاسات"
+
+# Multi-app TronCS Creative Suite plan
+node ./bin/tron-agy.mjs direct \
   --prompt "أورورا كرونوغراف X1 — حملة إطلاق متكاملة" \
-  --apps phototron,aftertron,gemimotion,filmtron \
-  --model claude-opus-4-6 \
-  --effort max \
+  --apps phototron,aftertron,gemimotion,filmtron,figtron,lighttron,scaletron \
+  --model gemini-4-argon-high \
+  --effort xhigh \
   --auth-mode agy-mcp-host \
   --transport hybrid-auto
+
+# Inspect skills, workflows, quota ledger, and 4-device fleet
+node ./bin/tron-agy.mjs skills --app phototron
+node ./bin/tron-agy.mjs workflows --app phototron
+node ./bin/tron-agy.mjs quota
+node ./bin/tron-agy.mjs fleet --probe
 ```
+

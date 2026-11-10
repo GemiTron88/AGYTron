@@ -759,6 +759,126 @@ test("AGYTron Creative Suite Intelligence powers FilmTron, FilmTron-Mobile, and 
   }
 });
 
+test("AGYTron supports phototron-mobile, app-aware 6-event SSE streams, auditAgySmartMindReadiness, /v1/agy/audit, full CLI subcommands, and 14-model + xhigh UI parity", async () => {
+  const fs = await import("node:fs");
+  const {
+    GEMITRON_GLOBAL_SERVICES,
+    resolveGemitronServiceProfile,
+    getAppKnowledgeAndSkills,
+    executeGlobalAgySmartMind,
+    auditAgySmartMindReadiness
+  } = await import("../src/index.mjs");
+  const { buildCreatorFriendlyStreamEvents } = await import("../src/fleet-router.mjs");
+  const { runTronAgyCli } = await import("../bin/tron-agy.mjs");
+  const { createAgyNodeDaemonServer } = await import("../bin/agy-node-daemon.mjs");
+
+  assert.ok(GEMITRON_GLOBAL_SERVICES["phototron-mobile"]);
+  assert.equal(resolveGemitronServiceProfile("photo-mobile").id, "phototron-mobile");
+  assert.equal(getAppKnowledgeAndSkills("phototron-mobile").appId, "phototron");
+
+  const mobileExec = await executeGlobalAgySmartMind({
+    service: "phototron-mobile",
+    skillId: "phototron.oklab_retouch_compositor",
+    workflowId: "phototron.wf.campaign_key_art_4ratio",
+    prompt: "تصميم بوستر حملة عربية بدقة OKLab",
+    model: "gemini-4-argon-high",
+    effort: "xhigh",
+    fetchFn: null
+  });
+  assert.equal(mobileExec.ok, true);
+  assert.equal(mobileExec.service, "phototron-mobile");
+  assert.equal(mobileExec.effort, "xhigh");
+  assert.equal(mobileExec.thinkingBudgetTokens, 24576);
+  assert.equal(mobileExec.critiquePassesCompleted, 4);
+  assert.ok(Array.isArray(mobileExec.structured.executableSteps));
+  assert.ok(mobileExec.structured.executableSteps.length >= 3);
+
+  for (const svc of ["phototron", "phototron-mobile", "aftertron", "figtron", "lighttron", "scaletron"]) {
+    const events = buildCreatorFriendlyStreamEvents({
+      prompt: "اختبار البث الذكي للتطبيقات الإبداعية",
+      service: svc,
+      model: "gemini-4-argon-high",
+      effort: "xhigh",
+      locale: "ar-EG",
+      nodeId: "vps-01"
+    });
+    assert.equal(events.length, 6);
+    assert.equal(events[0].type, "thinking");
+    assert.equal(events[1].type, "tool_badge");
+    assert.equal(events[5].type, "chat_message");
+  }
+
+  const readiness = auditAgySmartMindReadiness();
+  assert.equal(readiness.ok, true);
+  assert.equal(readiness.status, "READY_VERIFIED");
+  assert.equal(readiness.modelsCount, 14);
+  assert.ok(readiness.effortTiers.includes("xhigh"));
+  assert.equal(readiness.nineAppsSummary.totalApps, 9);
+  assert.equal(readiness.nineAppsSummary.totalSkills, 60);
+  assert.equal(readiness.nineAppsSummary.totalWorkflows, 39);
+
+  const cliSkills = await runTronAgyCli(["skills", "--app", "phototron"]);
+  assert.equal(cliSkills.ok, true);
+  assert.equal(cliSkills.skills.length, 4);
+
+  const cliWorkflows = await runTronAgyCli(["workflows", "--app", "phototron"]);
+  assert.equal(cliWorkflows.ok, true);
+  assert.equal(cliWorkflows.workflows.length, 3);
+
+  const cliQuota = await runTronAgyCli(["quota"]);
+  assert.equal(cliQuota.ok, true);
+  assert.equal(cliQuota.families.length, 6);
+
+  const cliFleet = await runTronAgyCli(["fleet"]);
+  assert.equal(cliFleet.ok, true);
+  assert.equal(cliFleet.nodes.length, 5);
+
+  const cliExec = await runTronAgyCli([
+    "execute",
+    "--service",
+    "phototron",
+    "--skill",
+    "phototron.arabic_calligraphy_setter",
+    "--effort",
+    "xhigh",
+    "--prompt",
+    "بوستر تايبوجرافي عربي فاخر"
+  ]);
+  assert.equal(cliExec.ok, true);
+  assert.equal(cliExec.service, "phototron");
+  assert.equal(cliExec.effort, "xhigh");
+
+  const daemon = createAgyNodeDaemonServer({ nodeId: "vps-01" });
+  await new Promise((resolve) => daemon.listen(0, "127.0.0.1", resolve));
+  const { port } = daemon.address();
+  try {
+    const auditRes = await fetch(`http://127.0.0.1:${port}/v1/agy/audit`);
+    assert.equal(auditRes.status, 200);
+    const auditBody = await auditRes.json();
+    assert.equal(auditBody.ok, true);
+    assert.equal(auditBody.status, "READY_VERIFIED");
+    assert.equal(auditBody.modelsCount, 14);
+  } finally {
+    await new Promise((resolve) => daemon.close(resolve));
+  }
+
+  const tsxSource = fs.readFileSync(
+    new URL("../ui/TronAgyControlCenter.tsx", import.meta.url),
+    "utf8"
+  );
+  const htmlSource = fs.readFileSync(
+    new URL("../ui/tron-agy-control-studio.html", import.meta.url),
+    "utf8"
+  );
+  for (const src of [tsxSource, htmlSource]) {
+    assert.match(src, /gemini-4-argon-high/);
+    assert.match(src, /claude-opus-5-5-high/);
+    assert.match(src, /qwen3\.5:4b-q4_K_M/);
+    assert.match(src, /xhigh/);
+  }
+});
+
+
 
 
 

@@ -575,6 +575,33 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
       "254,016,000,000 ticks/sec cross-app rational synchronization",
       "Signed SHA-256 package & rollback readiness verified"
     ]
+  }),
+  "phototron-mobile": Object.freeze({
+    id: "phototron-mobile",
+    name: "PhotoTron Mobile (Android ARM64)",
+    arName: "فوتو ترون موبايل (أندرويد ARM64)",
+    category: "mobile-creative",
+    ext: ".pcraft",
+    planSchema: "phototron.mobile.agy.plan.v1",
+    mcpRoute: "/products/photo/mcp",
+    accentHex: "#ef4444",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "xhigh",
+    roleEn: "Touch-First Non-Destructive .pcraft/.psd Raster & Typography Studio via Flutter + Rust FFI",
+    roleAr: "استوديو تعديل الصور والخطوط العربية غير المدمر للهواتف (Flutter + Rust ARM64)",
+    nativeTools: [
+      "photo.document.place",
+      "photo.text.create",
+      "photo.adjustment.levels",
+      "photo.adjustment.curves",
+      "photo.mask.revealAll",
+      "photo.layerStyle.dropShadow"
+    ],
+    critiqueChecks: [
+      "Touch-safe 48dp controls & 8% SafeRect RTL typography margin",
+      "WCAG >= 4.5:1 foreground/background luminance contrast",
+      "Non-destructive .pcraft/.psd layer stack & undo preservation"
+    ]
   })
 });
 
@@ -856,6 +883,8 @@ export function resolveGemitronServiceProfile(rawServiceId = "gemiai") {
     seo: "rankly",
     ads: "tarweeg",
     photo: "phototron",
+    "photo-mobile": "phototron-mobile",
+    phototronmobile: "phototron-mobile",
     after: "aftertron",
     film: "filmtron",
     "film-mobile": "filmtron-mobile",
@@ -1574,5 +1603,83 @@ export function buildTronAgyCreativePlan({
     cliCommand: `tron-agy direct --prompt "${cleanPrompt.replace(/"/g, '\\"')}" --apps ${validApps.join(",")} --model ${modelMeta.id} --effort ${effortMeta.id} --auth-mode ${normalizedAuth} --scope ${normalizedScope} --transport ${mcpTransport}`
   };
 }
+
+/**
+ * Audits full AGYTron Smart Mind readiness across ToS safety, 14 canonical models,
+ * 5 effort tiers (including xhigh), 9 core apps knowledge/skills/workflows,
+ * FilmTron 10 editorial presets, mobile profiles, and 6-family quota ledger.
+ */
+export function auditAgySmartMindReadiness({
+  quotaLedger = defaultAgyQuotaLedger
+} = {}) {
+  const catalog = listAllNineAppsKnowledgeCatalog();
+  const quotaSnap = quotaLedger ? quotaLedger.getSnapshot() : defaultAgyQuotaLedger.getSnapshot();
+  const effortKeys = Object.keys(AGY_EFFORT_TIERS);
+  const serviceKeys = Object.keys(GEMITRON_GLOBAL_SERVICES);
+  const presetsCount = Object.keys(FILMTRON_EDITORIAL_PRESETS).length;
+
+  const checks = [
+    {
+      id: "tos-safety-guard",
+      ok:
+        AGY_TOS_SAFETY_GUARD.forbidExternalGoogleOauthExtraction === true &&
+        AGY_TOS_SAFETY_GUARD.forbidGeminiCredentialFileScraping === true &&
+        AGY_TOS_SAFETY_GUARD.forbidUndocumentedInternalEndpoints === true
+    },
+    {
+      id: "models-14-canonical",
+      ok: AGY_MODELS.length === 14
+    },
+    {
+      id: "effort-5-tiers-with-xhigh",
+      ok: effortKeys.length === 5 && effortKeys.includes("xhigh")
+    },
+    {
+      id: "nine-apps-knowledge-skills",
+      ok:
+        catalog.totalApps === 9 &&
+        catalog.totalSkills >= 60 &&
+        catalog.totalWorkflows >= 39
+    },
+    {
+      id: "mobile-and-launcher-profiles",
+      ok:
+        serviceKeys.includes("phototron-mobile") &&
+        serviceKeys.includes("filmtron-mobile") &&
+        serviceKeys.includes("troncs")
+    },
+    {
+      id: "filmtron-10-editorial-presets",
+      ok: presetsCount === 10
+    },
+    {
+      id: "quota-6-model-families",
+      ok: quotaSnap.tosSafe === true && quotaSnap.families.length === 6
+    }
+  ];
+
+  const allOk = checks.every((c) => c.ok);
+  return {
+    ok: allOk,
+    schema: "tronagy.smart_mind.audit.v1",
+    version: TRON_AGY_VERSION,
+    status: allOk ? "READY_VERIFIED" : "DEGRADED",
+    tosSafetyGuard: AGY_TOS_SAFETY_GUARD,
+    modelsCount: AGY_MODELS.length,
+    effortTiers: effortKeys,
+    servicesCount: serviceKeys.length,
+    nineAppsSummary: {
+      totalApps: catalog.totalApps,
+      totalSkills: catalog.totalSkills,
+      totalWorkflows: catalog.totalWorkflows,
+      totalPlaybooks: catalog.totalPlaybooks,
+      totalMcpBindings: catalog.totalMcpBindings
+    },
+    filmtronPresetsCount: presetsCount,
+    quotaFamiliesCount: quotaSnap.families.length,
+    checks
+  };
+}
+
 
 
