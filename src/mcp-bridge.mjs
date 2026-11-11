@@ -28,6 +28,7 @@ export const GEMIMCP_ENDPOINTS = Object.freeze({
     motionMcpUrl: "https://mcp.gemitron.net/products/motion/mcp",
     ranklyMcpUrl: "https://mcp.gemitron.net/products/rankly/mcp",
     tarweegMcpUrl: "https://mcp.gemitron.net/products/tarweeg/mcp",
+    gemicloudMcpUrl: "https://mcp.gemitron.net/products/gemicloud/mcp",
     smartMindUrl: "https://mcp.gemitron.net/v1/agy/smart-mind",
     oidcIssuer: "https://auth.gemitron.net",
     role: "Cloud OAuth/Zitadel Gateway, GemiGuard Lease Verifier, Global AGYTron Smart Mind Hub & Paired Desktop/Mobile Companion Hub"
@@ -47,6 +48,7 @@ export const GEMIMCP_ENDPOINTS = Object.freeze({
     motionMcpUrl: "http://127.0.0.1:18210/products/motion/mcp",
     ranklyMcpUrl: "http://127.0.0.1:18210/products/rankly/mcp",
     tarweegMcpUrl: "http://127.0.0.1:18210/products/tarweeg/mcp",
+    gemicloudMcpUrl: "http://127.0.0.1:18210/products/gemicloud/mcp",
     smartMindUrl: "http://127.0.0.1:18210/v1/agy/smart-mind",
     localLlamaServerUrl: "http://127.0.0.1:8090",
     localGemiAiUrl: "http://127.0.0.1:18090",
