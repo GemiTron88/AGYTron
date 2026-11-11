@@ -31,15 +31,21 @@ import {
   validateCloudFleetAddress
 } from "../src/fleet-router.mjs";
 import {
+  AGY_TOS_SAFETY_GUARD,
   AGY_MODELS,
   AGY_EFFORT_TIERS,
   AGY_AUTH_MODES,
   AGY_EXECUTION_SCOPES,
+  TRONCS_SEVEN_DESKTOP_APPS,
+  TRONCS_SEVEN_MOBILE_COMPANIONS,
+  TRONCS_ALL_FOURTEEN_PRODUCTS,
+  SUITE_COMPANION_MATRIX,
   GEMITRON_GLOBAL_SERVICES,
   FILMTRON_EDITORIAL_PRESETS,
   defaultAgyQuotaLedger,
   getAppKnowledgeAndSkills,
   listAllNineAppsKnowledgeCatalog,
+  listFullSuiteCompanionCatalog,
   buildGlobalAgySmartMindPlan,
   executeGlobalAgySmartMind,
   buildFilmEditorialDirections,
@@ -49,6 +55,7 @@ import {
   GEMI_TOKENS_PALETTES,
   buildSuiteCreativeDirection,
   translateSubjectiveSuiteFeedback,
+  getSuiteArabicFeedbackCatalog,
   critiqueAndRepairSuitePlan,
   generateFigTronCodeSnippet,
   callGemiMcpTool,
@@ -632,7 +639,7 @@ export async function handleAgyNodeHttpRequest(
     const acceptHeader = String(req.headers?.accept || "");
     if (payload.format === "json" || (acceptHeader.includes("application/json") && !acceptHeader.includes("text/event-stream"))) {
       res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-      res.end(JSON.stringify({ ok: true, nodeId: effectiveNodeId, events }));
+      res.end(JSON.stringify({ ok: true, nodeId: effectiveNodeId, tosSafetyGuard: AGY_TOS_SAFETY_GUARD, events }));
       return true;
     }
 
@@ -646,7 +653,7 @@ export async function handleAgyNodeHttpRequest(
       res.write(`event: ${ev.type}\ndata: ${JSON.stringify(ev)}\n\n`);
     }
     res.write(
-      `event: done\ndata: ${JSON.stringify({ ok: true, nodeId: effectiveNodeId, eventsCount: events.length })}\n\n`
+      `event: done\ndata: ${JSON.stringify({ ok: true, nodeId: effectiveNodeId, tosSafetyGuard: AGY_TOS_SAFETY_GUARD, eventsCount: events.length })}\n\n`
     );
     res.end();
     return true;
@@ -843,6 +850,38 @@ export async function handleAgyNodeHttpRequest(
     return true;
   }
 
+  if (req.method === "GET" && pathname === "/v1/agy/suite/catalog") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        schema: "tronagy.suite_companion_matrix.v1",
+        tosSafetyGuard: AGY_TOS_SAFETY_GUARD,
+        desktopApps: TRONCS_SEVEN_DESKTOP_APPS,
+        mobileCompanions: TRONCS_SEVEN_MOBILE_COMPANIONS,
+        allProducts: TRONCS_ALL_FOURTEEN_PRODUCTS,
+        companionMatrix: SUITE_COMPANION_MATRIX,
+        suiteCatalog: listFullSuiteCompanionCatalog(),
+        gemiTokensPalettes: GEMI_TOKENS_PALETTES
+      })
+    );
+    return true;
+  }
+
+  if (req.method === "GET" && pathname === "/v1/agy/suite/feedback-catalog") {
+    const queryStr = rawUrl.includes("?") ? rawUrl.split("?")[1] : "";
+    const params = new URLSearchParams(queryStr);
+    const appId = params.get("app") || params.get("appId") || "figtron";
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ...getSuiteArabicFeedbackCatalog(appId),
+        tosSafetyGuard: AGY_TOS_SAFETY_GUARD
+      })
+    );
+    return true;
+  }
+
   if (req.method === "POST" && pathname === "/v1/agy/suite/direct") {
     const payload = await readJsonBody(req);
     const result = buildSuiteCreativeDirection({
@@ -855,7 +894,7 @@ export async function handleAgyNodeHttpRequest(
       locale: payload.locale || "ar-EG"
     });
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify(result));
+    res.end(JSON.stringify({ ...result, tosSafetyGuard: AGY_TOS_SAFETY_GUARD }));
     return true;
   }
 
@@ -868,7 +907,7 @@ export async function handleAgyNodeHttpRequest(
       locale: payload.locale || "ar-EG"
     });
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify(result));
+    res.end(JSON.stringify({ ...result, tosSafetyGuard: AGY_TOS_SAFETY_GUARD }));
     return true;
   }
 
@@ -880,7 +919,7 @@ export async function handleAgyNodeHttpRequest(
       maxPasses: payload.maxPasses || 3
     });
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify(result));
+    res.end(JSON.stringify({ ...result, tosSafetyGuard: AGY_TOS_SAFETY_GUARD }));
     return true;
   }
 
@@ -891,7 +930,7 @@ export async function handleAgyNodeHttpRequest(
       spec: payload.spec || {}
     });
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify(result));
+    res.end(JSON.stringify({ ...result, tosSafetyGuard: AGY_TOS_SAFETY_GUARD }));
     return true;
   }
 

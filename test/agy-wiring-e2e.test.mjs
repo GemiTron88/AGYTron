@@ -168,3 +168,73 @@ test("agy-node-daemon serves /ui Control Studio (zero fake Math.random latency),
   assert.equal(cliCodegen.ok, true);
   assert.equal(cliCodegen.target, "react");
 });
+
+test("Daemon :18220 /v1/agy/suite/*, /v1/agy/chat-stream, /v1/agy/smart-mind, mcp-bridge, and TronAgyControlCenter.tsx enforce AGY_TOS_SAFETY_GUARD, 20-palette GemiTokens, AR/EN RTL, color-neutral badges, and 7+7 companion matrix", async () => {
+  const { createAgyNodeDaemonServer } = await import("../bin/agy-node-daemon.mjs");
+  const { resolveMcpTransportConfig } = await import("../src/mcp-bridge.mjs");
+  const { TRONCS_SEVEN_DESKTOP_APPS, TRONCS_SEVEN_MOBILE_COMPANIONS } = await import("../src/index.mjs");
+
+  for (const mobId of TRONCS_SEVEN_MOBILE_COMPANIONS) {
+    const route = resolveMcpTransportConfig({ product: mobId, transport: "hybrid-auto" });
+    assert.equal(route.isMobileCompanion, true);
+    assert.equal(route.mobileBridgeScope, `${mobId}:*`);
+    assert.equal(route.tosSafePolicyId, "tronagy.google_tos_safe.v1");
+  }
+
+  const daemon = createAgyNodeDaemonServer({ nodeId: "vps-01" });
+  await new Promise((resolve) => daemon.listen(0, "127.0.0.1", resolve));
+  const { port } = daemon.address();
+  const base = `http://127.0.0.1:${port}`;
+
+  try {
+    const catRes = await fetch(`${base}/v1/agy/suite/catalog`);
+    assert.equal(catRes.status, 200);
+    const catBody = await catRes.json();
+    assert.equal(catBody.ok, true);
+    assert.equal(catBody.desktopApps.length, 7);
+    assert.equal(catBody.mobileCompanions.length, 7);
+    assert.equal(catBody.allProducts.length, 14);
+    assert.equal(catBody.tosSafetyGuard.forbidExternalGoogleOauthExtraction, true);
+
+    const streamRes = await fetch(`${base}/v1/agy/chat-stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ prompt: "تحريك 3D", service: "gemimotion-mobile", format: "json" })
+    });
+    assert.equal(streamRes.status, 200);
+    const streamBody = await streamRes.json();
+    assert.equal(streamBody.ok, true);
+    assert.equal(streamBody.tosSafetyGuard.policyId, "tronagy.google_tos_safe.v1");
+    assert.equal(streamBody.events.length, 6);
+
+    const smRes = await fetch(`${base}/v1/agy/smart-mind`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: "تكبير فائق الدقة", service: "scaletron-mobile", effort: "high" })
+    });
+    assert.equal(smRes.status, 200);
+    const smBody = await smRes.json();
+    assert.equal(smBody.ok, true);
+    assert.equal(smBody.service, "scaletron-mobile");
+    assert.equal(smBody.plan.tosSafetyGuard.policyId, "tronagy.google_tos_safe.v1");
+  } finally {
+    await new Promise((resolve) => daemon.close(resolve));
+  }
+
+  const uiTsx = fs.readFileSync(
+    new URL("../ui/TronAgyControlCenter.tsx", import.meta.url),
+    "utf8"
+  );
+  assert.match(uiTsx, /GEMI_TOKENS_PALETTES_UI/);
+  assert.match(uiTsx, /inferno-dark/);
+  assert.match(uiTsx, /Inferno Pixel Glass/);
+  assert.match(uiTsx, /GemiBaba/);
+  assert.match(uiTsx, /GemiFontSans/);
+  assert.match(uiTsx, /tron-agy-locale-toggle/);
+  assert.match(uiTsx, /tron-agy-color-neutral-badges/);
+  assert.match(uiTsx, /#808080/);
+  assert.match(uiTsx, /tron-agy-suite-companion-matrix/);
+  for (const id of [...TRONCS_SEVEN_DESKTOP_APPS, ...TRONCS_SEVEN_MOBILE_COMPANIONS]) {
+    assert.equal(uiTsx.includes(`'${id}'`), true, `UI missing product ID ${id}`);
+  }
+});

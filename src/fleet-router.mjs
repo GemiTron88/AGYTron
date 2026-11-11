@@ -745,8 +745,29 @@ export function buildCreatorFriendlyStreamEvents({
     ];
   }
 
-  const normalizedPhotoSvc = svc === "phototron-mobile" ? "phototron" : svc;
+  const normalizedBaseSvc = svc.endsWith("-mobile") ? svc.slice(0, -7) : svc;
+  const svcAliases = {
+    photo: "phototron",
+    after: "aftertron",
+    motion: "gemimotion",
+    fig: "figtron",
+    light: "lighttron",
+    scale: "scaletron"
+  };
+  const normalizedPhotoSvc = svcAliases[normalizedBaseSvc] || normalizedBaseSvc;
   const creativeAppStreams = {
+    gemimotion: {
+      thinkingAr: "جاري إخراج المشهد ثلاثي الأبعاد (3D PBR + WGSL) والموسيقى التصويرية في GemiMotion...",
+      thinkingEn: "Choreographing 3D PBR scene, WGSL volumetric shaders & 48kHz score in GemiMotion...",
+      badges: [
+        ["🧊", "motion.timeline.clip.scene3d", "إعداد مشهد 3D PBR وزوايا الكاميرا الذهبية", "Staging 3D PBR Hero & Golden-Ratio Camera Orbit", "دقة 705,600,000 نبضة/ثانية (Qt6 Flicks)", "705,600,000 flicks/sec integer frame lock"],
+        ["🌌", "motion.timeline.clip.vfx", "توليد إضاءة وشيدر WGSL المتفاعل", "Compiling Volumetric WGSL Shader World", "إضاءة محيطية ناعمة بدون ضوضاء بصرية", "Smooth HDRI rim lighting & bloom control"],
+        ["🎵", "motion.timeline.clip.daw", "تأليف الموسيقى التصويرية 48kHz و٦ مؤثرات صوتية", "Synthesizing 48kHz Vibe Score & 6 SFX Cues", "تزامن لحظي مع إيقاع المشهد", "Beat-grid locked stereo soundtrack"],
+        ["💬", "motion.caption.upsert", "مزامنة الكابشن العربي التفاعلي داخل SafeRect", "Syncing RTL Karaoke Captions Inside SafeRect", "صفر مخالفات لهوامش الأمان وتباين WCAG قياسي", "0 SafeRect violations & WCAG AA contrast"]
+      ],
+      doneAr: `جهزت مشهد GemiMotion (.gmotion) عبر ${nodeLabel} (${model})! صممت إضاءة 3D PBR وشيدر WGSL مع موسيقى 48kHz و٦ مؤثرات صوتية وكابشن عربي داخل منطقة الأمان.`,
+      doneEn: `Your GemiMotion (.gmotion) 3D PBR + WGSL scene is ready via ${nodeLabel} (${model})! 48kHz Vibe soundtrack, 6 frame-accurate SFX cues, and SafeRect captions are synced.`
+    },
     phototron: {
       thinkingAr: "جاري هندسة طبقات البوستر وتباين الخط العربي في PhotoTron...",
       thinkingEn: "Architecting non-destructive .pcraft layers & Arabic HarfBuzz typography in PhotoTron...",

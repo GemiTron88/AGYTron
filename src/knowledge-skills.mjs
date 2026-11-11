@@ -1440,6 +1440,114 @@ export const APP_KNOWLEDGE_SKILLS_REGISTRY = Object.freeze({
   })
 });
 
+export const MOBILE_COMPANION_SKILLS_REGISTRY = Object.freeze({
+  "phototron-mobile": Object.freeze({
+    appId: "phototron-mobile",
+    parentAppId: "phototron",
+    name: "PhotoTron Mobile (Android ARM64)",
+    arName: "فوتو ترون موبايل",
+    nativeExtension: ".pcraft",
+    mobileBridgeScope: "phototron-mobile:*",
+    skills: Object.freeze([
+      { id: "skill.phototron.mobile_touch_mask", labelEn: "Touch Smart Masking & 16-bit OKLab Retouch", labelAr: "عزل ذكي باللمس ومعالجة OKLab غير مدمرة" },
+      { id: "skill.phototron.mobile_rtl_story_poster", labelEn: "9:16 & 4:5 Arabic HarfBuzz Story Poster", labelAr: "تصميم بوسترات الستوري العربية (9:16 و4:5)" }
+    ]),
+    workflows: Object.freeze([
+      { id: "wf.phototron.mobile_instant_social", labelEn: "Camera-to-.pcraft Social Key Art Handoff", labelAr: "من التصوير الفوري إلى بوستر .pcraft متكامل" }
+    ])
+  }),
+  "filmtron-mobile": Object.freeze({
+    appId: "filmtron-mobile",
+    parentAppId: "filmtron",
+    name: "FilmTron Mobile (Android ARM64)",
+    arName: "فيلم ترون موبايل",
+    nativeExtension: ".fcproj",
+    mobileBridgeScope: "filmtron-mobile:*",
+    skills: Object.freeze([
+      { id: "skill.filmtron.mobile_3track_cut", labelEn: "Touch 3-Track J/L Cut & Ripple Trim", labelAr: "مونتاج ٣ مسارات باللمس وانتقالات J/L" },
+      { id: "skill.filmtron.mobile_lumetri_lufs", labelEn: "Mobile Lumetri Scopes & -14 LUFS Ducking", labelAr: "تلوين Lumetri للهاتف ومكساج -14 LUFS" }
+    ]),
+    workflows: Object.freeze([
+      { id: "wf.filmtron.mobile_vertical_reel", labelEn: "15s Vertical Reel Cut & Desktop .fcraft Sync", labelAr: "مونتاج ريلز ١٥ ثانية ومزامنة .fcraft مع سطح المكتب" }
+    ])
+  }),
+  "aftertron-mobile": Object.freeze({
+    appId: "aftertron-mobile",
+    parentAppId: "aftertron",
+    name: "AfterTron Mobile (Android ARM64)",
+    arName: "أفتر ترون موبايل",
+    nativeExtension: ".acraft",
+    mobileBridgeScope: "aftertron-mobile:*",
+    skills: Object.freeze([
+      { id: "skill.aftertron.mobile_kinetic_titles", labelEn: "Touch Bezier Curve & Kinetic RTL Hook Titles", labelAr: "تحريك عناوين الخطاف البصري ومنحنيات السرعة باللمس" },
+      { id: "skill.aftertron.mobile_glow_stinger", labelEn: "60fps Optical Glow & Logo Stinger", labelAr: "توهج بصري 60fps وخاتمة شعار متحركة" }
+    ]),
+    workflows: Object.freeze([
+      { id: "wf.aftertron.mobile_hook_stem", labelEn: "Mobile 3s VFX Hook Stem to FilmTron Mobile", labelAr: "تصدير مقدمة VFX ٣ ثوانٍ إلى فيلم ترون موبايل" }
+    ])
+  }),
+  "gemimotion-mobile": Object.freeze({
+    appId: "gemimotion-mobile",
+    parentAppId: "gemimotion",
+    name: "GemiMotion Mobile (Android ARM64)",
+    arName: "جيمي موشن موبايل",
+    nativeExtension: ".gmotion",
+    mobileBridgeScope: "gemimotion-mobile:*",
+    skills: Object.freeze([
+      { id: "skill.gemimotion.mobile_3d_orbit", labelEn: "ARM64 3D PBR Product Orbit & WGSL Backdrop", labelAr: "تحريك منتج 3D PBR وخلفية شيدر على أندرويد ARM64" },
+      { id: "skill.gemimotion.mobile_karaoke_vibe", labelEn: "48kHz Vibe Score & RTL Karaoke Captions", labelAr: "موسيقى 48kHz وكابشن عربي متزامن مع الإيقاع" }
+    ]),
+    workflows: Object.freeze([
+      { id: "wf.gemimotion.mobile_3d_reel", labelEn: "Touch 3D Commercial Loop (.gmotion)", labelAr: "إنتاج إعلان 3D حلقي متكامل للهاتف (.gmotion)" }
+    ])
+  }),
+  "figtron-mobile": Object.freeze({
+    appId: "figtron-mobile",
+    parentAppId: "figtron",
+    name: "FigTron Mobile (Android ARM64)",
+    arName: "فيج ترون موبايل",
+    nativeExtension: ".figtron",
+    mobileBridgeScope: "figtron-mobile:*",
+    skills: Object.freeze([
+      { id: "skill.figtron.mobile_autolayout_tokens", labelEn: "Touch Auto-Layout & 20-Mode GemiTokens Inspector", labelAr: "تصميم Auto-Layout باللمس ومبدل ٢٠ باليت GemiTokens" },
+      { id: "skill.figtron.mobile_prototype_player", labelEn: "Interactive RTL Prototype Flow & 48dp Audit", labelAr: "مشغل نماذج تفاعلية وفحص أهداف اللمس 48dp" }
+    ]),
+    workflows: Object.freeze([
+      { id: "wf.figtron.mobile_design_to_code", labelEn: "Mobile UI Review & Flutter/React Codegen", labelAr: "مراجعة الواجهة على الهاتف وتوليد كود Flutter/React" }
+    ])
+  }),
+  "lighttron-mobile": Object.freeze({
+    appId: "lighttron-mobile",
+    parentAppId: "lighttron",
+    name: "LightTron Mobile (Android ARM64)",
+    arName: "لايت ترون موبايل",
+    nativeExtension: ".lcraft",
+    mobileBridgeScope: "lighttron-mobile:*",
+    skills: Object.freeze([
+      { id: "skill.lighttron.mobile_dng_develop", labelEn: "Mobile DNG/RAW Filmic Develop & Clipping Guard", labelAr: "تحميض ملفات DNG/RAW باللمس ومنع قص الإضاءة" },
+      { id: "skill.lighttron.mobile_xmp_sync", labelEn: "Instant Shoot Preset & XMP Sidecar Sync", labelAr: "مزامنة إعدادات الألوان وملفات XMP عبر الجلسة" }
+    ]),
+    workflows: Object.freeze([
+      { id: "wf.lighttron.mobile_field_grade", labelEn: "On-Location RAW Tether & 16-bit Handoff", labelAr: "معايرة صور الميدان الفورية وتسليم 16-bit" }
+    ])
+  }),
+  "scaletron-mobile": Object.freeze({
+    appId: "scaletron-mobile",
+    parentAppId: "scaletron",
+    name: "ScaleTron Mobile (Android ARM64)",
+    arName: "سكيل ترون موبايل",
+    nativeExtension: ".stproj",
+    mobileBridgeScope: "scaletron-mobile:*",
+    skills: Object.freeze([
+      { id: "skill.scaletron.mobile_2x4x_sr", labelEn: "ARM64 NEON/Vulkan 2x/4x Zero-Halo Upscale", labelAr: "تكبير ٢-٤ أضعاف على معالج ARM64 بدون هالات" },
+      { id: "skill.scaletron.mobile_oklab_denoise", labelEn: "Low-Light Camera Chroma Denoise in OKLab", labelAr: "إزالة تشويش كاميرا الهاتف الليلي في فضاء OKLab" }
+    ]),
+    workflows: Object.freeze([
+      { id: "wf.scaletron.mobile_crisp_export", labelEn: "Mobile Photo Restore & Crisp WebP/PNG Export", labelAr: "استعادة تفاصيل صور الهاتف وتصدير WebP فائق الحدة" }
+    ])
+  })
+});
+
 export function getAppKnowledgeAndSkills(appId = "rankly") {
   const clean = String(appId || "rankly").trim().toLowerCase();
   const aliasMap = {
@@ -1448,20 +1556,56 @@ export function getAppKnowledgeAndSkills(appId = "rankly") {
     photo: "phototron",
     "phototron-mobile": "phototron",
     "photo-mobile": "phototron",
+    phototronmobile: "phototron",
     after: "aftertron",
+    "aftertron-mobile": "aftertron",
+    "after-mobile": "aftertron",
+    aftertronmobile: "aftertron",
     film: "filmtron",
     "filmtron-mobile": "filmtron",
     "film-mobile": "filmtron",
+    filmtronmobile: "filmtron",
     motion: "gemimotion",
+    "gemimotion-mobile": "gemimotion",
+    "motion-mobile": "gemimotion",
+    gemimotionmobile: "gemimotion",
     fig: "figtron",
     "figtron-mobile": "figtron",
     "fig-mobile": "figtron",
     figtronmobile: "figtron",
     light: "lighttron",
-    scale: "scaletron"
+    "lighttron-mobile": "lighttron",
+    "light-mobile": "lighttron",
+    lighttronmobile: "lighttron",
+    scale: "scaletron",
+    "scaletron-mobile": "scaletron",
+    "scale-mobile": "scaletron",
+    scaletronmobile: "scaletron"
   };
   const resolved = aliasMap[clean] || clean;
   return APP_KNOWLEDGE_SKILLS_REGISTRY[resolved] || null;
+}
+
+export function listFullSuiteCompanionCatalog() {
+  const desktopApps = [
+    "phototron",
+    "filmtron",
+    "aftertron",
+    "gemimotion",
+    "figtron",
+    "lighttron",
+    "scaletron"
+  ].map((id) => APP_KNOWLEDGE_SKILLS_REGISTRY[id]);
+  const mobileCompanions = Object.values(MOBILE_COMPANION_SKILLS_REGISTRY);
+  return {
+    ok: true,
+    schema: "tronagy.suite_companion_catalog.v1",
+    desktopCount: desktopApps.length,
+    mobileCount: mobileCompanions.length,
+    totalProducts: desktopApps.length + mobileCompanions.length,
+    desktopApps,
+    mobileCompanions
+  };
 }
 
 export function listAllNineAppsKnowledgeCatalog() {

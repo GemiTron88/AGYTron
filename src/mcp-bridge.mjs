@@ -18,18 +18,32 @@ export const GEMIMCP_ENDPOINTS = Object.freeze({
     origin: "https://mcp.gemitron.net",
     federatedMcpUrl: "https://mcp.gemitron.net/mcp",
     tronCsMcpUrl: "https://mcp.gemitron.net/products/troncs/mcp",
+    phototronMcpUrl: "https://mcp.gemitron.net/products/phototron/mcp",
+    filmtronMcpUrl: "https://mcp.gemitron.net/products/filmtron/mcp",
+    aftertronMcpUrl: "https://mcp.gemitron.net/products/aftertron/mcp",
+    gemimotionMcpUrl: "https://mcp.gemitron.net/products/gemimotion/mcp",
+    figtronMcpUrl: "https://mcp.gemitron.net/products/figtron/mcp",
+    lighttronMcpUrl: "https://mcp.gemitron.net/products/lighttron/mcp",
+    scaletronMcpUrl: "https://mcp.gemitron.net/products/scaletron/mcp",
     motionMcpUrl: "https://mcp.gemitron.net/products/motion/mcp",
     ranklyMcpUrl: "https://mcp.gemitron.net/products/rankly/mcp",
     tarweegMcpUrl: "https://mcp.gemitron.net/products/tarweeg/mcp",
     smartMindUrl: "https://mcp.gemitron.net/v1/agy/smart-mind",
     oidcIssuer: "https://auth.gemitron.net",
-    role: "Cloud OAuth/Zitadel Gateway, GemiGuard Lease Verifier, Global AGYTron Smart Mind Hub & Paired Desktop Agent Hub"
+    role: "Cloud OAuth/Zitadel Gateway, GemiGuard Lease Verifier, Global AGYTron Smart Mind Hub & Paired Desktop/Mobile Companion Hub"
   }),
   localWorkstation: Object.freeze({
     id: "local-workstation-mcp",
     origin: "http://127.0.0.1:18210",
     federatedMcpUrl: "http://127.0.0.1:18210/mcp",
     tronCsMcpUrl: "http://127.0.0.1:18210/products/troncs/mcp",
+    phototronMcpUrl: "http://127.0.0.1:18210/products/phototron/mcp",
+    filmtronMcpUrl: "http://127.0.0.1:18210/products/filmtron/mcp",
+    aftertronMcpUrl: "http://127.0.0.1:18210/products/aftertron/mcp",
+    gemimotionMcpUrl: "http://127.0.0.1:18210/products/gemimotion/mcp",
+    figtronMcpUrl: "http://127.0.0.1:18210/products/figtron/mcp",
+    lighttronMcpUrl: "http://127.0.0.1:18210/products/lighttron/mcp",
+    scaletronMcpUrl: "http://127.0.0.1:18210/products/scaletron/mcp",
     motionMcpUrl: "http://127.0.0.1:18210/products/motion/mcp",
     ranklyMcpUrl: "http://127.0.0.1:18210/products/rankly/mcp",
     tarweegMcpUrl: "http://127.0.0.1:18210/products/tarweeg/mcp",
@@ -37,8 +51,18 @@ export const GEMIMCP_ENDPOINTS = Object.freeze({
     localLlamaServerUrl: "http://127.0.0.1:8090",
     localGemiAiUrl: "http://127.0.0.1:18090",
     localTronBrokerUrl: "http://127.0.0.1:30001",
-    role: "Zero-Latency Workstation/VPS Loopback Server + Global AGYTron Smart Mind & Native App IPC"
+    role: "Zero-Latency Workstation/VPS Loopback Server + Global AGYTron Smart Mind & Native 7-Desktop + 7-Mobile IPC"
   })
+});
+
+const MOBILE_COMPANION_PRODUCT_MAP = Object.freeze({
+  "phototron-mobile": "phototron",
+  "filmtron-mobile": "filmtron",
+  "aftertron-mobile": "aftertron",
+  "gemimotion-mobile": "gemimotion",
+  "figtron-mobile": "figtron",
+  "lighttron-mobile": "lighttron",
+  "scaletron-mobile": "scaletron"
 });
 
 export function resolveMcpTransportConfig({
@@ -48,7 +72,10 @@ export function resolveMcpTransportConfig({
   cloudOrigin = GEMIMCP_ENDPOINTS.cloud.origin,
   localOrigin = GEMIMCP_ENDPOINTS.localWorkstation.origin
 } = {}) {
-  const cleanProduct = String(product || "troncs").trim().toLowerCase();
+  const rawProduct = String(product || "troncs").trim().toLowerCase();
+  const isMobileCompanion = Object.hasOwn(MOBILE_COMPANION_PRODUCT_MAP, rawProduct);
+  const cleanProduct = isMobileCompanion ? MOBILE_COMPANION_PRODUCT_MAP[rawProduct] : rawProduct;
+  const mobileBridgeScope = isMobileCompanion ? `${rawProduct}:*` : null;
   const routeSuffix =
     cleanProduct === "federated" || cleanProduct === "studio" || cleanProduct === "dashboard"
       ? "/mcp"
@@ -58,6 +85,10 @@ export function resolveMcpTransportConfig({
     return {
       activeTransport: "local-only",
       product: cleanProduct,
+      requestedProduct: rawProduct,
+      isMobileCompanion,
+      mobileBridgeScope,
+      tosSafePolicyId: "tronagy.google_tos_safe.v1",
       primaryMcpUrl: `${localOrigin}${routeSuffix}`,
       smartMindUrl: `${localOrigin}/v1/agy/smart-mind`,
       fallbackMcpUrl: null,
@@ -71,18 +102,26 @@ export function resolveMcpTransportConfig({
     return {
       activeTransport: "cloud-only",
       product: cleanProduct,
+      requestedProduct: rawProduct,
+      isMobileCompanion,
+      mobileBridgeScope,
+      tosSafePolicyId: "tronagy.google_tos_safe.v1",
       primaryMcpUrl: `${cloudOrigin}${routeSuffix}`,
       smartMindUrl: `${cloudOrigin}/v1/agy/smart-mind`,
       fallbackMcpUrl: null,
       requiresGemiGuardLease: true,
       zeroCloudTraffic: false,
       description:
-        "Cloud GemiMCP gateway (https://mcp.gemitron.net) dispatching to paired workstation via Outbound Desktop Agent Hub."
+        "Cloud GemiMCP gateway (https://mcp.gemitron.net) dispatching to paired workstation/mobile companion via Outbound Bridge Hub."
     };
   }
   return {
     activeTransport: "hybrid-auto",
     product: cleanProduct,
+    requestedProduct: rawProduct,
+    isMobileCompanion,
+    mobileBridgeScope,
+    tosSafePolicyId: "tronagy.google_tos_safe.v1",
     primaryMcpUrl: `${localOrigin}${routeSuffix}`,
     smartMindUrl: `${localOrigin}/v1/agy/smart-mind`,
     fallbackMcpUrl: `${cloudOrigin}${routeSuffix}`,

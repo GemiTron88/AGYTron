@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-export type TronCsAppId =
+export type TronCsDesktopAppId =
   | 'phototron'
   | 'aftertron'
   | 'filmtron'
@@ -8,6 +8,39 @@ export type TronCsAppId =
   | 'figtron'
   | 'lighttron'
   | 'scaletron';
+
+export type TronCsMobileCompanionId =
+  | 'phototron-mobile'
+  | 'aftertron-mobile'
+  | 'filmtron-mobile'
+  | 'gemimotion-mobile'
+  | 'figtron-mobile'
+  | 'lighttron-mobile'
+  | 'scaletron-mobile';
+
+export type TronCsAppId = TronCsDesktopAppId | TronCsMobileCompanionId;
+
+export type GemiTokensPaletteId =
+  | 'inferno-dark'
+  | 'inferno-light'
+  | 'royal-gold-dark'
+  | 'royal-gold-light'
+  | 'cyber-cyan-dark'
+  | 'cyber-cyan-light'
+  | 'emerald-oasis-dark'
+  | 'emerald-oasis-light'
+  | 'violet-nebula-dark'
+  | 'violet-nebula-light'
+  | 'sapphire-studio-dark'
+  | 'sapphire-studio-light'
+  | 'amber-cinema-dark'
+  | 'amber-cinema-light'
+  | 'rose-quartz-dark'
+  | 'rose-quartz-light'
+  | 'obsidian-mono-dark'
+  | 'alabaster-mono-light'
+  | 'desert-sand-dark'
+  | 'desert-sand-light';
 
 export type AgyFleetDeviceId = 'win-local' | 'mac-local' | 'vps-01' | 'vps-02';
 
@@ -54,6 +87,7 @@ export interface TronAgyPlanRequest {
   apps: TronCsAppId[];
   skillId?: string;
   workflowId?: string;
+  paletteId?: GemiTokensPaletteId;
   executionScope?: AgyExecutionScope;
   deviceId: AgyFleetDeviceId;
   deviceAddress: string;
@@ -66,6 +100,7 @@ export interface TronAgyPlanRequest {
 export interface TronAgyControlCenterProps {
   locale?: 'ar-EG' | 'en-US';
   defaultApp?: TronCsAppId;
+  defaultPalette?: GemiTokensPaletteId;
   fetchImpl?: typeof fetch;
   onExecutePlan?: (req: TronAgyPlanRequest) => void;
 }
@@ -73,7 +108,42 @@ export interface TronAgyControlCenterProps {
 export const FLEET_ADDRESSES_STORAGE_KEY = 'agy.fleet.addresses.v1';
 export const FLEET_ACTIVE_NODE_STORAGE_KEY = 'agy.fleet.activeNode.v1';
 export const FLEET_EXECUTION_SCOPE_STORAGE_KEY = 'agy.fleet.executionScope.v1';
+export const GEMI_PALETTE_STORAGE_KEY = 'agy.ui.palette.v1';
 export const REMOTE_AGENT_RELAY_URL = 'https://mcp.gemitron.net/v1/agy/remote-agent';
+
+export const GEMI_TOKENS_PALETTES_UI: Array<{
+  id: GemiTokensPaletteId;
+  presetId: string;
+  mode: 'dark' | 'light';
+  labelEn: string;
+  labelAr: string;
+  bgCanvas: string;
+  bgSurface: string;
+  textPrimary: string;
+  accentPrimary: string;
+  accentSecondary: string;
+}> = [
+  { id: 'inferno-dark', presetId: 'inferno', mode: 'dark', labelEn: 'Inferno Pixel Glass (Dark · Default ✦)', labelAr: 'زجاج الجحيم الرقمي (داكن · افتراضي ✦)', bgCanvas: '#08080A', bgSurface: '#121216', textPrimary: '#FAFAFC', accentPrimary: '#F83942', accentSecondary: '#FF6B35' },
+  { id: 'inferno-light', presetId: 'inferno', mode: 'light', labelEn: 'Inferno Pixel Glass (Light)', labelAr: 'زجاج الجحيم الرقمي (فاتح)', bgCanvas: '#F8F8FA', bgSurface: '#FFFFFF', textPrimary: '#111116', accentPrimary: '#D91E2A', accentSecondary: '#E04F1A' },
+  { id: 'royal-gold-dark', presetId: 'royalGold', mode: 'dark', labelEn: 'Royal Gold Titanium (Dark)', labelAr: 'التيتانيوم الذهبي الملكي (داكن)', bgCanvas: '#0A0908', bgSurface: '#151310', textPrimary: '#FCFBF7', accentPrimary: '#F59E0B', accentSecondary: '#FBBF24' },
+  { id: 'royal-gold-light', presetId: 'royalGold', mode: 'light', labelEn: 'Royal Gold Titanium (Light)', labelAr: 'التيتانيوم الذهبي الملكي (فاتح)', bgCanvas: '#FCFBF7', bgSurface: '#FFFFFF', textPrimary: '#1A1610', accentPrimary: '#B45309', accentSecondary: '#D97706' },
+  { id: 'cyber-cyan-dark', presetId: 'cyberCyan', mode: 'dark', labelEn: 'Cyber Cyan Neon (Dark)', labelAr: 'سيان نيون رقمي (داكن)', bgCanvas: '#060B10', bgSurface: '#0E1722', textPrimary: '#F0F9FF', accentPrimary: '#06B6D4', accentSecondary: '#38BDF8' },
+  { id: 'cyber-cyan-light', presetId: 'cyberCyan', mode: 'light', labelEn: 'Cyber Cyan Neon (Light)', labelAr: 'سيان نيون رقمي (فاتح)', bgCanvas: '#F0F9FF', bgSurface: '#FFFFFF', textPrimary: '#082F49', accentPrimary: '#0284C7', accentSecondary: '#0369A1' },
+  { id: 'emerald-oasis-dark', presetId: 'emeraldMushaf', mode: 'dark', labelEn: 'Emerald Oasis (Dark)', labelAr: 'واحة الزمرد (داكن)', bgCanvas: '#050E0B', bgSurface: '#0B1D17', textPrimary: '#ECFDF5', accentPrimary: '#10B981', accentSecondary: '#34D399' },
+  { id: 'emerald-oasis-light', presetId: 'emeraldMushaf', mode: 'light', labelEn: 'Emerald Oasis (Light)', labelAr: 'واحة الزمرد (فاتح)', bgCanvas: '#F2FBF7', bgSurface: '#FFFFFF', textPrimary: '#064E3B', accentPrimary: '#047857', accentSecondary: '#059669' },
+  { id: 'violet-nebula-dark', presetId: 'amethyst', mode: 'dark', labelEn: 'Violet Nebula (Dark)', labelAr: 'سديم البنفسج (داكن)', bgCanvas: '#0B0712', bgSurface: '#160F24', textPrimary: '#FAF5FF', accentPrimary: '#A855F7', accentSecondary: '#C084FC' },
+  { id: 'violet-nebula-light', presetId: 'amethyst', mode: 'light', labelEn: 'Violet Nebula (Light)', labelAr: 'سديم البنفسج (فاتح)', bgCanvas: '#FAF5FF', bgSurface: '#FFFFFF', textPrimary: '#3B0764', accentPrimary: '#7E22CE', accentSecondary: '#9333EA' },
+  { id: 'sapphire-studio-dark', presetId: 'oceanAbyss', mode: 'dark', labelEn: 'Sapphire Studio (Dark)', labelAr: 'استوديو الياقوت الأزرق (داكن)', bgCanvas: '#070A14', bgSurface: '#10172A', textPrimary: '#F8FAFC', accentPrimary: '#3B82F6', accentSecondary: '#60A5FA' },
+  { id: 'sapphire-studio-light', presetId: 'oceanAbyss', mode: 'light', labelEn: 'Sapphire Studio (Light)', labelAr: 'استوديو الياقوت الأزرق (فاتح)', bgCanvas: '#F8FAFC', bgSurface: '#FFFFFF', textPrimary: '#0F172A', accentPrimary: '#1D4ED8', accentSecondary: '#2563EB' },
+  { id: 'amber-cinema-dark', presetId: 'sunsetDune', mode: 'dark', labelEn: 'Amber Cinema ACES (Dark)', labelAr: 'عنبر السينما ACES (داكن)', bgCanvas: '#0C0907', bgSurface: '#1A1310', textPrimary: '#FFFBEB', accentPrimary: '#F97316', accentSecondary: '#FB923C' },
+  { id: 'amber-cinema-light', presetId: 'sunsetDune', mode: 'light', labelEn: 'Amber Cinema ACES (Light)', labelAr: 'عنبر السينما ACES (فاتح)', bgCanvas: '#FFFBEB', bgSurface: '#FFFFFF', textPrimary: '#431407', accentPrimary: '#C2410C', accentSecondary: '#EA580C' },
+  { id: 'rose-quartz-dark', presetId: 'sakuraNody', mode: 'dark', labelEn: 'Rose Quartz Editorial (Dark)', labelAr: 'كوارتز وردي تحريري (داكن)', bgCanvas: '#0E070A', bgSurface: '#1D0E15', textPrimary: '#FFF1F2', accentPrimary: '#F43F5E', accentSecondary: '#FB7185' },
+  { id: 'rose-quartz-light', presetId: 'sakuraNody', mode: 'light', labelEn: 'Rose Quartz Editorial (Light)', labelAr: 'كوارتز وردي تحريري (فاتح)', bgCanvas: '#FFF1F2', bgSurface: '#FFFFFF', textPrimary: '#4C0519', accentPrimary: '#BE123C', accentSecondary: '#E11D48' },
+  { id: 'obsidian-mono-dark', presetId: 'oledPitch', mode: 'dark', labelEn: 'Obsidian Neutral Pro (Dark)', labelAr: 'أوبسيديان محايد احترافي (داكن)', bgCanvas: '#09090B', bgSurface: '#18181B', textPrimary: '#FAFAFA', accentPrimary: '#E4E4E7', accentSecondary: '#A1A1AA' },
+  { id: 'alabaster-mono-light', presetId: 'cleanCommerce', mode: 'light', labelEn: 'Alabaster Neutral Pro (Light)', labelAr: 'مرمر محايد احترافي (فاتح)', bgCanvas: '#FAFAFA', bgSurface: '#FFFFFF', textPrimary: '#09090B', accentPrimary: '#18181B', accentSecondary: '#3F3F46' },
+  { id: 'desert-sand-dark', presetId: 'terracotta', mode: 'dark', labelEn: 'Desert Sand Heritage (Dark)', labelAr: 'رمال الصحراء التراثية (داكن)', bgCanvas: '#0E0C0A', bgSurface: '#1C1917', textPrimary: '#FAFAF9', accentPrimary: '#D6A868', accentSecondary: '#E7C496' },
+  { id: 'desert-sand-light', presetId: 'terracotta', mode: 'light', labelEn: 'Desert Sand Heritage (Light)', labelAr: 'رمال الصحراء التراثية (فاتح)', bgCanvas: '#FAF8F5', bgSurface: '#FFFFFF', textPrimary: '#1C1917', accentPrimary: '#854D0E', accentSecondary: '#A16207' },
+];
 
 export const AGY_MODEL_CATALOG: Array<{
   id: AgyModelId;
@@ -214,6 +284,69 @@ export const APP_SKILLS_AND_WORKFLOWS: Record<
       { id: 'wf.scaletron.pagespeed_lcp_auto_remediation', ar: 'معالجة بطء الصور في PageSpeed', en: 'PageSpeed LCP Auto-Remediation' },
     ],
   },
+  'phototron-mobile': {
+    skills: [
+      { id: 'skill.phototron.mobile_touch_mask', ar: 'عزل ذكي باللمس ومعالجة OKLab غير مدمرة', en: 'Touch Smart Masking & 16-bit OKLab Retouch' },
+      { id: 'skill.phototron.mobile_rtl_story_poster', ar: 'تصميم بوسترات الستوري العربية (9:16 و4:5)', en: '9:16 & 4:5 Arabic HarfBuzz Story Poster' },
+    ],
+    workflows: [
+      { id: 'wf.phototron.mobile_instant_social', ar: 'من التصوير الفوري إلى بوستر .pcraft متكامل', en: 'Camera-to-.pcraft Social Key Art Handoff' },
+    ],
+  },
+  'aftertron-mobile': {
+    skills: [
+      { id: 'skill.aftertron.mobile_kinetic_titles', ar: 'تحريك عناوين الخطاف البصري ومنحنيات السرعة باللمس', en: 'Touch Bezier Curve & Kinetic RTL Hook Titles' },
+      { id: 'skill.aftertron.mobile_glow_stinger', ar: 'توهج بصري 60fps وخاتمة شعار متحركة', en: '60fps Optical Glow & Logo Stinger' },
+    ],
+    workflows: [
+      { id: 'wf.aftertron.mobile_hook_stem', ar: 'تصدير مقدمة VFX ٣ ثوانٍ إلى فيلم ترون موبايل', en: 'Mobile 3s VFX Hook Stem to FilmTron Mobile' },
+    ],
+  },
+  'filmtron-mobile': {
+    skills: [
+      { id: 'skill.filmtron.mobile_3track_cut', ar: 'مونتاج ٣ مسارات باللمس وانتقالات J/L', en: 'Touch 3-Track J/L Cut & Ripple Trim' },
+      { id: 'skill.filmtron.mobile_lumetri_lufs', ar: 'تلوين Lumetri للهاتف ومكساج -14 LUFS', en: 'Mobile Lumetri Scopes & -14 LUFS Ducking' },
+    ],
+    workflows: [
+      { id: 'wf.filmtron.mobile_vertical_reel', ar: 'مونتاج ريلز ١٥ ثانية ومزامنة .fcraft مع سطح المكتب', en: '15s Vertical Reel Cut & Desktop .fcraft Sync' },
+    ],
+  },
+  'gemimotion-mobile': {
+    skills: [
+      { id: 'skill.gemimotion.mobile_3d_orbit', ar: 'تحريك منتج 3D PBR وخلفية شيدر على أندرويد ARM64', en: 'ARM64 3D PBR Product Orbit & WGSL Backdrop' },
+      { id: 'skill.gemimotion.mobile_karaoke_vibe', ar: 'موسيقى 48kHz وكابشن عربي متزامن مع الإيقاع', en: '48kHz Vibe Score & RTL Karaoke Captions' },
+    ],
+    workflows: [
+      { id: 'wf.gemimotion.mobile_3d_reel', ar: 'إنتاج إعلان 3D حلقي متكامل للهاتف (.gmotion)', en: 'Touch 3D Commercial Loop (.gmotion)' },
+    ],
+  },
+  'figtron-mobile': {
+    skills: [
+      { id: 'skill.figtron.mobile_autolayout_tokens', ar: 'تصميم Auto-Layout باللمس ومبدل ٢٠ باليت GemiTokens', en: 'Touch Auto-Layout & 20-Mode GemiTokens Inspector' },
+      { id: 'skill.figtron.mobile_prototype_player', ar: 'مشغل نماذج تفاعلية وفحص أهداف اللمس 48dp', en: 'Interactive RTL Prototype Flow & 48dp Audit' },
+    ],
+    workflows: [
+      { id: 'wf.figtron.mobile_design_to_code', ar: 'مراجعة الواجهة على الهاتف وتوليد كود Flutter/React', en: 'Mobile UI Review & Flutter/React Codegen' },
+    ],
+  },
+  'lighttron-mobile': {
+    skills: [
+      { id: 'skill.lighttron.mobile_dng_develop', ar: 'تحميض ملفات DNG/RAW باللمس ومنع قص الإضاءة', en: 'Mobile DNG/RAW Filmic Develop & Clipping Guard' },
+      { id: 'skill.lighttron.mobile_xmp_sync', ar: 'مزامنة إعدادات الألوان وملفات XMP عبر الجلسة', en: 'Instant Shoot Preset & XMP Sidecar Sync' },
+    ],
+    workflows: [
+      { id: 'wf.lighttron.mobile_field_grade', ar: 'معايرة صور الميدان الفورية وتسليم 16-bit', en: 'On-Location RAW Tether & 16-bit Handoff' },
+    ],
+  },
+  'scaletron-mobile': {
+    skills: [
+      { id: 'skill.scaletron.mobile_2x4x_sr', ar: 'تكبير ٢-٤ أضعاف على معالج ARM64 بدون هالات', en: 'ARM64 NEON/Vulkan 2x/4x Zero-Halo Upscale' },
+      { id: 'skill.scaletron.mobile_oklab_denoise', ar: 'إزالة تشويش كاميرا الهاتف الليلي في فضاء OKLab', en: 'Low-Light Camera Chroma Denoise in OKLab' },
+    ],
+    workflows: [
+      { id: 'wf.scaletron.mobile_crisp_export', ar: 'استعادة تفاصيل صور الهاتف وتصدير WebP فائق الحدة', en: 'Mobile Photo Restore & Crisp WebP/PNG Export' },
+    ],
+  },
 };
 
 export const DEFAULT_FLEET_DEVICE_ADDRESSES: Record<AgyFleetDeviceId, string> = {
@@ -271,17 +404,36 @@ const FLEET_DEVICES: Array<{
 ];
 
 const APP_CATALOG: Array<{
-  id: TronCsAppId;
+  id: TronCsDesktopAppId;
+  mobileCompanionId: TronCsMobileCompanionId;
   name: string;
   ar: string;
+  ext: string;
 }> = [
-  { id: 'phototron', name: 'PhotoTron', ar: 'فوتو ترون' },
-  { id: 'aftertron', name: 'AfterTron', ar: 'أفتر ترون' },
-  { id: 'filmtron', name: 'FilmTron', ar: 'فيلم ترون' },
-  { id: 'gemimotion', name: 'GemiMotion', ar: 'جيمي موشن' },
-  { id: 'figtron', name: 'FigTron', ar: 'فيج ترون' },
-  { id: 'lighttron', name: 'LightTron', ar: 'لايت ترون' },
-  { id: 'scaletron', name: 'ScaleTron', ar: 'سكيل ترون' },
+  { id: 'phototron', mobileCompanionId: 'phototron-mobile', name: 'PhotoTron', ar: 'فوتو ترون', ext: '.pcraft' },
+  { id: 'aftertron', mobileCompanionId: 'aftertron-mobile', name: 'AfterTron', ar: 'أفتر ترون', ext: '.acraft' },
+  { id: 'filmtron', mobileCompanionId: 'filmtron-mobile', name: 'FilmTron', ar: 'فيلم ترون', ext: '.fcraft' },
+  { id: 'gemimotion', mobileCompanionId: 'gemimotion-mobile', name: 'GemiMotion', ar: 'جيمي موشن', ext: '.gmotion' },
+  { id: 'figtron', mobileCompanionId: 'figtron-mobile', name: 'FigTron', ar: 'فيج ترون', ext: '.figtron' },
+  { id: 'lighttron', mobileCompanionId: 'lighttron-mobile', name: 'LightTron', ar: 'لايت ترون', ext: '.lcraft' },
+  { id: 'scaletron', mobileCompanionId: 'scaletron-mobile', name: 'ScaleTron', ar: 'سكيل ترون', ext: '.stproj' },
+];
+
+export const MOBILE_COMPANION_CATALOG: Array<{
+  id: TronCsMobileCompanionId;
+  desktopParentId: TronCsDesktopAppId;
+  name: string;
+  ar: string;
+  ext: string;
+  bridgeScope: string;
+}> = [
+  { id: 'phototron-mobile', desktopParentId: 'phototron', name: 'PhotoTron Mobile', ar: 'فوتو ترون موبايل', ext: '.pcraft', bridgeScope: 'phototron-mobile:*' },
+  { id: 'aftertron-mobile', desktopParentId: 'aftertron', name: 'AfterTron Mobile', ar: 'أفتر ترون موبايل', ext: '.acraft', bridgeScope: 'aftertron-mobile:*' },
+  { id: 'filmtron-mobile', desktopParentId: 'filmtron', name: 'FilmTron Mobile', ar: 'فيلم ترون موبايل', ext: '.fcproj', bridgeScope: 'filmtron-mobile:*' },
+  { id: 'gemimotion-mobile', desktopParentId: 'gemimotion', name: 'GemiMotion Mobile', ar: 'جيمي موشن موبايل', ext: '.gmotion', bridgeScope: 'gemimotion-mobile:*' },
+  { id: 'figtron-mobile', desktopParentId: 'figtron', name: 'FigTron Mobile', ar: 'فيج ترون موبايل', ext: '.figtron', bridgeScope: 'figtron-mobile:*' },
+  { id: 'lighttron-mobile', desktopParentId: 'lighttron', name: 'LightTron Mobile', ar: 'لايت ترون موبايل', ext: '.lcraft', bridgeScope: 'lighttron-mobile:*' },
+  { id: 'scaletron-mobile', desktopParentId: 'scaletron', name: 'ScaleTron Mobile', ar: 'سكيل ترون موبايل', ext: '.stproj', bridgeScope: 'scaletron-mobile:*' },
 ];
 
 export function normalizeNodeEndpoint(rawAddress = '', defaultPort = 18220): string {
@@ -351,13 +503,39 @@ function readStoredExecutionScope(): AgyExecutionScope {
   }
 }
 
+function readStoredPalette(fallback: GemiTokensPaletteId = 'inferno-dark'): GemiTokensPaletteId {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return fallback;
+  }
+  try {
+    const raw = window.localStorage.getItem(GEMI_PALETTE_STORAGE_KEY);
+    if (raw && GEMI_TOKENS_PALETTES_UI.some((p) => p.id === raw)) {
+      return raw as GemiTokensPaletteId;
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function TronAgyControlCenter({
   locale = 'ar-EG',
   defaultApp = 'gemimotion',
+  defaultPalette = 'inferno-dark',
   fetchImpl,
   onExecutePlan,
 }: TronAgyControlCenterProps) {
-  const isArabic = locale.startsWith('ar');
+  const [activeLocale, setActiveLocale] = useState<'ar-EG' | 'en-US'>(locale);
+  const [paletteId, setPaletteId] = useState<GemiTokensPaletteId>(() =>
+    readStoredPalette(defaultPalette),
+  );
+  const isArabic = activeLocale.startsWith('ar');
+  const activePalette = useMemo(
+    () =>
+      GEMI_TOKENS_PALETTES_UI.find((p) => p.id === paletteId) ??
+      GEMI_TOKENS_PALETTES_UI[0],
+    [paletteId],
+  );
   const [selectedApps, setSelectedApps] = useState<TronCsAppId[]>([defaultApp]);
   const [executionScope, setExecutionScope] = useState<AgyExecutionScope>(() =>
     readStoredExecutionScope(),
@@ -423,6 +601,15 @@ export function TronAgyControlCenter({
       // Ignore storage quota errors
     }
   }, [executionScope]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(GEMI_PALETTE_STORAGE_KEY, paletteId);
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [paletteId]);
 
   const activeDeviceMeta = useMemo(
     () => FLEET_DEVICES.find((d) => d.id === activeDevice) ?? FLEET_DEVICES[0],
@@ -557,8 +744,26 @@ export function TronAgyControlCenter({
   return (
     <section
       dir={isArabic ? 'rtl' : 'ltr'}
+      lang={activeLocale}
       data-testid="tron-agy-control-center"
+      data-gemi-palette={activePalette.id}
+      data-gemi-mode={activePalette.mode}
       className="tron-agy-control-center"
+      style={
+        {
+          '--gemi-bg-canvas': activePalette.bgCanvas,
+          '--gemi-bg-surface': activePalette.bgSurface,
+          '--gemi-text-primary': activePalette.textPrimary,
+          '--gemi-accent-primary': activePalette.accentPrimary,
+          '--gemi-accent-secondary': activePalette.accentSecondary,
+          '--gemi-neutral-media-backdrop': '#808080',
+          fontFamily: isArabic
+            ? "'GemiBaba', 'GemiFontSans', system-ui, sans-serif"
+            : "'GemiFontSans', system-ui, sans-serif",
+          backgroundColor: 'var(--gemi-bg-canvas)',
+          color: 'var(--gemi-text-primary)',
+        } as React.CSSProperties
+      }
     >
       <header className="tron-agy-header">
         <div>
@@ -572,6 +777,27 @@ export function TronAgyControlCenter({
                 ? `متصل: ${activeDeviceMeta.ar} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`
                 : `Connected: ${activeDeviceMeta.en} (${addresses[activeDevice]} · ${liveStatus[activeDevice].latencyMs}ms ●)`}
           </p>
+        </div>
+        <div className="tron-agy-theme-locale-bar" data-testid="tron-agy-theme-locale-bar">
+          <button
+            type="button"
+            data-testid="tron-agy-locale-toggle"
+            onClick={() => setActiveLocale((prev) => (prev === 'ar-EG' ? 'en-US' : 'ar-EG'))}
+          >
+            {isArabic ? '🌐 العربية (RTL · GemiBaba) ⇄ EN' : '🌐 English (LTR · GemiFontSans) ⇄ عربي'}
+          </button>
+          <select
+            aria-label="GemiTokens 20-Palette Theme Selector"
+            data-testid="tron-agy-palette-select"
+            value={paletteId}
+            onChange={(e) => setPaletteId(e.target.value as GemiTokensPaletteId)}
+          >
+            {GEMI_TOKENS_PALETTES_UI.map((pal) => (
+              <option key={pal.id} value={pal.id}>
+                {isArabic ? pal.labelAr : pal.labelEn}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="tron-agy-scope-toggle" data-testid="tron-agy-execution-scope-switcher">
           <button
@@ -750,9 +976,28 @@ export function TronAgyControlCenter({
         </div>
       ) : null}
 
-      <div className="tron-agy-section">
-        <label>{isArabic ? 'تطبيقات جناح TronCS' : 'TronCS Suite Apps'}</label>
-        <div className="tron-agy-pill-row">
+      {/* Color-Neutral Media Preview & Scope Guard Badges */}
+      <div className="tron-agy-section" data-testid="tron-agy-color-neutral-badges">
+        <span data-testid="tron-agy-neutral-backdrop-badge" style={{ backgroundColor: '#808080', color: '#FFFFFF', padding: '2px 8px', borderRadius: '999px' }}>
+          {isArabic
+            ? '🎨 خلفية معاينة قياسية محايدة (#808080 Neutral 18% Gray · صفر تلوين للوسائط)'
+            : '🎨 Color-Neutral Preview Backdrop (#808080 Neutral Gray · Zero Media Tint)'}
+        </span>
+        <span data-testid="tron-agy-color-scope-badge">
+          {isArabic
+            ? '🔬 نطاقات لونية معزولة: sRGB · Rec.709 · ACEScct · OKLab'
+            : '🔬 Un-Tinted Color Scopes: sRGB · Rec.709 · ACEScct · OKLab'}
+        </span>
+      </div>
+
+      {/* Full 7-Desktop + 7-Mobile Suite Companion Matrix */}
+      <div className="tron-agy-section" data-testid="tron-agy-suite-companion-matrix">
+        <label>
+          {isArabic
+            ? 'مصفوفة جناح TronCS الكاملة (٧ تطبيقات سطح مكتب + ٧ رفقاء أندرويد ARM64)'
+            : 'Full TronCS 7-Desktop + 7-Mobile Companion Matrix (14 Products)'}
+        </label>
+        <div className="tron-agy-pill-row" data-testid="tron-agy-desktop-apps-row">
           {APP_CATALOG.map((app) => (
             <button
               key={app.id}
@@ -761,7 +1006,20 @@ export function TronAgyControlCenter({
               aria-pressed={selectedApps.includes(app.id)}
               onClick={() => toggleApp(app.id)}
             >
-              {isArabic ? app.ar : app.name}
+              {isArabic ? `${app.ar} (${app.ext})` : `${app.name} (${app.ext})`}
+            </button>
+          ))}
+        </div>
+        <div className="tron-agy-pill-row" data-testid="tron-agy-mobile-companions-row">
+          {MOBILE_COMPANION_CATALOG.map((mob) => (
+            <button
+              key={mob.id}
+              type="button"
+              data-testid={`tron-agy-app-${mob.id}`}
+              aria-pressed={selectedApps.includes(mob.id)}
+              onClick={() => toggleApp(mob.id)}
+            >
+              {isArabic ? `📱 ${mob.ar} (${mob.ext})` : `📱 ${mob.name} (${mob.ext})`}
             </button>
           ))}
         </div>
@@ -867,6 +1125,7 @@ export function TronAgyControlCenter({
               apps: selectedApps,
               skillId,
               workflowId,
+              paletteId,
               executionScope,
               deviceId: activeDevice,
               deviceAddress:
@@ -877,7 +1136,7 @@ export function TronAgyControlCenter({
                 executionScope === 'account-remote-agent' ? REMOTE_AGENT_RELAY_URL : null,
               model,
               effort,
-              locale,
+              locale: activeLocale,
             })
           }
         >

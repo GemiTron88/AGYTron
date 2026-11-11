@@ -15,6 +15,10 @@ import { fileURLToPath } from "node:url";
 import {
   AGY_TOS_SAFETY_GUARD,
   TRONCS_SUITE_APPS,
+  TRONCS_MOBILE_APPS,
+  TRONCS_SEVEN_DESKTOP_APPS,
+  TRONCS_SEVEN_MOBILE_COMPANIONS,
+  SUITE_COMPANION_MATRIX,
   GEMITRON_GLOBAL_SERVICES,
   AGY_MODELS,
   AGY_EFFORT_TIERS,
@@ -22,6 +26,7 @@ import {
   defaultAgyQuotaLedger,
   getAppKnowledgeAndSkills,
   listAllNineAppsKnowledgeCatalog,
+  listFullSuiteCompanionCatalog,
   auditAgySmartMindReadiness,
   buildTronAgyCreativePlan,
   buildGlobalAgySmartMindPlan,
@@ -32,6 +37,7 @@ import {
   FIGTRON_DESIGN_PRESETS,
   buildSuiteCreativeDirection,
   translateSubjectiveSuiteFeedback,
+  getSuiteArabicFeedbackCatalog,
   critiqueAndRepairSuitePlan,
   generateFigTronCodeSnippet,
   callGemiMcpTool
@@ -88,10 +94,31 @@ export async function runTronAgyCli(rawArgs = process.argv.slice(2)) {
       command: "audit",
       tosSafetyGuard: AGY_TOS_SAFETY_GUARD,
       suiteAppsCount: Object.keys(TRONCS_SUITE_APPS).length,
+      mobileCompanionsCount: Object.keys(TRONCS_MOBILE_APPS).length,
+      totalSuiteProductsCount:
+        TRONCS_SEVEN_DESKTOP_APPS.length + TRONCS_SEVEN_MOBILE_COMPANIONS.length,
       globalServicesCount: Object.keys(GEMITRON_GLOBAL_SERVICES).length,
       modelsCount: AGY_MODELS.length,
       effortTiers: Object.keys(AGY_EFFORT_TIERS),
       filmtronPresetsCount: Object.keys(FILMTRON_EDITORIAL_PRESETS).length
+    };
+  }
+
+  if (firstArg === "suite-catalog") {
+    return {
+      ok: true,
+      command: "suite-catalog",
+      tosSafetyGuard: AGY_TOS_SAFETY_GUARD,
+      ...listFullSuiteCompanionCatalog(),
+      companionMatrix: SUITE_COMPANION_MATRIX
+    };
+  }
+
+  if (firstArg === "feedback-catalog") {
+    return {
+      ...getSuiteArabicFeedbackCatalog(service),
+      command: "feedback-catalog",
+      tosSafetyGuard: AGY_TOS_SAFETY_GUARD
     };
   }
 

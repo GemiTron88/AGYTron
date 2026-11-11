@@ -1,13 +1,14 @@
 /**
  * @gemitron/tron-agy — Core Global AGY AI Creative Brain & ToS-Safe SDK
  *
- * Powers all 6 TronCS Creative Suite applications alongside TRON AI:
- *   1. PhotoTron  (phototron  / .pcraft)
- *   2. AfterTron  (aftertron  / .acraft)
- *   3. FilmTron   (filmtron   / .fcraft)
- *   4. GemiMotion (gemimotion / .gmotion)
- *   5. FigTron    (figtron    / .figtron)
- *   6. LightTron  (lighttron  / .lcraft)
+ * Powers all 7 TronCS Creative Suite desktop applications + all 7 Android ARM64 mobile companions:
+ *   1. PhotoTron  (phototron  / .pcraft)  + PhotoTron Mobile  (phototron-mobile)
+ *   2. AfterTron  (aftertron  / .acraft)  + AfterTron Mobile  (aftertron-mobile)
+ *   3. FilmTron   (filmtron   / .fcraft)  + FilmTron Mobile   (filmtron-mobile)
+ *   4. GemiMotion (gemimotion / .gmotion) + GemiMotion Mobile (gemimotion-mobile)
+ *   5. FigTron    (figtron    / .figtron) + FigTron Mobile    (figtron-mobile)
+ *   6. LightTron  (lighttron  / .lcraft)  + LightTron Mobile  (lighttron-mobile)
+ *   7. ScaleTron  (scaletron  / .stproj)  + ScaleTron Mobile  (scaletron-mobile)
  */
 
 import {
@@ -21,8 +22,10 @@ import {
   KNOWLEDGE_SKILLS_SCHEMA,
   NINE_CORE_APPS,
   APP_KNOWLEDGE_SKILLS_REGISTRY,
+  MOBILE_COMPANION_SKILLS_REGISTRY,
   getAppKnowledgeAndSkills,
-  listAllNineAppsKnowledgeCatalog
+  listAllNineAppsKnowledgeCatalog,
+  listFullSuiteCompanionCatalog
 } from "./knowledge-skills.mjs";
 import {
   AUTHORITATIVE_TICKS_PER_SECOND,
@@ -43,12 +46,18 @@ import {
   invokeAgyModel
 } from "./llm-providers.mjs";
 import {
+  TRONCS_SEVEN_DESKTOP_APPS,
+  TRONCS_SEVEN_MOBILE_COMPANIONS,
+  TRONCS_ALL_FOURTEEN_PRODUCTS,
+  SUITE_COMPANION_MATRIX,
   GEMI_TOKENS_PALETTES,
   FIGTRON_DESIGN_PRESETS,
+  SUITE_DOMAIN_FEEDBACK_RULES,
   computeRelativeLuminance,
   computeWcagContrastRatio,
   buildSuiteCreativeDirection,
   translateSubjectiveSuiteFeedback,
+  getSuiteArabicFeedbackCatalog,
   critiqueAndRepairSuitePlan,
   generateFigTronCodeSnippet
 } from "./suite-directors.mjs";
@@ -69,8 +78,10 @@ export {
   KNOWLEDGE_SKILLS_SCHEMA,
   NINE_CORE_APPS,
   APP_KNOWLEDGE_SKILLS_REGISTRY,
+  MOBILE_COMPANION_SKILLS_REGISTRY,
   getAppKnowledgeAndSkills,
   listAllNineAppsKnowledgeCatalog,
+  listFullSuiteCompanionCatalog,
   AUTHORITATIVE_TICKS_PER_SECOND,
   RATIONAL_FRAME_RATES,
   resolveRationalFps,
@@ -85,12 +96,18 @@ export {
   assertTosSafeInferenceTarget,
   mapAgyModelToCommercialApiModel,
   invokeAgyModel,
+  TRONCS_SEVEN_DESKTOP_APPS,
+  TRONCS_SEVEN_MOBILE_COMPANIONS,
+  TRONCS_ALL_FOURTEEN_PRODUCTS,
+  SUITE_COMPANION_MATRIX,
   GEMI_TOKENS_PALETTES,
   FIGTRON_DESIGN_PRESETS,
+  SUITE_DOMAIN_FEEDBACK_RULES,
   computeRelativeLuminance,
   computeWcagContrastRatio,
   buildSuiteCreativeDirection,
   translateSubjectiveSuiteFeedback,
+  getSuiteArabicFeedbackCatalog,
   critiqueAndRepairSuitePlan,
   generateFigTronCodeSnippet,
   GEMIMCP_ENDPOINTS,
@@ -666,7 +683,122 @@ export const GEMITRON_GLOBAL_SERVICES = Object.freeze({
       "WCAG >= 4.5:1 AA / >= 7.0:1 AAA GemiTokens luminance contrast",
       "Arabic HarfBuzz RTL mirroring & zero dead-end prototype triggers"
     ]
+  }),
+  "aftertron-mobile": Object.freeze({
+    id: "aftertron-mobile",
+    name: "AfterTron Mobile (Android ARM64)",
+    arName: "أفتر ترون موبايل (أندرويد ARM64)",
+    category: "mobile-creative",
+    ext: ".acraft",
+    planSchema: "aftertron.mobile.agy.plan.v1",
+    mcpRoute: "/products/aftertron/mcp",
+    accentHex: "#a855f7",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "xhigh",
+    roleEn: "Touch-First 60fps Motion Graphics, Cubic-Bezier Velocity Curves & Optical Glow VFX Studio via Flutter + Rust ARM64",
+    roleAr: "استوديو الخدع البصرية وتحريك النصوص ومنحنيات السرعة للهواتف (Flutter + Rust ARM64)",
+    nativeTools: [
+      "after.comp.create",
+      "after.layer.create_text",
+      "after.layer.create_shape",
+      "after.keyframe.easy_ease",
+      "after.effect.apply"
+    ],
+    critiqueChecks: [
+      "254,016,000,000 ticks/sec rational frame alignment",
+      "Touch-safe >= 48dp controls & 90% SafeRect RTL kinetic typography",
+      "Continuous cubic-bezier velocity curves & linear optical glow safety"
+    ]
+  }),
+  "gemimotion-mobile": Object.freeze({
+    id: "gemimotion-mobile",
+    name: "GemiMotion Mobile (Android ARM64)",
+    arName: "جيمي موشن موبايل (أندرويد ARM64)",
+    category: "mobile-creative",
+    ext: ".gmotion",
+    planSchema: "gemimotion.mobile.agy.plan.v1",
+    recipeSchema: "gemimotion-recipe/v3",
+    mcpRoute: "/products/gemimotion/mcp",
+    accentHex: "#f59e0b",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "xhigh",
+    roleEn: "Touch-First 3D PBR Scene, WGSL Shader World, 48kHz Vibe Score & Beat-Synced Karaoke Captions via Flutter + Rust ARM64",
+    roleAr: "استوديو إخراج مشاهد 3D وشيدر والموسيقى التصويرية 48kHz للهواتف (Flutter + Rust ARM64)",
+    nativeTools: [
+      "motion.timeline.clip.scene3d",
+      "motion.timeline.clip.vfx",
+      "motion.timeline.clip.transform",
+      "motion.timeline.clip.daw",
+      "motion.caption.upsert"
+    ],
+    critiqueChecks: [
+      "705,600,000 flicks/sec integer grid & 0 SafeRect margin violations",
+      "Touch-safe >= 48dp controls & overcrowding density <= 5 elements",
+      "48kHz stereo Vibe Score beat-grid + 6 frame-accurate SFX cues"
+    ]
+  }),
+  "lighttron-mobile": Object.freeze({
+    id: "lighttron-mobile",
+    name: "LightTron Mobile (Android ARM64)",
+    arName: "لايت ترون موبايل (أندرويد ARM64)",
+    category: "mobile-creative",
+    ext: ".lcraft",
+    planSchema: "lighttron.mobile.agy.plan.v1",
+    mcpRoute: "/products/lighttron/mcp",
+    accentHex: "#6366f1",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "high",
+    roleEn: "Touch-First RAW/DNG Demosaic Develop, Filmic Tone Curves & Non-Destructive XMP Sidecar Sync via Flutter + Rust ARM64",
+    roleAr: "استوديو تحميض ملفات RAW/DNG ومعايرة الألوان ومزامنة XMP للهواتف (Flutter + Rust ARM64)",
+    nativeTools: [
+      "lighttron.develop.exposure_wb",
+      "lighttron.develop.tone_curve",
+      "lighttron.develop.hsl_calibration",
+      "lighttron.mask.radial_gradient",
+      "lighttron.catalog.sync_settings"
+    ],
+    critiqueChecks: [
+      "Highlight & shadow clipping guard (< 0.5% clipped pixels)",
+      "Touch-safe >= 48dp sliders & color-neutral #808080 develop canvas",
+      "Non-destructive parametric XMP sidecar & 16-bit rendition preservation"
+    ]
+  }),
+  "scaletron-mobile": Object.freeze({
+    id: "scaletron-mobile",
+    name: "ScaleTron Mobile (Android ARM64)",
+    arName: "سكيل ترون موبايل (أندرويد ARM64)",
+    category: "mobile-creative",
+    ext: ".stproj",
+    planSchema: "scaletron.mobile.agy.plan.v1",
+    mcpRoute: "/products/scaletron/mcp",
+    accentHex: "#ec4899",
+    defaultModel: "gemini-4-argon-high",
+    defaultEffort: "high",
+    roleEn: "Touch-First ARM64 NEON/Vulkan 2x/4x Zero-Halo Super-Resolution, OKLab Guided Denoising & xBR Restoration",
+    roleAr: "استوديو تكبير الصور فائق الدقة وتنقية OKLab على معالجات أندرويد ARM64",
+    nativeTools: [
+      "scale.inspect.classify",
+      "scale.enhance.steerable_sr",
+      "scale.enhance.xbr_multislope",
+      "scale.enhance.oklab_guided",
+      "scale.topaz.neural_upscale"
+    ],
+    critiqueChecks: [
+      "3x3 source range clamping (zero ringing/overshoot halo)",
+      "Touch-safe >= 48dp split-compare loupe & color-neutral preview",
+      "Deterministic tile seam continuity & OKLab chroma preservation"
+    ]
   })
+});
+
+export const TRONCS_MOBILE_APPS = Object.freeze({
+  "phototron-mobile": GEMITRON_GLOBAL_SERVICES["phototron-mobile"],
+  "filmtron-mobile": GEMITRON_GLOBAL_SERVICES["filmtron-mobile"],
+  "aftertron-mobile": GEMITRON_GLOBAL_SERVICES["aftertron-mobile"],
+  "gemimotion-mobile": GEMITRON_GLOBAL_SERVICES["gemimotion-mobile"],
+  "figtron-mobile": GEMITRON_GLOBAL_SERVICES["figtron-mobile"],
+  "lighttron-mobile": GEMITRON_GLOBAL_SERVICES["lighttron-mobile"],
+  "scaletron-mobile": GEMITRON_GLOBAL_SERVICES["scaletron-mobile"]
 });
 
 /**
@@ -950,17 +1082,25 @@ export function resolveGemitronServiceProfile(rawServiceId = "gemiai") {
     "photo-mobile": "phototron-mobile",
     phototronmobile: "phototron-mobile",
     after: "aftertron",
+    "after-mobile": "aftertron-mobile",
+    aftertronmobile: "aftertron-mobile",
     film: "filmtron",
     "film-mobile": "filmtron-mobile",
     filmtronmobile: "filmtron-mobile",
     mobile: "filmtron-mobile",
     launcher: "troncs",
     motion: "gemimotion",
+    "motion-mobile": "gemimotion-mobile",
+    gemimotionmobile: "gemimotion-mobile",
     fig: "figtron",
     "fig-mobile": "figtron-mobile",
     figtronmobile: "figtron-mobile",
     light: "lighttron",
+    "light-mobile": "lighttron-mobile",
+    lighttronmobile: "lighttron-mobile",
     scale: "scaletron",
+    "scale-mobile": "scaletron-mobile",
+    scaletronmobile: "scaletron-mobile",
     code: "gemicode",
     cyber: "gemicyber",
     hack: "gemicyber",
@@ -1308,7 +1448,7 @@ export async function executeGlobalAgySmartMind({
 
   const creativeDirections = isCreativeApp
     ? buildSuiteCreativeDirection({
-        appId: baseAppId,
+        appId: profile.id,
         prompt: plan.prompt,
         presetId: context?.presetId || null,
         paletteId: context?.paletteId || "inferno-dark",
@@ -1320,7 +1460,7 @@ export async function executeGlobalAgySmartMind({
   const feedbackTranslation =
     isCreativeApp && context?.feedback
       ? translateSubjectiveSuiteFeedback({
-          appId: baseAppId,
+          appId: profile.id,
           feedbackText: context.feedback,
           currentFps: context?.fps || "24/1",
           locale
@@ -1329,7 +1469,7 @@ export async function executeGlobalAgySmartMind({
 
   const closedLoopCritique = isCreativeApp
     ? critiqueAndRepairSuitePlan({
-        appId: baseAppId,
+        appId: profile.id,
         spec: context?.spec || {},
         maxPasses: plan.maxCritiquePasses
       })
@@ -1764,9 +1904,15 @@ export function auditAgySmartMindReadiness({
     {
       id: "mobile-and-launcher-profiles",
       ok:
-        serviceKeys.includes("phototron-mobile") &&
-        serviceKeys.includes("filmtron-mobile") &&
+        TRONCS_SEVEN_DESKTOP_APPS.every((id) => serviceKeys.includes(id)) &&
+        TRONCS_SEVEN_MOBILE_COMPANIONS.every((id) => serviceKeys.includes(id)) &&
         serviceKeys.includes("troncs")
+    },
+    {
+      id: "suite-14-products-matrix",
+      ok:
+        Object.keys(SUITE_COMPANION_MATRIX).length === 14 &&
+        TRONCS_ALL_FOURTEEN_PRODUCTS.every((id) => Object.hasOwn(SUITE_COMPANION_MATRIX, id))
     },
     {
       id: "filmtron-10-editorial-presets",

@@ -176,3 +176,95 @@ test("critiqueAndRepairSuitePlan detects mathematical defects and auto-repairs F
   assert.equal(scaleCritique.finalStatus, "PASSED");
   assert.ok(scaleCritique.repairedSpec.haloOvershoot <= 0.35);
 });
+
+test("Full 7-desktop + 7-mobile companion matrix, 7 Egyptian Arabic professional feedback refinements per domain (zero street slang), and closed-loop critics across all 14 products", async () => {
+  const {
+    TRONCS_SEVEN_DESKTOP_APPS,
+    TRONCS_SEVEN_MOBILE_COMPANIONS,
+    TRONCS_ALL_FOURTEEN_PRODUCTS,
+    SUITE_COMPANION_MATRIX,
+    buildSuiteCreativeDirection,
+    translateSubjectiveSuiteFeedback,
+    getSuiteArabicFeedbackCatalog,
+    critiqueAndRepairSuitePlan
+  } = await import("../src/suite-directors.mjs");
+
+  assert.equal(TRONCS_SEVEN_DESKTOP_APPS.length, 7);
+  assert.equal(TRONCS_SEVEN_MOBILE_COMPANIONS.length, 7);
+  assert.equal(TRONCS_ALL_FOURTEEN_PRODUCTS.length, 14);
+  assert.equal(Object.keys(SUITE_COMPANION_MATRIX).length, 14);
+
+  const forbiddenSlangRegex = /(جامد|فشخ|روش|طرش|فشيخ|خرابيط|اي كلام|هبد)/i;
+
+  for (const productId of TRONCS_ALL_FOURTEEN_PRODUCTS) {
+    const matrixEntry = SUITE_COMPANION_MATRIX[productId];
+    assert.ok(matrixEntry, `Missing companion matrix entry for ${productId}`);
+    assert.ok(matrixEntry.skills.length >= 2, `Expected >=2 skills for ${productId}`);
+    assert.ok(matrixEntry.workflows.length >= 1, `Expected >=1 workflow for ${productId}`);
+
+    const direction = buildSuiteCreativeDirection({
+      appId: productId,
+      prompt: "حملة إطلاق هوية عربية رقمية متكاملة",
+      locale: "ar-EG"
+    });
+    assert.equal(direction.ok, true);
+    assert.equal(direction.requestedAppId, productId);
+    assert.equal(direction.isMobileCompanion, productId.endsWith("-mobile"));
+    assert.equal(direction.directions.length, 2);
+
+    const fbCatalog = getSuiteArabicFeedbackCatalog(productId);
+    assert.equal(fbCatalog.ok, true);
+    assert.equal(fbCatalog.zeroStreetSlangPolicy, true);
+    assert.equal(
+      fbCatalog.refinementsCount,
+      7,
+      `Expected 7 Arabic feedback refinements for ${productId}, got ${fbCatalog.refinementsCount}`
+    );
+    for (const ref of fbCatalog.refinements) {
+      assert.equal(
+        forbiddenSlangRegex.test(ref.rationaleAr),
+        false,
+        `Street slang forbidden in rationaleAr for ${productId}: ${ref.rationaleAr}`
+      );
+      const translated = translateSubjectiveSuiteFeedback({
+        appId: productId,
+        feedbackText: ref.sampleFeedbackAr || "يرجى تحسين التوازن البصري",
+        locale: "ar-EG"
+      });
+      assert.equal(translated.ok, true);
+      assert.ok(translated.actions.length >= 1);
+    }
+  }
+
+  // Verify GemiMotion mathematical closed-loop critic (flicks + SafeRect + density + 48kHz)
+  const motionCritique = critiqueAndRepairSuitePlan({
+    appId: "gemimotion",
+    spec: {
+      safeRectMarginPct: 3,
+      activeSceneElementsCount: 9,
+      sampleRateHz: 44100,
+      sfxCuesCount: 2,
+      clips: [{ startFlicks: 12345 }]
+    },
+    maxPasses: 3
+  });
+  assert.equal(motionCritique.finalStatus, "PASSED");
+  assert.equal(motionCritique.repairedSpec.safeRectMarginPct >= 8, true);
+  assert.equal(motionCritique.repairedSpec.activeSceneElementsCount <= 5, true);
+  assert.equal(motionCritique.repairedSpec.sampleRateHz, 48000);
+  assert.equal(motionCritique.repairedSpec.sfxCuesCount, 6);
+  assert.equal(motionCritique.repairedSpec.clips[0].startFlicks % 29_400_000, 0);
+
+  // Verify Mobile Companion 48dp touch-target + SafeRect auto-repair across all 7 mobile apps
+  for (const mobileId of TRONCS_SEVEN_MOBILE_COMPANIONS) {
+    const mobCritique = critiqueAndRepairSuitePlan({
+      appId: mobileId,
+      spec: { minTouchTargetDp: 32, mobileSafeRectMarginPct: 2 },
+      maxPasses: 3
+    });
+    assert.equal(mobCritique.finalStatus, "PASSED", `Mobile critique failed to repair ${mobileId}`);
+    assert.equal(mobCritique.isMobileCompanion, true);
+    assert.equal(mobCritique.repairedSpec.minTouchTargetDp >= 48, true);
+    assert.equal(mobCritique.repairedSpec.mobileSafeRectMarginPct >= 8, true);
+  }
+});

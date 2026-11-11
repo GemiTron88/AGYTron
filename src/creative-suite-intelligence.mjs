@@ -984,10 +984,10 @@ export function synthesizeCreativeAppSmartMind({
     };
   }
 
-  if (appId === "aftertron") {
+  if (appId === "aftertron" || appId === "aftertron-mobile") {
     const rate = resolveRationalFps(context.fps || "60/1");
     const structured = {
-      engine: "aftertron-agy-smart-mind",
+      engine: `${profile.id}-agy-smart-mind`,
       service: profile.id,
       serviceName: profile.name,
       model: plan.model,
@@ -995,6 +995,7 @@ export function synthesizeCreativeAppSmartMind({
       task,
       ticksPerSecond: AUTHORITATIVE_TICKS_PER_SECOND,
       rationalFps: `${rate.num}/${rate.den}`,
+      mobileCompanionReady: true,
       compGraph: [
         {
           node: "Hero_3D_Text_Reveal",
@@ -1018,26 +1019,33 @@ export function synthesizeCreativeAppSmartMind({
           effectName: "OpticalGlow_Linear"
         }
       ],
+      executableSteps: [
+        { step: 1, tool: "after.comp.create", fps: `${rate.num}/${rate.den}`, ticksPerSecond: AUTHORITATIVE_TICKS_PER_SECOND },
+        { step: 2, tool: "after.layer.create_text", text: cleanPrompt.slice(0, 64), direction: isAr ? "rtl" : "ltr" },
+        { step: 3, tool: "after.keyframe.easy_ease", cubicBezier: [0.22, 1.0, 0.36, 1.0] },
+        { step: 4, tool: "after.effect.apply", effectName: "OpticalGlow_Linear" }
+      ],
       recommendedTools: profile.nativeTools,
       critiqueChecks: profile.critiqueChecks
     };
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · أفتر ترون · ${plan.model}] تم تصميم شجرة الخدع البصرية والـ Motion Graphics لـ «${cleanPrompt}» مع منحنيات سرعة Easy-Ease ناعمة وإضاءة Optical Glow خطية.`
-        : `[AGYTron Smart Mind · AfterTron · ${plan.model}] Generated VFX composition & Easy-Ease velocity choreography for "${cleanPrompt}" aligned to 254,016,000,000 ticks/sec.`
+        ? `[AGYTron Smart Mind · ${profile.arName} · ${plan.model}] تم تصميم شجرة الخدع البصرية والـ Motion Graphics لـ «${cleanPrompt}» مع منحنيات سرعة Easy-Ease ناعمة وإضاءة Optical Glow خطية.`
+        : `[AGYTron Smart Mind · ${profile.name} · ${plan.model}] Generated VFX composition & Easy-Ease velocity choreography for "${cleanPrompt}" aligned to 254,016,000,000 ticks/sec.`
     };
   }
 
-  if (appId === "gemimotion") {
+  if (appId === "gemimotion" || appId === "gemimotion-mobile") {
     const structured = {
-      engine: "gemimotion-agy-smart-mind",
+      engine: `${profile.id}-agy-smart-mind`,
       service: profile.id,
       serviceName: profile.name,
       model: plan.model,
       effort: plan.effort,
       task,
       recipeSchema: "gemimotion-recipe/v3",
+      mobileCompanionReady: true,
       scenes3d: [
         {
           sceneId: "scene-01-hero-orbit",
@@ -1059,14 +1067,20 @@ export function synthesizeCreativeAppSmartMind({
         bpm: 120,
         sfxCuesCount: 6
       },
+      executableSteps: [
+        { step: 1, tool: "motion.timeline.clip.scene3d", cameraRig: "Orbit_Golden_Ratio_DOF" },
+        { step: 2, tool: "motion.timeline.clip.vfx", shader: "WGSL_Volumetric_Studio" },
+        { step: 3, tool: "motion.timeline.clip.daw", sampleRateHz: 48000, sfxCuesCount: 6 },
+        { step: 4, tool: "motion.caption.upsert", text: cleanPrompt.slice(0, 64), direction: isAr ? "rtl" : "ltr" }
+      ],
       recommendedTools: profile.nativeTools,
       critiqueChecks: profile.critiqueChecks
     };
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · جيمي موشن · ${plan.model}] تم تجهيز وصفة المشاهد ثلاثية الأبعاد (PBR + WGSL) لـ «${cleanPrompt}» مع موسيقى تصويرية 48kHz و٦ مؤثرات صوتية متزامنة.`
-        : `[AGYTron Smart Mind · GemiMotion · ${plan.model}] Prepared 3D PBR + WGSL shader choreography for "${cleanPrompt}" with a 48kHz beat-synced score and 6 frame-accurate SFX cues.`
+        ? `[AGYTron Smart Mind · ${profile.arName} · ${plan.model}] تم تجهيز وصفة المشاهد ثلاثية الأبعاد (PBR + WGSL) لـ «${cleanPrompt}» مع موسيقى تصويرية 48kHz و٦ مؤثرات صوتية متزامنة.`
+        : `[AGYTron Smart Mind · ${profile.name} · ${plan.model}] Prepared 3D PBR + WGSL shader choreography for "${cleanPrompt}" with a 48kHz beat-synced score and 6 frame-accurate SFX cues.`
     };
   }
 
@@ -1079,6 +1093,7 @@ export function synthesizeCreativeAppSmartMind({
       effort: plan.effort,
       task,
       presetId: context.presetId || "auto-layout-responsive-system",
+      mobileCompanionReady: true,
       designTokenSystem: {
         theme: "Inferno Pixel Glass",
         paletteId: context.paletteId || "inferno-dark",
@@ -1107,19 +1122,20 @@ export function synthesizeCreativeAppSmartMind({
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · فيج ترون · ${plan.model}] تم بناء نظام التصميم ومكونات Auto-Layout التفاعلية (RTL/LTR) لـ «${cleanPrompt}» مع ربط ١٠٠٪ بمتغيرات الألوان والخطوط القياسية.`
-        : `[AGYTron Smart Mind · FigTron · ${plan.model}] Generated bidirectional RTL/LTR Auto-Layout component system and interactive prototype flow for "${cleanPrompt}" with 100% design token binding.`
+        ? `[AGYTron Smart Mind · ${profile.arName} · ${plan.model}] تم بناء نظام التصميم ومكونات Auto-Layout التفاعلية (RTL/LTR) لـ «${cleanPrompt}» مع ربط ١٠٠٪ بمتغيرات الألوان والخطوط القياسية.`
+        : `[AGYTron Smart Mind · ${profile.name} · ${plan.model}] Generated bidirectional RTL/LTR Auto-Layout component system and interactive prototype flow for "${cleanPrompt}" with 100% design token binding.`
     };
   }
 
-  if (appId === "lighttron") {
+  if (appId === "lighttron" || appId === "lighttron-mobile") {
     const structured = {
-      engine: "lighttron-agy-smart-mind",
+      engine: `${profile.id}-agy-smart-mind`,
       service: profile.id,
       serviceName: profile.name,
       model: plan.model,
       effort: plan.effort,
       task,
+      mobileCompanionReady: true,
       parametricDevelopRecipe: {
         exposureEv: 0.25,
         whiteBalanceKelvin: 5450,
@@ -1136,25 +1152,31 @@ export function synthesizeCreativeAppSmartMind({
           "lighttron.catalog.sync_settings"
         ]
       },
+      executableSteps: [
+        { step: 1, tool: "lighttron.develop.exposure_wb", exposureEv: 0.25, whiteBalanceKelvin: 5450 },
+        { step: 2, tool: "lighttron.develop.tone_curve", highlights: -24, shadows: 18 },
+        { step: 3, tool: "lighttron.catalog.sync_settings", preserveSidecarXmp: true }
+      ],
       recommendedTools: profile.nativeTools,
       critiqueChecks: profile.critiqueChecks
     };
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · لايت ترون · ${plan.model}] تم إعداد وصفة تحميض RAW غير التدميرية لـ «${cleanPrompt}» مع حماية الإضاءة العالية والظلال (< 0.1% clipping) ومزامنة الكتالوج.`
-        : `[AGYTron Smart Mind · LightTron · ${plan.model}] Prepared non-destructive RAW develop recipe & batch catalog sync for "${cleanPrompt}" with <0.1% highlight/shadow clipping.`
+        ? `[AGYTron Smart Mind · ${profile.arName} · ${plan.model}] تم إعداد وصفة تحميض RAW غير التدميرية لـ «${cleanPrompt}» مع حماية الإضاءة العالية والظلال (< 0.1% clipping) ومزامنة الكتالوج.`
+        : `[AGYTron Smart Mind · ${profile.name} · ${plan.model}] Prepared non-destructive RAW develop recipe & batch catalog sync for "${cleanPrompt}" with <0.1% highlight/shadow clipping.`
     };
   }
 
-  if (appId === "scaletron") {
+  if (appId === "scaletron" || appId === "scaletron-mobile") {
     const structured = {
-      engine: "scaletron-agy-smart-mind",
+      engine: `${profile.id}-agy-smart-mind`,
       service: profile.id,
       serviceName: profile.name,
       model: plan.model,
       effort: plan.effort,
       task,
+      mobileCompanionReady: true,
       upscalePipeline: {
         scaleFactor: context.scaleFactor || "4x",
         classifierTool: "scale.inspect.classify",
@@ -1163,14 +1185,19 @@ export function synthesizeCreativeAppSmartMind({
         haloClamping: "3x3_local_extrema_strict",
         tileSeamError: 0.0
       },
+      executableSteps: [
+        { step: 1, tool: "scale.inspect.classify", detectCompression: true },
+        { step: 2, tool: "scale.enhance.steerable_sr", scaleFactor: 4, clamp3x3: true },
+        { step: 3, tool: "scale.enhance.oklab_guided", preserveChroma: true }
+      ],
       recommendedTools: profile.nativeTools,
       critiqueChecks: profile.critiqueChecks
     };
     return {
       structured,
       text: isAr
-        ? `[AGYTron Smart Mind · سكيل ترون · ${plan.model}] تم تجهيز خط تكبير الصور فائق الدقة (4x OKLab Guided Super-Resolution) لـ «${cleanPrompt}» بدون هالات ضوئية أو فواصل بين البلاطات.`
-        : `[AGYTron Smart Mind · ScaleTron · ${plan.model}] Configured 4x Edge-Directed Super-Resolution & OKLab guided filtering for "${cleanPrompt}" with strict 3x3 halo clamping.`
+        ? `[AGYTron Smart Mind · ${profile.arName} · ${plan.model}] تم تجهيز خط تكبير الصور فائق الدقة (4x OKLab Guided Super-Resolution) لـ «${cleanPrompt}» بدون هالات ضوئية أو فواصل بين البلاطات.`
+        : `[AGYTron Smart Mind · ${profile.name} · ${plan.model}] Configured 4x Edge-Directed Super-Resolution & OKLab guided filtering for "${cleanPrompt}" with strict 3x3 halo clamping.`
     };
   }
 
